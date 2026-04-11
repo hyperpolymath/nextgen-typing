@@ -1,0 +1,38 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= nextgen-typing Roadmap
+Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+:toc:
+
+== Near-Term (This Sprint)
+
+* [ ] Create `katagoria` repo from rsr-template-repo
+* [ ] Fix TypeLL docs: remove "10 levels" framing → "open-ended progressive"
+* [ ] Add `typed-wasm` reference to `nextgen-languages/` monorepo
+* [ ] Write `docs/ARCHITECTURE.adoc` (see `docs/NEXTGEN-TYPING-PIPELINE.adoc` on Desktop)
+* [ ] Populate `.machine_readable/6a2/` files with real project state
+* [ ] Add ecosystem references to constituent repos (typell, typed-wasm, tropical-resource-typing)
+
+== Medium-Term
+
+* [ ] Formalise Protocol Squisher tropical connection (`protocol-squisher/proofs/tropical/`)
+* [ ] Extend `Tropical.thy`: linorder instance, tropical matrices, Kleene algebra
+* [ ] Write arXiv paper on speculative tropical session types
+* [ ] katagoria: first research artefacts (type theory prototypes)
+* [ ] typed-wasm ABI conventions for AffineScript + Ephapax cross-language calls
+
+== Long-Term
+
+* [ ] Tropical time series application (Diehl–Ebrahimi-Fard–Tapia 2022)
+* [ ] Multiparty tropical session types
+* [ ] Probabilistic extension of TropicalSessionTypes.lean
+* [ ] Lean 4 tactic for automated grade calculation
+
+== Done (This Session, 2026-04-11)
+
+* [x] `tropical-resource-typing`: Isabelle/HOL formalisation committed
+* [x] `tropical-resource-typing`: Lean 4 session types committed
+* [x] `tropical-resource-typing`: FORMAL-PROOFS.adoc + HANDOVER.adoc committed
+* [x] AffineScript: ADR-007 through ADR-010 committed
+* [x] AffineScript: DESIGN-VISION.adoc + SETTLED-DECISIONS.adoc committed
+* [x] typed-wasm: AGGREGATE-LIBRARY-VISION.adoc + ADR-004 committed
+* [x] nextgen-typing: this repo skeleton created

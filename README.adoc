@@ -1,0 +1,89 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= nextgen-typing — The Hyperpolymath Type Theory Pipeline
+Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+:toc:
+:icons: font
+
+[TIP]
+====
+*AI agents:* read `0-AI-MANIFEST.a2ml` first, then `.machine_readable/6a2/STATE.a2ml`.
+====
+
+== What This Is
+
+`nextgen-typing` is the coordination monorepo for the hyperpolymath type
+theory research and production pipeline.  It does not contain compiler
+code.  It documents relationships between type-theoretic repos, tracks
+the pipeline roadmap, and hosts research artefacts that span multiple projects.
+
+== The Main Chain
+
+....
+katagoria  →  typell  →  typed-wasm  →  PanLL
+ (research)   (kernel)   (target)    (eNSAID env)
+....
+
+[cols="1,1,3"]
+|===
+| Repo | Status | Role
+
+| katagoria
+| 🚧 Planned
+| Research origination.  Type theory prototypes, Idris2/Lean proof-of-concepts,
+  and reading notes before promotion to production.
+
+| typell
+| ✅ Active
+| TypeLL — open-ended progressive type verification kernel.
+  Powers PanLL's neurosymbolic intelligence.  Port 7800.
+
+| typed-wasm
+| ✅ Active
+| Dual role: (1) TypeLL type safety for WasmGC linear memory, and
+  (2) aggregate library — shared binary conventions for AffineScript
+  and Ephapax cross-language calls.
+
+| PanLL
+| ✅ Active
+| eNSAID reference implementation.  Downstream consumer of TypeLL.
+  Binary Star: human (Panel-L) + machine (Panel-N) + world (Panel-W).
+|===
+
+== Co-Products
+
+[cols="1,3"]
+|===
+| Repo | Relationship
+
+| affinescript (nextgen-languages/)
+| Compiles to typed WasmGC.  Row polymorphism, algebraic effects,
+  QTT surface syntax — all TypeLL-grounded.
+
+| ephapax (nextgen-languages/)
+| Compiles to typed WasmGC.  Dyadic linear/affine type system.
+
+| protocol-squisher
+| Transport semilattice with max-composition is a tropical optimisation problem.
+  Adapter path finding = Dijkstra over a max-plus semiring.
+|===
+
+== Research Section
+
+[cols="1,3"]
+|===
+| Repo | What's There
+
+| tropical-resource-typing
+| Isabelle/HOL: max-plus semiring, comm_semiring_1, dioid.
+  Lean 4: speculative session types, soundness + QTT refinement.
+  Research PDF.  Proof document.  Handover guide.
+|===
+
+== Key Architectural Decisions
+
+* *TypeLL is open-ended* — not capped at any fixed number of levels.
+* *typed-wasm has dual role* — TypeLL application AND aggregate library (ADR-004).
+* *Tropical grading separates billing from budget* — spec_branch uses max not +.
+  QTT overestimates wall-clock time; tropical grades give the tighter bound.
+
+See `docs/ARCHITECTURE.adoc` and `ROADMAP.adoc` for full detail.

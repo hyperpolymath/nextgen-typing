@@ -1,0 +1,181 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= nextgen-typing: Pipeline Architecture and Session Briefing
+Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+2026-04-11
+:toc:
+:icons: font
+
+== Purpose of This Document
+
+This document is both:
+. A briefing for the *nextgen-typing* Claude session (to create and flesh
+  out the monorepo), and
+. The architecture document that will live as
+  `nextgen-typing/docs/ARCHITECTURE.adoc` explaining the pipeline to
+  developers and to AI agents working in any of the constituent repos.
+
+== What nextgen-typing Is
+
+`nextgen-typing` is a coordination monorepo that documents and connects
+the hyperpolymath type theory pipeline.  It does not contain compiler
+code.  It contains:
+
+* Architecture docs explaining the main chain and co-products
+* Roadmap and status tracking
+* Cross-repo integration notes
+* Research artefacts that don't belong in a single language repo
+
+It follows the pattern of `nextgen-languages` and `nextgen-databases`.
+
+== The Main Chain
+
+[source]
+----
+katagoria  →  typell  →  typed-wasm  →  PanLL
+  (research)   (kernel)   (target)    (eNSAID env)
+----
+
+[cols="1,1,2"]
+|===
+| Repo | Exists? | Role
+
+| `katagoria`
+| ❌ Not yet created
+| Research origination.  Where type theory ideas are explored before
+  being promoted to a production repo.  Contains proofs-of-concept,
+  reading notes, and prototype Idris2/Lean formalizations.
+
+| `typell`
+| ✅ `/var/mnt/eclipse/repos/typell/`
+| The TypeLL verification kernel.  *Open-ended progressive* type safety
+  framework (NOT capped at 10 levels).  Powers PanLL's neurosymbolic
+  intelligence.  Runs as a service on port 7800 in PanLL.
+
+| `typed-wasm`
+| ✅ `/var/mnt/eclipse/repos/typed-wasm/`
+| Dual role: (1) TypeLL type safety for WasmGC linear memory,
+  (2) aggregate library — shared binary conventions for AffineScript
+  and Ephapax.  ADR-004 documents both roles.
+
+| `PanLL`
+| ✅ `/var/mnt/eclipse/repos/panll/`
+| eNSAID reference implementation.  TypeLL runs inside PanLL.
+  Not owned by nextgen-typing — just the downstream consumer.
+|===
+
+== Co-Products Section
+
+These repos benefit from or contribute to the typing pipeline but are not
+part of the main chain:
+
+[cols="1,2"]
+|===
+| Repo | Relationship
+
+| `nextgen-languages/affinescript`
+| Compiles to typed WasmGC.  The faces architecture (Python/JS/pseudocode
+  sugar layers) and QTT surface syntax are outcomes of TypeLL thinking.
+
+| `nextgen-languages/ephapax`
+| Compiles to typed WasmGC.  The dyadic (linear/affine) type system is
+  a direct application of TypeLL principles.
+
+| `protocol-squisher`
+| The 4-class transport semilattice (Concorde/Business/Economy/Wheelbarrow)
+  is a tropical optimisation problem.  The minimax adapter path search is
+  Dijkstra over a max-plus semiring — formally a tropical computation.
+  See `proofs/tropical/` (to be created).
+|===
+
+== Research Section
+
+[cols="1,2"]
+|===
+| Repo | What's There
+
+| `tropical-resource-typing`
+| `Tropical.thy` (Isabelle, max-plus semiring, dioid, comm_semiring_1),
+  `TropicalSessionTypes.lean` (Lean 4, speculative session types,
+  soundness + QTT refinement), research PDF, proof docs, handover guide.
+|===
+
+== What the nextgen-typing Session Needs to Do
+
+=== Step 1: Create the Repo
+
+[source,bash]
+----
+cd /var/mnt/eclipse/repos
+git clone https://github.com/hyperpolymath/rsr-template-repo nextgen-typing
+cd nextgen-typing
+rm -rf .git && git init
+just init   # ALWAYS run after cloning rsr-template-repo
+----
+
+Then customise placeholders (`{{REPO}}` → `nextgen-typing`,
+`{{OWNER}}` → `hyperpolymath`, etc.).
+
+=== Step 2: Populate Core Documents
+
+Create these files from the architecture defined above:
+
+* `README.adoc` — what nextgen-typing is, the pipeline diagram
+* `ROADMAP.adoc` — katagoria creation, typell doc fixes, typed-wasm
+  ABI conventions, Protocol Squisher tropical proof
+* `docs/ARCHITECTURE.adoc` — the full pipeline document (this file,
+  adapted)
+* `docs/PIPELINE.adoc` — machine-readable pipeline spec (A2ML format)
+* `.machine_readable/6a2/STATE.a2ml` — current state
+* `.machine_readable/6a2/ECOSYSTEM.a2ml` — relationships to constituent repos
+
+=== Step 3: Create katagoria
+
+`katagoria` is the one missing piece.  It should be a lightweight research
+repo (not a full RSR from scratch — more like a Zettlekasten for type
+theory prototypes).  Create it from rsr-template-repo, then link it from
+nextgen-typing as a submodule or reference.
+
+=== Step 4: Fix TypeLL Documentation
+
+In `typell/README.adoc` and `typell/.machine_readable/6a2/META.a2ml`:
+remove all references to "10 levels" and replace with "open-ended
+progressive framework".
+
+=== Step 5: Add typed-wasm to nextgen-languages
+
+Add a reference to `typed-wasm` in the `nextgen-languages/` monorepo.
+Check how other repos are listed there and follow the same pattern.
+
+=== Step 6: Push Everything and Create GitHub Repo
+
+[source,bash]
+----
+gh repo create hyperpolymath/nextgen-typing --private --source=. --push
+----
+
+== Sending to Constituent Repos
+
+Each of the constituent repos (typell, typed-wasm, tropical-resource-typing,
+protocol-squisher, affinescript, ephapax) should receive:
+
+* A reference to `nextgen-typing` in their `ECOSYSTEM.a2ml`
+* Their place in the pipeline described in their own docs
+
+The nextgen-typing README should contain the canonical pipeline description
+so that AI agents working in any of these repos can find their context.
+
+== Session Startup
+
+[source,bash]
+----
+# Read this file first
+cat ~/Desktop/NEXTGEN-TYPING-PIPELINE.adoc
+
+# Check constituent repos:
+ls /var/mnt/eclipse/repos/typell/
+ls /var/mnt/eclipse/repos/typed-wasm/
+ls /var/mnt/eclipse/repos/tropical-resource-typing/
+
+# Check nextgen-languages for the submodule pattern:
+cat /var/mnt/eclipse/repos/nextgen-languages/README.adoc | head -60
+----
