@@ -23,7 +23,7 @@ Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 * [x] katagoria L11-modal-box: comonad laws proved (Refl after case split — believe_me-free)
 * [x] typed-wasm DecEq: `DecEq (a, b)` instance added — WHT_Struct resolution chain complete
 * [x] protocol-squisher tropical: foldl-min optimality proved (`foldl_tcAdd_le_init/mem` + `minimax_path_optimal`)
-* [ ] typed-wasm layout: model WasmGC recursive types (List self-reference in Stdlib.idr)
+* [x] typed-wasm layout: WasmGC recursive types — WHT_Var/WHT_Rec added; List self-reference correct
 * [ ] Extend `Tropical.thy`: linorder instance, tropical matrices, Kleene algebra
 * [ ] Write arXiv paper on speculative tropical session types
 * [ ] typed-wasm ABI conventions for AffineScript + Ephapax cross-language calls (pending recursive types)
