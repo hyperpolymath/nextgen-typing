@@ -1,15 +1,15 @@
 # SPDX-License-Identifier: PMPL-1.0-or-later
-# Copyright (c) {{CURRENT_YEAR}} {{AUTHOR}} ({{OWNER}}) <{{AUTHOR_EMAIL}}>
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <6759885+hyperpolymath@users.noreply.github.com>
 #
 # ANCHOR.a2ml - authoritative anchor for this repository
 
 [metadata]
 version = "1.0.0"
-last-updated = "{{CURRENT_DATE}}"
+last-updated = "2026-04-11"
 
 [anchor]
 schema = "hyperpolymath.anchor/1"
-repo = "{{OWNER}}/{{REPO}}"
+repo = "hyperpolymath/nextgen-typing"
 authority = "upstream-canonical"
 
 purpose = [
@@ -19,9 +19,9 @@ purpose = [
 ]
 
 [identity]
-project = "{{PROJECT_NAME}}"
+project = "nextgen-typing"
 kind = "{{PROJECT_KIND}}"                # language | library | service | tool
-one-sentence = "{{PROJECT_PURPOSE}}"
+one-sentence = "Coordination monorepo for the hyperpolymath type theory pipeline (katagoria → typell → typed-wasm → PanLL)"
 domain = "{{PROJECT_DOMAIN}}"
 
 [semantic-authority]

@@ -1,4 +1,4 @@
-# Proof Requirements — {{PROJECT}}
+# Proof Requirements — NEXTGEN_TYPING
 <!-- SPDX-License-Identifier: PMPL-1.0-or-later -->
 <!-- Template: rsr-template-repo/PROOF-NEEDS.md -->
 <!-- Authoritative master list: ~/Desktop/PROOF-REQUIREMENTS-MASTER.md -->

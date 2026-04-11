@@ -1,7 +1,7 @@
 <!-- SPDX-License-Identifier: PMPL-1.0-or-later -->
 <!-- Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk> -->
 
-# {{REPO}} Component Readiness Assessment
+# nextgen-typing Component Readiness Assessment
 
 **Standard:** [Component Readiness Grades (CRG) v2.2](https://github.com/hyperpolymath/standards/tree/main/component-readiness-grades)
 **Current Grade:** C
@@ -22,7 +22,7 @@
 
 ## Grade C Evidence
 
-- Deployed and dogfooded on the {{REPO}} project itself
+- Deployed and dogfooded on the nextgen-typing project itself
 - CI passing (dogfood-gate, hypatia-scan, static-analysis-gate)
 - TEST-NEEDS.md documents test matrix
 - No home failures

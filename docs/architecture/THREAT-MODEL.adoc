@@ -1,17 +1,17 @@
 = Threat Model
 <!-- SPDX-License-Identifier: PMPL-1.0-or-later -->
-<!-- Copyright (c) {{CURRENT_YEAR}} {{AUTHOR}} ({{OWNER}}) <{{AUTHOR_EMAIL}}> -->
+<!-- Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <6759885+hyperpolymath@users.noreply.github.com> -->
 
-# Threat Model: {{PROJECT_NAME}}
+# Threat Model: nextgen-typing
 
 ## Document Info
 
 | Field         | Value                          |
 |---------------|--------------------------------|
-| Project       | {{PROJECT_NAME}}               |
+| Project       | nextgen-typing               |
 | Version       | 1.0                            |
 | Last Reviewed | {{DATE}}                       |
-| Author        | {{AUTHOR}}                     |
+| Author        | Jonathan D.A. Jewell                     |
 | Methodology   | STRIDE                         |
 
 ## Scope
@@ -34,7 +34,7 @@
 
 ## System Overview
 
-Brief description of {{PROJECT_NAME}} and its architecture.
+Brief description of nextgen-typing and its architecture.
 
 > See [STATE-VISUALIZER.adoc](../STATE-VISUALIZER.adoc) for the full architecture diagram and completion dashboard.
 

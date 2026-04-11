@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: PMPL-1.0-or-later
-# Copyright (c) {{CURRENT_YEAR}} {{AUTHOR}} ({{OWNER}}) <{{AUTHOR_EMAIL}}>
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <6759885+hyperpolymath@users.noreply.github.com>
 #
 # ENSAID_CONFIG.a2ml — eNSAID Environment Configuration
 # Per-repo configuration for PanLL and eNSAID-compatible tools.
@@ -89,8 +89,8 @@ version = "1.0.0"
 
 # Example: a custom portfolio for this project
 # [[portfolios.custom]]
-# id = "{{project}}-dev"
-# name = "{{PROJECT_NAME}} Development"
-# description = "Panels for {{PROJECT_NAME}} development"
+# id = "nextgen_typing-dev"
+# name = "nextgen-typing Development"
+# description = "Panels for nextgen-typing development"
 # panels = ["valence-shell", "editor-bridge", "build-dashboard"]
 # default-isolation = "native"

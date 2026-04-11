@@ -5,12 +5,14 @@ Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 
 == Near-Term (This Sprint)
 
-* [ ] Create `katagoria` repo from rsr-template-repo
-* [ ] Fix TypeLL docs: remove "10 levels" framing → "open-ended progressive"
-* [ ] Add `typed-wasm` reference to `nextgen-languages/` monorepo
-* [ ] Write `docs/ARCHITECTURE.adoc` (see `docs/NEXTGEN-TYPING-PIPELINE.adoc` on Desktop)
-* [ ] Populate `.machine_readable/6a2/` files with real project state
-* [ ] Add ecosystem references to constituent repos (typell, typed-wasm, tropical-resource-typing)
+* [x] Create `katagoria` repo from rsr-template-repo
+* [x] Fix TypeLL docs: remove "10 levels" framing → "open-ended progressive" (typell/ROADMAP.adoc)
+* [x] Add `typed-wasm` reference to `nextgen-languages/` monorepo
+* [x] Write/clean up `docs/ARCHITECTURE.adoc` (pure architecture doc, no briefing framing)
+* [x] Populate `.machine_readable/6a2/` files with real project state (STATE, META, ECOSYSTEM)
+* [x] Add nextgen-typing + katagoria ecosystem references to typell and typed-wasm ECOSYSTEM.a2ml
+* [ ] Add ecosystem references to remaining constituent repos (affinescript, ephapax, tropical-resource-typing)
+* [ ] typed-wasm ABI conventions implementation (layout proofs in src/abi/layout/)
 
 == Medium-Term
 

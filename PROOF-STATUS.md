@@ -1,4 +1,4 @@
-# Proof Status — {{PROJECT}}
+# Proof Status — NEXTGEN_TYPING
 <!-- SPDX-License-Identifier: PMPL-1.0-or-later -->
 <!-- Template: rsr-template-repo/PROOF-STATUS.md -->
 <!-- Tracks proof completion. Requirements defined in PROOF-NEEDS.md -->

@@ -1,61 +1,42 @@
-# RSR Template AI Manifest (Read First)
+# nextgen-typing AI Manifest (Read First)
+# SPDX-License-Identifier: PMPL-1.0-or-later
 
-This is the root AI manifest for the template repository.
+## What This Repo Is
 
-## Template Status
+`nextgen-typing` is a **coordination monorepo** for the hyperpolymath type
+theory pipeline.  It does NOT contain compiler code.
 
-This repository intentionally contains template placeholders before bootstrap.
-Examples: `{{OWNER}}`, `{{REPO}}`, `{{PROJECT_NAME}}`, `[YOUR-REPO-NAME]`.
+Pipeline:  katagoria → typell → typed-wasm → PanLL
 
-Do not invent project-specific values unless the operator runs template
-initialization (for example `just init`) or explicitly provides values.
+## Critical Invariants
 
-## Authority Split
+1. **TypeLL is open-ended** — never say "TypeLL is a 10-level system". The
+   current initial mapping runs L1-L10; new levels are added as theory demands.
+2. **typed-wasm has two roles** — (1) TypeLL type safety for WasmGC linear
+   memory, (2) aggregate library for AffineScript + Ephapax binary conventions.
+   See typed-wasm ADR-004.
+3. **No compiler claims here** — correctness/proof/benchmark claims are made
+   in constituent repos, never in this coordination layer.
+4. **katagoria does not exist yet** — do not assume files exist there.
 
-- Central protocol authority:
-  `standards/session-management-standards/`
-- Local integration authority (this repo):
-  - `Justfile` session recipes
-  - `session/dispatch.sh`
-  - `session/custom-checks.k9`
-  - `session/local-hooks.sh`
-  - `coordination.k9`
+## Canonical Locations
 
-## Canonical Session Commands
+- Pipeline architecture: `docs/ARCHITECTURE.adoc`
+- Current state + blockers: `.machine_readable/6a2/STATE.a2ml`
+- ADRs: `.machine_readable/6a2/META.a2ml`
+- Ecosystem relationships: `.machine_readable/6a2/ECOSYSTEM.a2ml`
+- Human overview: `README.adoc`
+- What-is-this explainer: `EXPLAINME.adoc`
+
+## Startup Sequence For AI Agents
+
+1. Read this manifest.
+2. Read `.machine_readable/6a2/STATE.a2ml` for blockers and next actions.
+3. Read `docs/ARCHITECTURE.adoc` for the full pipeline picture.
+4. Read `ROADMAP.adoc` for what is and isn't done.
+
+## Session Commands
 
 - `intake repo <path>`
 - `checkpoint change <path>`
 - `verify maintenance <path>`
-- `verify substantial <path>`
-- `verify release <path>`
-- `close planned <path>`
-- `close urgent <path>`
-- `recover repo <path>`
-- `handover full <path>`
-- `handover split <path>`
-- `handover model <path>`
-- `handover human <path>`
-
-## Core Invariants
-
-1. Keep protocol text centralized; do not duplicate full protocol specs here.
-2. Keep local policy and hook behavior local to this repo.
-3. Write runtime session artifacts in working repos (typically `.session/`).
-4. Keep README/AUDIT/manifest claims synchronized with actual files.
-5. Mark stubs and placeholders explicitly.
-
-## Key Local Files
-
-- `AUDIT.adoc` (local audit gate summary)
-- `README.adoc` (template orientation)
-- `EXPLAINME.adoc` (claim-to-implementation map)
-- `session/README.md` (session-binding usage)
-- `.machine_readable/` (machine-readable repo policy/state files)
-
-## Startup Checklist For Agents
-
-1. Read `0-AI-MANIFEST.a2ml`.
-2. Read `AUDIT.adoc`.
-3. Confirm whether placeholders have been initialized.
-4. Use canonical session commands through `session/dispatch.sh` or Just aliases.
-5. Avoid claiming files/paths exist unless verified in this repository.

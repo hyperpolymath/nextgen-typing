@@ -1,68 +1,71 @@
 // SPDX-License-Identifier: PMPL-1.0-or-later
-= RSR Template Repo - Explainme
+= nextgen-typing — Explainme
+Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 :toc:
 :icons: font
 
-This file explains how the key template claims map to real files.
+== What This Is
 
-== Central Session Protocol Authority
+`nextgen-typing` is the **coordination monorepo** for the hyperpolymath type
+theory pipeline.  It does not contain compiler code.  It documents, connects,
+and tracks the pipeline:
 
-Claim:
-Session protocols are centrally maintained and not duplicated in this template.
+----
+katagoria  →  typell  →  typed-wasm  →  PanLL
+(research)   (kernel)   (target)    (eNSAID env)
+----
 
-How this is implemented:
+== Why It Exists
 
-* The local dispatcher (`session/dispatch.sh`) maps canonical commands to central
-  protocol paths in `standards/session-management-standards`.
-* Local files (`session/custom-checks.k9`, `session/local-hooks.sh`,
-  `coordination.k9`) are integration-only.
+The type theory work spans multiple repos:
+* *typell* — the verification kernel (Rust, ~14 crates)
+* *typed-wasm* — WasmGC type safety + aggregate library (Idris2, Zig)
+* *tropical-resource-typing* — foundational tropical type theory (Isabelle, Lean 4)
+* *protocol-squisher* — transport semilattice (tropical connection)
+* *katagoria* — planned research origination space (not yet created)
 
-Caveat:
+These repos are logically one pipeline.  Without a coordination layer, AI
+agents and developers working in any single repo lack context for the others.
+`nextgen-typing` is that context: one place to read the full architecture.
 
-* If `SESSION_STANDARDS_DIR` is unset and no adjacent standards checkout exists,
-  the dispatcher records the command but cannot resolve central checklist paths.
+== What Claims Are Made Here
 
-== Canonical Command Surface
+This repo makes **no claims** about compiler correctness, proof soundness, or
+benchmark results.  Those claims are made and verified in the constituent
+repos.  Here we only document:
 
-Claim:
-Template bindings align to one canonical command model.
+* The pipeline structure and how repos relate
+* Architectural decisions that span repos (e.g. "TypeLL is open-ended")
+* Research artefacts that don't belong in a single repo
 
-How this is implemented:
+== Key Files
 
-* `Justfile` provides thin aliases (`intake-repo`, `checkpoint-change`,
-  `verify-maintenance`, `verify-substantial`, `verify-release`, `close-planned`,
-  `close-urgent`, `recover-repo`, `handover-*`).
-* Every alias calls `session/dispatch.sh` with canonical verb-object pairs.
+[cols="1,2"]
+|===
+| File | What's There
 
-Caveat:
+| `README.adoc`
+| Pipeline overview: the main chain, co-products, key architectural decisions
 
-* Recipes are wrappers only. They do not replace protocol content from
-  the central standards repo.
+| `ROADMAP.adoc`
+| What needs doing: katagoria creation, constituent repo updates, research work
 
-== Runtime State Is Local
+| `docs/ARCHITECTURE.adoc`
+| Full pipeline architecture doc (also served as the creation briefing)
 
-Claim:
-Session state is per-repository runtime output, not standards text.
+| `.machine_readable/6a2/STATE.a2ml`
+| Current state: milestones, blockers, next actions
 
-How this is implemented:
+| `.machine_readable/6a2/META.a2ml`
+| ADRs: open-ended TypeLL, dual-role typed-wasm, katagoria upstream
 
-* `session/dispatch.sh` writes command and continuity-core capture stubs to
-  `.session/LAST-CANONICAL-COMMAND.md` in the target repository path.
+| `.machine_readable/6a2/ECOSYSTEM.a2ml`
+| All related projects and their relationship types
+|===
 
-Caveat:
+== How To Navigate
 
-* Runtime files are intentionally lightweight and require human/agent completion.
-
-== Template Token Policy
-
-Claim:
-Placeholders are explicit template content until initialization.
-
-How this is implemented:
-
-* `README.adoc` and bootstrap recipes keep `{{TOKEN}}` placeholders visible.
-* `just init` performs token replacement.
-
-Caveat:
-
-* Uninitialized placeholders must not be treated as project-specific truth.
+Start with `README.adoc` for a 60-second overview.  Read
+`docs/ARCHITECTURE.adoc` for the full pipeline description.  Check
+`ROADMAP.adoc` for what is and isn't done.  Read `.machine_readable/6a2/STATE.a2ml`
+for blockers and next actions.
