@@ -11,8 +11,10 @@ Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 * [x] Write/clean up `docs/ARCHITECTURE.adoc` (pure architecture doc, no briefing framing)
 * [x] Populate `.machine_readable/6a2/` files with real project state (STATE, META, ECOSYSTEM)
 * [x] Add nextgen-typing + katagoria ecosystem references to typell and typed-wasm ECOSYSTEM.a2ml
-* [ ] Add ecosystem references to remaining constituent repos (affinescript, ephapax, tropical-resource-typing)
-* [ ] typed-wasm ABI conventions implementation (layout proofs in src/abi/layout/)
+* [x] Add ecosystem references to all constituent repos (affinescript, ephapax, tropical-resource-typing, protocol-squisher)
+* [x] katagoria: first research artefact structure (research/level-candidates/)
+* [x] protocol-squisher ECOSYSTEM.a2ml migrated from SCM format to A2ML
+* [ ] typed-wasm ABI conventions implementation (layout proofs in src/abi/layout/ — stubs exist)
 
 == Medium-Term
 

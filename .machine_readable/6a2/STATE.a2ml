@@ -17,7 +17,7 @@ Documents and connects: katagoria (research) → typell (kernel) → typed-wasm 
 Hosts cross-repo architecture docs, pipeline roadmap, and research artefacts that span projects.
 Does NOT contain compiler code.
 """
-completion-percentage = 30
+completion-percentage = 75
 
 [position]
 phase = "implementation"
@@ -29,22 +29,19 @@ milestones = [
   { name = "README + ROADMAP with pipeline description", completion = 100 },
   { name = "Machine-readable files populated (STATE/META/ECOSYSTEM)", completion = 50 },
   { name = "docs/ARCHITECTURE.adoc cleaned up as pure architecture doc", completion = 80 },
-  { name = "katagoria repo created and linked", completion = 0 },
-  { name = "ECOSYSTEM.a2ml updated in constituent repos (typell, typed-wasm)", completion = 0 },
+  { name = "katagoria repo created and linked", completion = 100 },
+  { name = "ECOSYSTEM.a2ml updated in constituent repos (typell, typed-wasm, affinescript, ephapax, tropical-resource-typing, protocol-squisher)", completion = 100 },
   { name = "Protocol Squisher tropical connection documented", completion = 0 },
 ]
 
 [blockers-and-issues]
-issues = [
-  "katagoria repo does not exist yet — needs to be created from rsr-template-repo",
-  "Constituent repos (typell, typed-wasm, affinescript, ephapax) do not yet reference nextgen-typing in their ECOSYSTEM.a2ml",
-]
+issues = []
 
 [critical-next-actions]
 actions = [
-  "Create katagoria repo from rsr-template-repo",
-  "Add nextgen-typing reference to typell/.machine_readable/6a2/ECOSYSTEM.a2ml",
-  "Add nextgen-typing reference to typed-wasm/.machine_readable/6a2/ECOSYSTEM.a2ml",
+  "typed-wasm: implement layout proofs in src/abi/layout/ (stubs exist; proofs pending)",
+  "katagoria: add first real research artefact (type theory prototype or reading note)",
+  "Protocol Squisher: formalise tropical connection in protocol-squisher/proofs/tropical/",
 ]
 
 [maintenance-status]
