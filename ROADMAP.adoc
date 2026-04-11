@@ -14,15 +14,18 @@ Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 * [x] Add ecosystem references to all constituent repos (affinescript, ephapax, tropical-resource-typing, protocol-squisher)
 * [x] katagoria: first research artefact structure (research/level-candidates/)
 * [x] protocol-squisher ECOSYSTEM.a2ml migrated from SCM format to A2ML
-* [ ] typed-wasm ABI conventions implementation (layout proofs in src/abi/layout/ — stubs exist)
+* [x] typed-wasm ABI conventions implementation (layout proofs in src/abi/layout/ — DecEq, nullability, distinctness, passConvention + proofs, Stdlib)
 
 == Medium-Term
 
-* [ ] Formalise Protocol Squisher tropical connection (`protocol-squisher/proofs/tropical/`)
+* [x] Formalise Protocol Squisher tropical connection (`protocol-squisher/proofs/tropical/`)
+* [x] katagoria: first research artefact — L11-modal-box (Idris2 sketch, MOTIVATION.adoc)
+* [ ] typed-wasm layout: prove comonad laws in L11 candidate (2 open believe_me)
+* [ ] typed-wasm layout: model WasmGC recursive types (List self-reference in Stdlib.idr)
+* [ ] protocol-squisher tropical: prove Dijkstra correctness for min-max semiring
 * [ ] Extend `Tropical.thy`: linorder instance, tropical matrices, Kleene algebra
 * [ ] Write arXiv paper on speculative tropical session types
-* [ ] katagoria: first research artefacts (type theory prototypes)
-* [ ] typed-wasm ABI conventions for AffineScript + Ephapax cross-language calls
+* [ ] typed-wasm ABI conventions for AffineScript + Ephapax cross-language calls (pending recursive types)
 
 == Long-Term
 

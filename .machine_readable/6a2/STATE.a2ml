@@ -17,7 +17,7 @@ Documents and connects: katagoria (research) → typell (kernel) → typed-wasm 
 Hosts cross-repo architecture docs, pipeline roadmap, and research artefacts that span projects.
 Does NOT contain compiler code.
 """
-completion-percentage = 75
+completion-percentage = 90
 
 [position]
 phase = "implementation"
@@ -39,9 +39,10 @@ issues = []
 
 [critical-next-actions]
 actions = [
-  "typed-wasm: implement layout proofs in src/abi/layout/ (stubs exist; proofs pending)",
-  "katagoria: add first real research artefact (type theory prototype or reading note)",
-  "Protocol Squisher: formalise tropical connection in protocol-squisher/proofs/tropical/",
+  "typed-wasm layout proofs: resolve List (String, WasmValType) DecEq + WasmGC recursive types",
+  "katagoria L11-modal-box: prove comonadLaw1/comonadLaw2 without believe_me",
+  "protocol-squisher tropical: prove Dijkstra correctness for min-max semiring (open item 1)",
+  "typed-wasm: implement layout proofs for WasmGC recursive types (Stdlib.idr list self-reference)",
 ]
 
 [maintenance-status]
