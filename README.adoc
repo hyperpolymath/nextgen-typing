@@ -28,7 +28,7 @@ katagoria  →  typell  →  typed-wasm  →  PanLL
 | Repo | Status | Role
 
 | katagoria
-| 🚧 Planned
+| ✅ Active
 | Research origination.  Type theory prototypes, Idris2/Lean proof-of-concepts,
   and reading notes before promotion to production.
 
@@ -86,4 +86,4 @@ katagoria  →  typell  →  typed-wasm  →  PanLL
 * *Tropical grading separates billing from budget* — spec_branch uses max not +.
   QTT overestimates wall-clock time; tropical grades give the tighter bound.
 
-See `docs/ARCHITECTURE.adoc` and `ROADMAP.adoc` for full detail.
+See `docs/ARCHITECTURE.adoc`, `docs/PIPELINE.adoc`, and `ROADMAP.adoc` for full detail.

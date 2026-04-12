@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: PMPL-1.0-or-later
 = nextgen-typing: Pipeline Architecture
 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
-2026-04-11
+2026-04-12
 :toc:
 :icons: font
 
@@ -31,7 +31,7 @@ katagoria  →  typell  →  typed-wasm  →  PanLL
 | Repo | Status | Role
 
 | `katagoria`
-| ❌ Not yet created (2026-04-11)
+| ✅ Active (created 2026-04-11)
 | Research origination.  Where type theory ideas are explored before
   being promoted to a production repo.  Contains proofs-of-concept,
   reading notes, and prototype Idris2/Lean formalizations.
@@ -116,12 +116,14 @@ Each constituent repo receives:
 * Their place in the pipeline described in their own docs
 * The open-ended TypeLL invariant documented in their own ROADMAP
 
-Status (2026-04-11):
+Status (2026-04-12):
 
-* `typell` — ROADMAP.adoc updated ✅; ECOSYSTEM.a2ml not yet updated
-* `typed-wasm` — dual role + pipeline position documented ✅; ECOSYSTEM.a2ml not yet updated
-* `affinescript` — not yet updated
-* `ephapax` — not yet updated
+* `typell` — open-ended ROADMAP framing and ECOSYSTEM pipeline refs updated ✅
+* `typed-wasm` — dual role + pipeline position documented; ECOSYSTEM pipeline refs updated ✅
+* `affinescript` — ECOSYSTEM pipeline refs updated ✅
+* `ephapax` — ECOSYSTEM pipeline refs updated ✅
+* `tropical-resource-typing` — ECOSYSTEM pipeline refs updated ✅
+* `protocol-squisher` — ECOSYSTEM migrated to A2ML and pipeline refs updated ✅
 
 == Relationship to Other Monorepos
 

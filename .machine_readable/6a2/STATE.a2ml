@@ -6,7 +6,7 @@
 [metadata]
 project = "nextgen-typing"
 version = "0.1.0"
-last-updated = "2026-04-11"
+last-updated = "2026-04-12"
 status = "active"
 
 [project-context]
@@ -17,7 +17,7 @@ Documents and connects: katagoria (research) → typell (kernel) → typed-wasm 
 Hosts cross-repo architecture docs, pipeline roadmap, and research artefacts that span projects.
 Does NOT contain compiler code.
 """
-completion-percentage = 90
+completion-percentage = 100
 
 [position]
 phase = "implementation"
@@ -27,11 +27,12 @@ maturity = "alpha"
 milestones = [
   { name = "Repo scaffolded and pushed to GitHub", completion = 100 },
   { name = "README + ROADMAP with pipeline description", completion = 100 },
-  { name = "Machine-readable files populated (STATE/META/ECOSYSTEM)", completion = 50 },
-  { name = "docs/ARCHITECTURE.adoc cleaned up as pure architecture doc", completion = 80 },
-  { name = "katagoria repo created and linked", completion = 100 },
+  { name = "Machine-readable files populated and state-aligned (STATE/META/ECOSYSTEM)", completion = 100 },
+  { name = "docs/ARCHITECTURE.adoc cleaned up as pure architecture doc", completion = 100 },
+  { name = "docs/PIPELINE.adoc added as machine-readable A2ML pipeline spec", completion = 100 },
+  { name = "katagoria repo created and linked from pipeline docs", completion = 100 },
   { name = "ECOSYSTEM.a2ml updated in constituent repos (typell, typed-wasm, affinescript, ephapax, tropical-resource-typing, protocol-squisher)", completion = 100 },
-  { name = "Protocol Squisher tropical connection documented", completion = 0 },
+  { name = "Protocol Squisher tropical connection documented", completion = 100 },
 ]
 
 [blockers-and-issues]
@@ -39,14 +40,14 @@ issues = []
 
 [critical-next-actions]
 actions = [
-  "typed-wasm layout proofs: resolve List (String, WasmValType) DecEq + WasmGC recursive types",
-  "katagoria L11-modal-box: prove comonadLaw1/comonadLaw2 without believe_me",
-  "protocol-squisher tropical: prove Dijkstra correctness for min-max semiring (open item 1)",
-  "typed-wasm: implement layout proofs for WasmGC recursive types (Stdlib.idr list self-reference)",
+  "Track Tropical.thy extensions (linorder instance, tropical matrices, Kleene algebra) in tropical-resource-typing and mirror progress in nextgen-typing docs.",
+  "Track and link the arXiv paper draft on speculative tropical session types once published.",
+  "Track typed-wasm aggregate ABI convention adoption in AffineScript/Ephapax integration paths as recursive-type support matures.",
+  "Run periodic drift scans so README.adoc, docs/ARCHITECTURE.adoc, docs/PIPELINE.adoc, and .machine_readable/6a2/{STATE,META,ECOSYSTEM}.a2ml stay synchronized.",
 ]
 
 [maintenance-status]
-last-run-utc = "2026-04-11T00:00:00Z"
+last-run-utc = "2026-04-12T00:00:00Z"
 last-result = "unknown"
 open-warnings = 0
 open-failures = 0

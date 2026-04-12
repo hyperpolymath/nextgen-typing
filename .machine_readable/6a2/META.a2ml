@@ -6,7 +6,7 @@
 
 [metadata]
 version = "0.1.0"
-last-updated = "2026-04-11"
+last-updated = "2026-04-12"
 
 [project-info]
 type = "monorepo"  # library | binary | monorepo | service | website
@@ -22,8 +22,8 @@ adrs = [
     rationale = "Earlier docs described TypeLL as a '10-level hierarchy'. This is incorrect. TypeLL progressively adds levels as the type theory demands. L1-L10 is the current initial mapping, not a ceiling. The ROADMAP.adoc in typell was updated to reflect this." },
   { id = "ADR-003", title = "typed-wasm has dual role (ADR-004 in typed-wasm)", status = "accepted", date = "2026-04-11",
     rationale = "typed-wasm is both the TypeLL WASM safety application AND the aggregate library for AffineScript+Ephapax cross-language binary conventions. Both roles are first-class. See typed-wasm/.machine_readable/6a2/META.a2ml#ADR-004." },
-  { id = "ADR-004", title = "katagoria is the research upstream of typell", status = "proposed", date = "2026-04-11",
-    rationale = "Type theory ideas need an origination space before promotion to production repos. katagoria is that space: Idris2/Lean proofs-of-concept, reading notes, prototype formalizations. It has not been created yet." },
+  { id = "ADR-004", title = "katagoria is the research upstream of typell", status = "accepted", date = "2026-04-11",
+    rationale = "Type theory ideas need an origination space before promotion to production repos. katagoria is that space: Idris2/Lean proofs-of-concept, reading notes, prototype formalizations. The repository was created on 2026-04-11 and is now active in the pipeline." },
 ]
 
 [development-practices]

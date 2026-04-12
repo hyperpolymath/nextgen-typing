@@ -9,6 +9,7 @@ Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 * [x] Fix TypeLL docs: remove "10 levels" framing → "open-ended progressive" (typell/ROADMAP.adoc)
 * [x] Add `typed-wasm` reference to `nextgen-languages/` monorepo
 * [x] Write/clean up `docs/ARCHITECTURE.adoc` (pure architecture doc, no briefing framing)
+* [x] Add `docs/PIPELINE.adoc` (machine-readable A2ML pipeline spec)
 * [x] Populate `.machine_readable/6a2/` files with real project state (STATE, META, ECOSYSTEM)
 * [x] Add nextgen-typing + katagoria ecosystem references to typell and typed-wasm ECOSYSTEM.a2ml
 * [x] Add ecosystem references to all constituent repos (affinescript, ephapax, tropical-resource-typing, protocol-squisher)

@@ -6,7 +6,7 @@
 
 [metadata]
 version = "0.1.0"
-last-updated = "2026-04-11"
+last-updated = "2026-04-12"
 
 [project]
 name = "nextgen-typing"
@@ -18,7 +18,7 @@ tier = "infrastructure"  # 1 | 2 | infrastructure
 
 [related-projects]
 projects = [
-  { name = "katagoria", relationship = "coordinates", notes = "Research upstream of the pipeline. Type theory prototypes before promotion to production. Does not exist yet (2026-04-11)." },
+  { name = "katagoria", relationship = "coordinates", notes = "Research upstream of the pipeline. Type theory prototypes before promotion to production. Repository created 2026-04-11." },
   { name = "typell", relationship = "coordinates", notes = "TypeLL verification kernel. Open-ended progressive type safety. Powers PanLL port 7800." },
   { name = "typed-wasm", relationship = "coordinates", notes = "TypeLL applied to WasmGC memory safety + aggregate library for AffineScript/Ephapax." },
   { name = "panll", relationship = "downstream-consumer", notes = "eNSAID reference env. TypeLL runs inside PanLL. Not owned by nextgen-typing." },
@@ -32,6 +32,7 @@ projects = [
 
 [integration-points]
 integrations = [
-  { system = "typell", direction = "outbound", protocol = "documentation-reference", notes = "nextgen-typing is the canonical source of pipeline architecture; typell links back" },
-  { system = "typed-wasm", direction = "outbound", protocol = "documentation-reference", notes = "same as typell" },
+  { system = "katagoria", direction = "outbound", protocol = "documentation-reference", notes = "Research upstream and level-candidate feeder for the main chain." },
+  { system = "typell", direction = "outbound", protocol = "documentation-reference", notes = "nextgen-typing is the canonical source of pipeline architecture; typell links back." },
+  { system = "typed-wasm", direction = "outbound", protocol = "documentation-reference", notes = "Canonical dual-role documentation (WasmGC safety + aggregate library) is maintained in nextgen-typing." },
 ]

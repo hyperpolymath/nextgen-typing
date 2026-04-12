@@ -1,0 +1,56 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= nextgen-typing: Pipeline Spec (A2ML)
+Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+2026-04-12
+:toc:
+:icons: font
+
+This document is the canonical machine-readable pipeline specification for
+tooling and AI agents. Human-oriented architectural narrative remains in
+`docs/ARCHITECTURE.adoc`.
+
+== Canonical Spec (A2ML)
+
+[source,a2ml]
+----
+[pipeline]
+id = "hyperpolymath-type-theory-main-chain"
+version = "2026-04-12"
+coordination = "nextgen-typing"
+chain = "katagoria → typell → typed-wasm → PanLL"
+invariant = "TypeLL is open-ended progressive; L1-L10 is an initial checked set, not a ceiling."
+
+[nodes]
+repos = [
+  { name = "katagoria", role = "research-origination", status = "active", outputs = "level candidates, prototype Idris2/Lean formalizations, reading notes" },
+  { name = "typell", role = "verification-kernel", status = "active", outputs = "open-ended progressive type verification, JSON-RPC service for PanLL" },
+  { name = "typed-wasm", role = "target + aggregate-library", status = "active", outputs = "WasmGC memory safety application + shared binary layout/ABI conventions" },
+  { name = "panll", role = "downstream-environment", status = "active", outputs = "eNSAID reference environment consuming TypeLL" },
+]
+
+[co-products]
+repos = [
+  { name = "nextgen-languages/affinescript", relationship = "co-product", note = "Compiles to typed WasmGC; TypeLL-grounded design." },
+  { name = "nextgen-languages/ephapax", relationship = "co-product", note = "Compiles to typed WasmGC; dyadic linear/affine type system." },
+  { name = "protocol-squisher", relationship = "co-product", note = "Transport semilattice and minimax adapter path search map to tropical computation." },
+]
+
+[research]
+repos = [
+  { name = "tropical-resource-typing", relationship = "foundational-research", note = "Isabelle/HOL + Lean 4 tropical type theory work feeding protocol-squisher." },
+]
+
+[sync-contract]
+canonical-state-files = [
+  ".machine_readable/6a2/STATE.a2ml",
+  ".machine_readable/6a2/META.a2ml",
+  ".machine_readable/6a2/ECOSYSTEM.a2ml",
+]
+drift-policy = "When pipeline membership or status changes, update README.adoc, docs/ARCHITECTURE.adoc, this file, and the 6a2 state files in the same change set."
+----
+
+== Consumer Guidance
+
+* For narrative context: read `docs/ARCHITECTURE.adoc`.
+* For current state: read `.machine_readable/6a2/STATE.a2ml`.
+* For ecosystem edges: read `.machine_readable/6a2/ECOSYSTEM.a2ml`.
