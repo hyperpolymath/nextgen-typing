@@ -1186,6 +1186,10 @@ validate-state:
         echo "No .machine_readable/STATE.a2ml found"; \
     fi
 
+# Validate pipeline doc/A2ML synchronization drift
+validate-pipeline-drift:
+    ./scripts/check-pipeline-drift.sh .
+
 # Validate AI installation guide completeness (finishbot pre-release check)
 validate-ai-install:
     #!/usr/bin/env bash
