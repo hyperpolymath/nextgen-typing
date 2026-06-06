@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <6759885+hyperpolymath@users.noreply.github.com>
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
 #
 # STATE.a2ml — nextgen-typing project state
 
 [metadata]
 project = "nextgen-typing"
 version = "0.1.0"
-last-updated = "2026-04-12"
+last-updated = "2026-06-05"
 status = "active"
 
 [project-context]
@@ -17,17 +17,21 @@ Documents and connects: katagoria (research) → typell (kernel) → typed-wasm 
 Hosts cross-repo architecture docs, pipeline roadmap, and research artefacts that span projects.
 Does NOT contain compiler code.
 """
-completion-percentage = 100
+# Reconciled 2026-06-05: the earlier completion=100 was inconsistent with reality.
+# PROOF-STATUS.md records 0 of 7 mandated proofs done (0% proven), and the repo
+# still carries an un-rescoped RSR code scaffold (src/interface/, verification/proofs/).
+# Maturity reflects scaffold/early state, not a finished coordination layer.
+completion-percentage = 10
 
 [position]
-phase = "implementation"
-maturity = "alpha"
+phase = "scaffold"
+maturity = "scaffold"
 
 [route-to-mvp]
 milestones = [
   { name = "Repo scaffolded and pushed to GitHub", completion = 100 },
   { name = "README + ROADMAP with pipeline description", completion = 100 },
-  { name = "Machine-readable files populated and state-aligned (STATE/META/ECOSYSTEM)", completion = 100 },
+  { name = "Machine-readable files populated and state-aligned (STATE/META/ECOSYSTEM)", completion = 80 },
   { name = "docs/ARCHITECTURE.adoc cleaned up as pure architecture doc", completion = 100 },
   { name = "docs/PIPELINE.adoc added as machine-readable A2ML pipeline spec", completion = 100 },
   { name = "katagoria repo created and linked from pipeline docs", completion = 100 },
@@ -36,7 +40,11 @@ milestones = [
 ]
 
 [blockers-and-issues]
-issues = []
+issues = [
+  { id = "OQ-001", kind = "open-question", status = "open", raised = "2026-06-05",
+    title = "Identity contradiction — coordination monorepo vs RSR proof scaffold",
+    detail = "Narrative/STATE describe a docs-only coordination monorepo (\"does NOT contain compiler code\"), but src/interface/ + verification/proofs/ carry an un-rescoped RSR code scaffold; reconcile (docs-only ⇒ Tier T5/Exempt, drop scaffold) vs (real proof repo ⇒ re-scope). NOT decided here." },
+]
 
 [critical-next-actions]
 actions = [
@@ -47,10 +55,17 @@ actions = [
 ]
 
 [maintenance-status]
-last-run-utc = "2026-04-12T00:00:00Z"
-last-result = "unknown"
+last-run-utc = "2026-06-05T00:00:00Z"
+last-result = "docs-checkpoint"
 open-warnings = 0
 open-failures = 0
+
+[recent-activity]
+events = [
+  { date = "2026-05-22", kind = "licence", detail = "Migrated licence from PMPL-1.0-or-later to MPL-2.0 across the repo (commit 7a84a1d)." },
+  { date = "2026-05-26", kind = "audit", detail = "Recorded estate-wide tech-debt audit findings in docs/tech-debt-2026-05-26.md (combined severity LOW; proof debt = 6 Idris2 believe_me markers in scaffold proof files; licence + docs debt OK)." },
+  { date = "2026-05-30", kind = "ci", detail = "CI reusable-wrapper rework (2026-05-26..2026-05-30): hypatia-scan, scorecard, secret-scanner, rust-ci, and mirror workflows converted to thin wrappers of standards reusables; reusable SHA pins repinned to live merge-commit SHAs (latest commit 4a848fd)." },
+]
 
 [ecosystem]
 part-of = ["hyperpolymath coordination infrastructure"]
