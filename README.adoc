@@ -94,6 +94,8 @@ It should not be placed between Kategoria/Katagoria and TypeLL as a required dep
 
 See `docs/ARCHITECTURE.adoc`, `docs/PIPELINE.adoc`, and `ROADMAP.adoc` for full detail.
 
+== Calibration Calculi.
+
 TypeFix Zero is a proposed standalone calibration calculus for the type-theory pipeline.
 
 It is not a production language and not a replacement for TypeLL. Its role is to mark the lower bound of the estate’s “typed but Turing-complete” design space:
