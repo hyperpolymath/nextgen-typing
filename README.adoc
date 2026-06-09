@@ -49,6 +49,12 @@ katagoria  →  typell  →  typed-wasm  →  PanLL
   Binary Star: human (Panel-L) + machine (Panel-N) + world (Panel-W).
 |===
 
+TypeFix Zero / TF0 sits beside this chain as a calibration calculus rather than a production stage. It is upstream of design judgement, not downstream infrastructure:
+
+TypeFix Zero → Kategoria/Katagoria design tests → TypeLL partiality/totality boundary checks
+
+It should not be placed between Kategoria/Katagoria and TypeLL as a required dependency. It is a small reference object used to test claims about universes, ordinary types, fixed points, and Turing completeness.
+
 == Co-Products
 
 [cols="1,3"]
