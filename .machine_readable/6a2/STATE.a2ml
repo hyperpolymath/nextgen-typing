@@ -6,7 +6,7 @@
 [metadata]
 project = "nextgen-typing"
 version = "0.1.0"
-last-updated = "2026-06-05"
+last-updated = "2026-06-12"
 status = "active"
 
 [project-context]
@@ -17,10 +17,12 @@ Documents and connects: katagoria (research) → typell (kernel) → typed-wasm 
 Hosts cross-repo architecture docs, pipeline roadmap, and research artefacts that span projects.
 Does NOT contain compiler code.
 """
-# Reconciled 2026-06-05: the earlier completion=100 was inconsistent with reality.
-# PROOF-STATUS.md records 0 of 7 mandated proofs done (0% proven), and the repo
-# still carries an un-rescoped RSR code scaffold (src/interface/, verification/proofs/).
-# Maturity reflects scaffold/early state, not a finished coordination layer.
+# Reconciled 2026-06-05 (PR #31): the earlier completion=100 was inconsistent with
+# reality. PROOF-STATUS.md records 0 of 7 mandated proofs done (0% proven), and the
+# repo still carries an un-rescoped RSR code scaffold (src/interface/,
+# verification/proofs/). Maturity reflects scaffold/early state, not a finished
+# coordination layer. Recalibration retained at the 2026-06-12 checkpoint: work
+# landed since #31 is CI/governance/docs only — it does not move the scaffold needle.
 completion-percentage = 10
 
 [position]
@@ -31,7 +33,7 @@ maturity = "scaffold"
 milestones = [
   { name = "Repo scaffolded and pushed to GitHub", completion = 100 },
   { name = "README + ROADMAP with pipeline description", completion = 100 },
-  { name = "Machine-readable files populated and state-aligned (STATE/META/ECOSYSTEM)", completion = 80 },
+  { name = "Machine-readable files populated and state-aligned (STATE/META/ECOSYSTEM)", completion = 90 },
   { name = "docs/ARCHITECTURE.adoc cleaned up as pure architecture doc", completion = 100 },
   { name = "docs/PIPELINE.adoc added as machine-readable A2ML pipeline spec", completion = 100 },
   { name = "katagoria repo created and linked from pipeline docs", completion = 100 },
@@ -39,15 +41,28 @@ milestones = [
   { name = "Protocol Squisher tropical connection documented", completion = 100 },
 ]
 
+[recent-work]
+# Landed work since 2026-04-12, summarized from git log on origin/main.
+summary = [
+  "2026-04-15..04-18: M5 CI/workflow sweep (contractile.just, blockers), Dependabot security path + auto-merge, contractile 6-verb cleanup (drop lust, add bust/, relocate k9 to svc/), workspace standardization.",
+  "2026-05-12..05-18: CI hardening wave — upload-artifact SHA bump (#1), hypatia-scan token + --exit-zero fix (#2), setup-beam SHA for ubuntu24 (#3), fleet submission no longer fails security gate (#4), stale gen-v-connector recipe removed (#5), k9-validate-action pins (#6), concurrency-cancel guards (#7, #8).",
+  "2026-05-22: licence migrated from PMPL-1.0-or-later to MPL-2.0 repo-wide (commit 7a84a1d).",
+  "2026-05-26..05-30: CI reusable-wrapper rework — hypatia-scan (#10, #25), mirror (#13, #24), secret-scanner (#14, #21), rust-ci (#15, #23), scorecard (#16, #22), reusable SHA repins (#17, #20, #30), fake action-SHA sweep in e2e template stubs (#28); stale SafeDOMExample.res ReScript fixture deleted (#11, #19); tech-debt audit findings recorded in docs/tech-debt-2026-05-26.md (#12, #18); issue templates updated (#26).",
+  "2026-06-06: 6a2 STATE checkpoint — completion/identity reconciled, non-portable paths fixed (#31).",
+  "2026-06-09: README.adoc gains TypeFix Zero (TF0) calibration-calculus section — proposed standalone calibration calculus beside the main chain, design-stage.",
+  "2026-06-12: estate-standardization-20260607 merged — GOVERNANCE.adoc, MAINTAINERS.adoc, .github/CODEOWNERS, 6a2 manifest/README, anchors/ → 6a2/anchor/, agent_instructions/ → bot_directives/, svc/k9/ → self-validating/, flat contractiles, flake.nix removed (Guix primary); codeql cron weekly → monthly; governance checkpoint layer (bot_directives trio, repo-true contractiles, dual-STATE reconciliation).",
+]
+
 [blockers-and-issues]
 issues = [
-  { id = "OQ-001", kind = "open-question", status = "open", raised = "2026-06-05",
-    title = "Identity contradiction — coordination monorepo vs RSR proof scaffold",
-    detail = "Narrative/STATE describe a docs-only coordination monorepo (\"does NOT contain compiler code\"), but src/interface/ + verification/proofs/ carry an un-rescoped RSR code scaffold; reconcile (docs-only ⇒ Tier T5/Exempt, drop scaffold) vs (real proof repo ⇒ re-scope). NOT decided here." },
+  { id = "OQ-001", kind = "open-question", status = "open", raised = "2026-06-05", title = "Identity contradiction — coordination monorepo vs RSR proof scaffold", detail = "Narrative/STATE describe a docs-only coordination monorepo (\"does NOT contain compiler code\"), but src/interface/ + verification/proofs/ carry an un-rescoped RSR code scaffold; reconcile (docs-only ⇒ Tier T5/Exempt, drop scaffold) vs (real proof repo ⇒ re-scope). NOT decided here." },
+  { id = "OQ-002", kind = "template-residue", status = "open", raised = "2026-06-12", title = "Unreplaced template placeholders across community-health files", detail = "{{OWNER}}/{{REPO}}/{{AUTHOR}}/{{SECURITY_EMAIL}}/{{CONDUCT_*}} and friends remain in .github/ community files, self-validating/ k9 templates, and QUICKSTART-MAINTAINER.adoc; .machine_readable/ai/PLACEHOLDERS.adoc is the index. Needs a maintainer fill-in pass (just init or manual)." },
 ]
 
 [critical-next-actions]
 actions = [
+  "Decide OQ-001: docs-only coordination monorepo (drop RSR code scaffold) vs real proof repo (re-scope proofs).",
+  "Replace remaining template placeholders ({{OWNER}}, {{REPO}}, {{SECURITY_EMAIL}}, ...) per .machine_readable/ai/PLACEHOLDERS.adoc.",
   "Track Tropical.thy extensions (linorder instance, tropical matrices, Kleene algebra) in tropical-resource-typing and mirror progress in nextgen-typing docs.",
   "Track and link the arXiv paper draft on speculative tropical session types once published.",
   "Track typed-wasm aggregate ABI convention adoption in AffineScript/Ephapax integration paths as recursive-type support matures.",
@@ -55,8 +70,8 @@ actions = [
 ]
 
 [maintenance-status]
-last-run-utc = "2026-06-05T00:00:00Z"
-last-result = "docs-checkpoint"
+last-run-utc = "2026-06-12T00:00:00Z"
+last-result = "governance-checkpoint"
 open-warnings = 0
 open-failures = 0
 
@@ -64,7 +79,9 @@ open-failures = 0
 events = [
   { date = "2026-05-22", kind = "licence", detail = "Migrated licence from PMPL-1.0-or-later to MPL-2.0 across the repo (commit 7a84a1d)." },
   { date = "2026-05-26", kind = "audit", detail = "Recorded estate-wide tech-debt audit findings in docs/tech-debt-2026-05-26.md (combined severity LOW; proof debt = 6 Idris2 believe_me markers in scaffold proof files; licence + docs debt OK)." },
-  { date = "2026-05-30", kind = "ci", detail = "CI reusable-wrapper rework (2026-05-26..2026-05-30): hypatia-scan, scorecard, secret-scanner, rust-ci, and mirror workflows converted to thin wrappers of standards reusables; reusable SHA pins repinned to live merge-commit SHAs (latest commit 4a848fd)." },
+  { date = "2026-05-30", kind = "ci", detail = "CI reusable-wrapper rework (2026-05-26..2026-05-30): hypatia-scan, scorecard, secret-scanner, rust-ci, and mirror workflows converted to thin wrappers of standards reusables; reusable SHA pins repinned to live merge-commit SHAs (commit 4a848fd)." },
+  { date = "2026-06-09", kind = "docs", detail = "README.adoc: TypeFix Zero (TF0) calibration-calculus section added (commits f11cc29..ec3496f)." },
+  { date = "2026-06-12", kind = "governance", detail = "Estate standardization merged (governance docs, bot_directives, self-validating, flat contractiles, flake.nix removal); codeql cron monthly; checkpoint layer: dual STATE reconciled (root pointer-ized to 6a2), bot_directives trio added, contractiles populated with repo-true obligations." },
 ]
 
 [ecosystem]

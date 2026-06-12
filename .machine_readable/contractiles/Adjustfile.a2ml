@@ -1,72 +1,121 @@
 # SPDX-License-Identifier: MPL-2.0
-# Adjustfile — Drift-tolerance contract for rsr-template-repo
+# Adjustfile — Drift-tolerance + accessibility contract for nextgen-typing
 # Author: Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 #
 # Cumulative-drift catchment: tolerance bands + corrective actions.
 # Authority: advisory (Yard) — continue-with-warnings; auto_fix where deterministic.
 # Run with: adjust check
 # Fix with: adjust fix (applies deterministic patches; advisory otherwise)
+#
+# Provenance: repo-true rewrite at the 2026-06-12 governance checkpoint.
+# Carries the estate drift-tolerance shape PLUS the accessibility
+# invariants ported from the former root ADJUST.contractile
+# ("Accessibility & Digital Justice for Universal Software & Technology",
+# WCAG 2.2 AA), removed by the estate-standardization merge.
 
 @abstract:
-Drift tolerances and corrective actions for rsr-template-repo. Unlike
+Drift tolerances and corrective actions for nextgen-typing. Unlike
 MUST (hard gate), ADJUST tracks cumulative drift against tolerance bands
 and proposes corrective actions. Advisory — it warns and trends, it does
-not block.
+not block. The accessibility section is normative for any user-facing
+output this repo produces (docs, CLI tooling, diagrams).
 @end
-
-## Template Drift
-
-### placeholder-drift
-- description: Template placeholders should be replaced when copied
-- tolerance: 0 placeholder markers in copied repos
-- corrective: Search and replace all {{PLACEHOLDER}} markers
-- severity: advisory
-- notes: This check only applies to repos that copied from this template
-
-### template-version-drift
-- description: Template version should match RSR spec version
-- tolerance: Template version matches current RSR spec
-- corrective: Update template to match latest RSR spec
-- severity: advisory
 
 ## Documentation Drift
 
-### readme-completeness
-- description: README should document all template features
-- tolerance: README covers all contractiles and directory structure
-- corrective: Update README.adoc with missing sections
+### readme-state-sync
+- description: README.adoc, docs/ARCHITECTURE.adoc, docs/PIPELINE.adoc and 6a2/{STATE,META,ECOSYSTEM}.a2ml should agree
+- tolerance: No contradictions between narrative docs and 6a2 metadata
+- corrective: Run the periodic drift scan listed in 6a2/STATE.a2ml critical-next-actions
 - severity: advisory
 
-### example-accuracy
-- description: Examples in documentation should match actual template content
-- tolerance: All code examples in docs are accurate
-- corrective: Audit and fix examples in documentation
+### pipeline-currency
+- description: Pipeline docs should track constituent-repo reality (typell, typed-wasm, katagoria, tropical-resource-typing, protocol-squisher)
+- tolerance: Status table in README matches constituent repos' actual state
+- corrective: Refresh the README status table and ECOSYSTEM.a2ml
 - severity: advisory
+
+### placeholder-drift
+- description: Remaining template placeholders should trend to zero
+- tolerance: 0 {{PLACEHOLDER}} markers outside .machine_readable/ai/PLACEHOLDERS.adoc
+- corrective: Fill per PLACEHOLDERS.adoc (just init or manual sed pass)
+- severity: advisory
+- notes: As of 2026-06-12 placeholders remain in .github/ community files, self-validating/ k9 templates, and QUICKSTART-MAINTAINER.adoc (tracked as OQ-002 in 6a2/STATE.a2ml)
 
 ## Structural Drift
 
-### contractile-sync
-- description: All contractiles should have matching a2ml and ncl implementations
-- tolerance: Every .a2ml has a corresponding .ncl
-- corrective: Generate missing .ncl files from .a2ml
-- severity: advisory
-
 ### no-broken-symlinks
-- description: No broken symbolic links in template structure
+- description: No broken symbolic links in the tree
 - tolerance: 0 broken symlinks
-- corrective: Run symlink-check script
+- corrective: Remove or re-point the broken link
 - severity: advisory
-
-## Accessibility Drift
 
 ### adoc-not-md
-- description: Template docs should prefer AsciiDoc
+- description: Prose docs should prefer AsciiDoc
 - tolerance: New prose docs are *.adoc
 - corrective: Convert any new *.md to *.adoc
 - severity: advisory
 
 ### spdx-header-consistency
-- description: All template files have correct SPDX headers
+- description: All files have correct SPDX headers (MPL-2.0 since 2026-05-22)
 - tolerance: 0 files missing SPDX-License-Identifier
 - corrective: Add SPDX headers to files that need them
 - severity: advisory
+
+## Accessibility — Visual (ported from root ADJUST.contractile, WCAG 2.2 AA)
+
+### colour-contrast
+- description: Colour contrast ratio >= 4.5:1 normal text, >= 3:1 large text; no information conveyed by colour alone; no flashing content (3 flashes/second max)
+- tolerance: WCAG 2.2 AA
+- corrective: Fix palette / add non-colour signal
+- severity: advisory
+
+### text-resizable
+- description: Text resizable to 200% without loss of content or function; focus indicators visible on all interactive elements
+- tolerance: WCAG 2.2 AA
+- corrective: Use relative units; add focus styles
+- severity: advisory
+
+## Accessibility — Keyboard and Screen Reader
+
+### keyboard-reachable
+- description: All interactive elements reachable via keyboard; no keyboard traps; skip-navigation present; logical focus order
+- tolerance: WCAG 2.2 AA
+- corrective: Add tabindex/skip links; fix focus order
+- severity: advisory
+
+### screen-reader-support
+- description: Meaningful alt text on images; labelled form inputs; ARIA landmarks; aria-live for dynamic updates; semantic HTML (no div soup)
+- tolerance: WCAG 2.2 AA
+- corrective: Add alt/labels/landmarks/semantics
+- severity: advisory
+
+## Accessibility — CLI/TUI and Documentation
+
+### cli-not-colour-only
+- description: CLI output must not rely solely on colour (use symbols: [OK] [FAIL]); TUI supports high-contrast mode; --help with plain-text output; plain-language error messages
+- tolerance: 100% of CLI surfaces
+- corrective: Add symbol prefixes and --help text
+- severity: advisory
+
+### docs-plain-language
+- description: Docs use clear language, short sentences, logical structure; code examples commented; diagrams have text descriptions
+- tolerance: All new docs
+- corrective: Editorial pass
+- severity: advisory
+
+## Accessibility — Internationalisation
+
+### i18n-ready
+- description: User-facing strings externalisable; no hardcoded English in error messages; locale-aware date/time/number formats; RTL support where applicable; UTF-8 throughout
+- tolerance: All user-facing surfaces
+- corrective: Externalise strings; use message keys
+- severity: advisory
+- notes: Related ecosystem resources — standards/lol (multilingual NLP corpus) and polyglot-i18n (i18n framework + WASM translation engine)
+
+## Enforcement (advisory layer)
+
+- ci: accessibility linting rides quality.yml where user-facing output exists
+- tool: axe-core or pa11y for automated checks on any web UI
+- tool: CLI output inspected for colour-only signalling
+- manual: screen reader pass before major releases

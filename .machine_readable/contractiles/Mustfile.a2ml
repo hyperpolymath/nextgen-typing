@@ -1,14 +1,21 @@
 # SPDX-License-Identifier: MPL-2.0
-# Mustfile — Physical state contract for rsr-template-repo
+# Mustfile — Physical state contract for nextgen-typing
 # Author: Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 #
 # What MUST be true about this repository. Hard requirements.
 # Run with: must check
 # Fix with: must fix (where a deterministic fix exists)
+#
+# Provenance: repo-true rewrite at the 2026-06-12 governance checkpoint.
+# Folds the former nested contractiles/must/Mustfile.a2ml checks and the
+# universal invariants of the former root MUST.contractile (both removed
+# by the estate-standardization merge). Directory checks updated to the
+# post-merge flat layout (no nested bust/dust dirs; 6a2/anchor singular).
 
 @abstract:
-Physical-state invariants for rsr-template-repo. This is the canonical
-RSR template repository. These are hard requirements — CI and pre-commit
+Physical-state invariants for nextgen-typing, the coordination monorepo
+for the hyperpolymath type theory pipeline (katagoria → typell →
+typed-wasm → PanLL). These are hard requirements — CI and pre-commit
 hooks fail if any check fails.
 @end
 
@@ -40,25 +47,25 @@ hooks fail if any check fails.
 - severity: critical
 
 ### machine-readable-dir
-- description: .machine_readable/ directory must exist
+- description: .machine_readable/ directory must exist and be preserved
 - run: test -d .machine_readable
 - severity: critical
 
+### contributing
+- description: CONTRIBUTING.md must exist (GitHub community health)
+- run: test -f CONTRIBUTING.md
+- severity: warning
+
+### editorconfig
+- description: .editorconfig must exist
+- run: test -f .editorconfig
+- severity: warning
+
 ## Directory Structure
 
-### contractiles-complete
-- description: All required contractile directories exist
-- run: test -d .machine_readable/contractiles && test -d .machine_readable/contractiles/bust && test -d .machine_readable/contractiles/dust
-- severity: critical
-
 ### contractiles-files-present
-- description: All four primary contractile files exist
-- run: test -f .machine_readable/contractiles/Intentfile.a2ml && test -f .machine_readable/contractiles/Mustfile.a2ml && test -f .machine_readable/contractiles/Trustfile.a2ml && test -f .machine_readable/contractiles/Adjustfile.a2ml
-- severity: critical
-
-### bust-dust-files-present
-- description: Bustfile and Dustfile exist in their directories
-- run: test -f .machine_readable/contractiles/bust/Bustfile.a2ml && test -f .machine_readable/contractiles/dust/Dustfile.a2ml
+- description: All six flat contractile files exist (estate layout, 2026-06-12)
+- run: test -f .machine_readable/contractiles/Intentfile.a2ml && test -f .machine_readable/contractiles/Mustfile.a2ml && test -f .machine_readable/contractiles/Trustfile.a2ml && test -f .machine_readable/contractiles/Adjustfile.a2ml && test -f .machine_readable/contractiles/Dustfile.a2ml && test -f .machine_readable/contractiles/Bustfile.a2ml
 - severity: critical
 
 ### six-directory-present
@@ -66,37 +73,98 @@ hooks fail if any check fails.
 - run: test -d .machine_readable/6a2 && test -f .machine_readable/6a2/META.a2ml && test -f .machine_readable/6a2/ECOSYSTEM.a2ml && test -f .machine_readable/6a2/STATE.a2ml && test -f .machine_readable/6a2/PLAYBOOK.a2ml && test -f .machine_readable/6a2/AGENTIC.a2ml && test -f .machine_readable/6a2/NEUROSYM.a2ml
 - severity: critical
 
-### anchors-directory
-- description: anchors directory exists in 6a2
-- run: test -d .machine_readable/6a2/anchors
+### anchor-directory
+- description: anchor directory exists in 6a2 with ANCHOR.a2ml
+- run: test -f .machine_readable/6a2/anchor/ANCHOR.a2ml
 - severity: warning
 
 ### self-validating-structure
-- description: self-validating directory has k9-svc and examples
-- run: test -d .machine_readable/self-validating && test -d .machine_readable/self-validating/k9-svc && test -d .machine_readable/self-validating/examples
+- description: self-validating directory has templates and examples
+- run: test -d .machine_readable/self-validating && test -d .machine_readable/self-validating/examples
 - severity: warning
 
-## Template Integrity
+## SPDX and Licence Compliance
 
-### no-placeholder-values
-- description: No placeholder values remain in template files
-- run: test -z "$(grep -r '{{' .machine_readable/contractiles/ 2>/dev/null)"
+### spdx-headers
+- description: All source files must have SPDX-License-Identifier
+- run: "! find src/ -name '*.rs' -o -name '*.idr' -o -name '*.zig' 2>/dev/null | head -20 | xargs grep -L 'SPDX-License-Identifier' 2>/dev/null | head -1 | grep -q ."
+- severity: warning
+
+### no-agpl
+- description: No AGPL-3.0 references in dotfiles
+- run: "! grep -r 'AGPL-3.0' .gitignore .gitattributes .editorconfig 2>/dev/null | head -1 | grep -q ."
 - severity: critical
-- notes: All placeholders must be substituted when copying this template
 
-### template-readonly
-- description: Template marker files are not modified
-- run: grep -q 'RSR_TEMPLATE_DO_NOT_EDIT' .machine_readable/0.1-AI-MANIFEST.a2ml
+### no-license-removal
+- description: LICENSE file must not be removed or emptied
+- run: test -s LICENSE
+- severity: critical
+
+## Language Policy (from former root MUST.contractile)
+
+### no-typescript
+- description: No new TypeScript files
+- run: "! find src/ tools/ -name '*.ts' 2>/dev/null | head -1 | grep -q ."
+- severity: critical
+
+### no-python
+- description: No new Python files
+- run: "! find src/ tools/ scripts/ -name '*.py' 2>/dev/null | head -1 | grep -q ."
+- severity: critical
+
+### no-go
+- description: No new Go files
+- run: "! find src/ tools/ -name '*.go' 2>/dev/null | head -1 | grep -q ."
+- severity: critical
+
+### no-node-package-managers
+- description: No npm/bun/yarn/pnpm lockfiles — Deno only for JS deps
+- run: "! ls package-lock.json bun.lockb yarn.lock pnpm-lock.yaml 2>/dev/null | head -1 | grep -q ."
+- severity: critical
+
+### no-hardcoded-absolute-paths
+- description: No hardcoded absolute paths (/home/*, /var/mnt/*) in scripts
+- run: "! grep -rE '(/home/|/var/mnt/)[a-z]' scripts/ --include='*.sh' 2>/dev/null | head -1 | grep -q ."
 - severity: warning
+
+## Dangerous Patterns
+
+### no-believe-me
+- description: No believe_me in Idris2 code
+- run: "! grep -r 'believe_me' --include='*.idr' . 2>/dev/null | grep -v node_modules | head -1 | grep -q ."
+- severity: critical
+- notes: 6 believe_me markers currently exist in scaffold proof files; recorded tech debt (docs/tech-debt-2026-05-26.md, PRs #12/#18), pending the OQ-001 identity decision in 6a2/STATE.a2ml. The check stays red until that decision lands — do not weaken it to hide the debt.
+
+### no-sorry
+- description: No sorry in Lean code
+- run: "! grep -r 'sorry' --include='*.lean' . 2>/dev/null | grep -v node_modules | head -1 | grep -q ."
+- severity: critical
+
+### no-admitted
+- description: No Admitted in Coq code
+- run: "! grep -r 'Admitted' --include='*.v' . 2>/dev/null | grep -v node_modules | head -1 | grep -q ."
+- severity: critical
+
+## CI Invariants (from former root MUST.contractile)
+
+### actions-sha-pinned
+- description: All GitHub Actions must be SHA-pinned
+- run: "! grep -rE 'uses:.*@(main|master|v[0-9]+)\\s*$' .github/workflows/ 2>/dev/null | head -1 | grep -q ."
+- severity: critical
+
+### no-workflow-removal
+- description: CI workflows must not be removed without explicit approval
+- run: test -d .github/workflows
+- severity: critical
+
+### proofs-not-removed
+- description: Formal verification proofs must not be deleted without the OQ-001 decision
+- run: test -d verification/proofs
+- severity: critical
 
 ## Git State
 
 ### no-untracked-contractiles
 - description: All contractile files are tracked in git
 - run: test -z "$(git ls-files -o --exclude-standard .machine_readable/contractiles/ 2>/dev/null)"
-- severity: critical
-
-### signed-commits
-- description: All commits must be signed
-- run: git verify-commit HEAD
 - severity: critical

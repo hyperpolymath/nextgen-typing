@@ -1,21 +1,33 @@
 // SPDX-License-Identifier: MPL-2.0
 // Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
-= Contractiles Template Set
+= Contractiles
 :toc:
 :sectnums:
 
-This directory contains the generalized contractiles templates. Copy the `.machine_readable/contractiles/` directory into a new repo to establish a consistent operational, validation, trust, recovery, and intent framework.
-
-== Fill-In Instructions
-
-1. Update the Mustfile to reflect your real invariants (paths, schema versions, ports).
-2. Replace Trustfile.hs placeholders with your actual key paths and verification commands.
-3. Adjust Dustfile handlers to match your rollback and recovery tooling.
-4. Update Intentfile to mirror the roadmap you want the system to evolve toward.
+This directory contains the flat contractile set for nextgen-typing
+(estate-standardization layout, adopted 2026-06-12). The six contractile
+verbs are: intend, must, trust, adjust, bust, dust.
 
 == Contents
 
-* `must/Mustfile` - required invariants and validations.
-* `trust/Trustfile.hs` - cryptographic verification steps.
-* `dust/Dustfile` - rollback and recovery semantics.
-* `lust/Intentfile` - future intent and roadmap direction.
+* `Intentfile.a2ml` — north-star: purpose, anti-purpose, committed
+  next-actions, horizon wishes (verb: intend; non-gating)
+* `Mustfile.a2ml` — hard physical-state invariants; CI fails on violation
+  (verb: must)
+* `Trustfile.a2ml` — agent trust levels/boundaries + integrity invariants
+  (verb: trust)
+* `Adjustfile.a2ml` — drift tolerances + accessibility invariants
+  (verb: adjust; advisory)
+* `Bustfile.a2ml` — failure modes, recovery paths, escalation ladder
+  (verb: bust)
+* `Dustfile.a2ml` — cleanup/hygiene items (verb: dust; advisory)
+* `Justfile` — contractile runner recipes
+
+== History
+
+Until 2026-06-12 the contractiles lived as nested directories
+(`must/`, `trust/`, `dust/`, `bust/`) plus root-level `*.contractile`
+files (MUST/TRUST/ADJUST/INTENT). The estate-standardization merge
+flattened the layout; the old files' real content was ported into the
+flat files above (see each file's provenance header). The retired `lust`
+verb was folded into `Intentfile` back in April 2026 (commit 9634e38).
