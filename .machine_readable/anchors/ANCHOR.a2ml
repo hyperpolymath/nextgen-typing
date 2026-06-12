@@ -5,7 +5,7 @@
 
 [metadata]
 version = "1.0.0"
-last-updated = "2026-04-11"
+last-updated = "2026-06-12"
 
 [anchor]
 schema = "hyperpolymath.anchor/1"
@@ -22,7 +22,7 @@ purpose = [
 project = "nextgen-typing"
 kind = "{{PROJECT_KIND}}"                # language | library | service | tool
 one-sentence = "Coordination monorepo for the hyperpolymath type theory pipeline (katagoria → typell → typed-wasm → PanLL)"
-domain = "{{PROJECT_DOMAIN}}"
+domain = "type theory / type safety"
 
 [semantic-authority]
 policy = "canonical"

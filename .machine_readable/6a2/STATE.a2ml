@@ -6,7 +6,7 @@
 [metadata]
 project = "nextgen-typing"
 version = "0.1.0"
-last-updated = "2026-06-05"
+last-updated = "2026-06-12"
 status = "active"
 
 [project-context]
@@ -55,10 +55,11 @@ actions = [
 ]
 
 [maintenance-status]
-last-run-utc = "2026-06-05T00:00:00Z"
-last-result = "docs-checkpoint"
+last-run-utc = "2026-06-12T00:00:00Z"
+last-result = "pass"  # CRG Grade C: dogfood-gate, hypatia-scan, static-analysis-gate green (READINESS.md)
 open-warnings = 0
 open-failures = 0
+recent-activity = "2026-05-30 CI/governance hardening: reusable-workflow wrappers (scorecard, secret-scanner, mirror, rust-ci, hypatia-scan), SHA repinning to live commits, stale ReScript fixture removal, tech-debt audit findings recorded."
 
 [recent-activity]
 events = [
