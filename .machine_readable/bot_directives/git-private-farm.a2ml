@@ -14,7 +14,7 @@ enabled = true
 target = "hyperpolymath/.git-private-farm"
 event-type = "propagate"
 # Secret NAME only — value lives in GitHub Actions secrets.
-secret = "FARM_DISPATCH_TOKEN"
+secret-name = "FARM_DISPATCH_TOKEN"
 # Verified 2026-06-12: the dispatch step has NO if-guard checking the secret
 # is present; a fork/secretless run would fail rather than skip. Proposed as
 # an issue at the 2026-06-12 checkpoint.
