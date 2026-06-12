@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0
-# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <6759885+hyperpolymath@users.noreply.github.com>
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
 #
 # META.a2ml — Project meta-level information
 # Architecture decisions, design rationale, governance.
@@ -24,6 +24,8 @@ adrs = [
     rationale = "typed-wasm is both the TypeLL WASM safety application AND the aggregate library for AffineScript+Ephapax cross-language binary conventions. Both roles are first-class. See typed-wasm/.machine_readable/6a2/META.a2ml#ADR-004." },
   { id = "ADR-004", title = "katagoria is the research upstream of typell", status = "accepted", date = "2026-04-11",
     rationale = "Type theory ideas need an origination space before promotion to production repos. katagoria is that space: Idris2/Lean proofs-of-concept, reading notes, prototype formalizations. The repository was created on 2026-04-11 and is now active in the pipeline." },
+  { id = "ADR-005", title = "Licence migrated from PMPL-1.0-or-later to MPL-2.0", status = "accepted", date = "2026-05-22",
+    rationale = "Repo-wide licence migration to the Palimpsest License (MPL-2.0) (commit 7a84a1d). All SPDX headers now read MPL-2.0; LICENSE body is the Palimpsest variant." },
 ]
 
 [development-practices]
