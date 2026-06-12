@@ -1,3 +1,4 @@
+K9!
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (c) {{CURRENT_YEAR}} {{AUTHOR}} ({{OWNER}}) <{{AUTHOR_EMAIL}}>
 #
@@ -11,6 +12,23 @@ let methodology_guard = {
   name = "methodology-guard",
   version = "1.0.0",
   description = "Validates that agent work respects declared methodology constraints",
+
+  # Required by K9 validators (hyperpolymath/k9-validate-action): the magic
+  # first line above and this pedigree. Data-only guard — no network/write/
+  # subprocess access. (Defect found via januskey's "Validate K9 contracts"
+  # gate when this template was adopted there.)
+  pedigree = {
+    name = "methodology-guard",
+    schema_version = "1.0.0",
+    component_type = "methodology-validator",
+    security = {
+      leash = 'Kennel,
+      trust_level = "data-only",
+      allow_network = false,
+      allow_filesystem_write = false,
+      allow_subprocess = false,
+    },
+  },
 
   checks = {
     divergent_invariant_language = {
