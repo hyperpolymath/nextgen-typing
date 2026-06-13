@@ -56,13 +56,13 @@ summary = [
 [blockers-and-issues]
 issues = [
   { id = "OQ-001", kind = "open-question", status = "open", raised = "2026-06-05", title = "Identity contradiction — coordination monorepo vs RSR proof scaffold", detail = "Narrative/STATE describe a docs-only coordination monorepo (\"does NOT contain compiler code\"), but src/interface/ + verification/proofs/ carry an un-rescoped RSR code scaffold; reconcile (docs-only ⇒ Tier T5/Exempt, drop scaffold) vs (real proof repo ⇒ re-scope). NOT decided here." },
-  { id = "OQ-002", kind = "template-residue", status = "open", raised = "2026-06-12", title = "Unreplaced template placeholders across community-health files", detail = "{{OWNER}}/{{REPO}}/{{AUTHOR}}/{{SECURITY_EMAIL}}/{{CONDUCT_*}} and friends remain in .github/ community files, self-validating/ k9 templates, and QUICKSTART-MAINTAINER.adoc; .machine_readable/ai/PLACEHOLDERS.adoc is the index. Needs a maintainer fill-in pass (just init or manual)." },
+  { id = "OQ-002", kind = "template-residue", status = "open", raised = "2026-06-12", title = "Unreplaced template placeholders across community-health files", detail = "Template tokens (OWNER, REPO, AUTHOR, SECURITY_EMAIL, CONDUCT_*) remain unfilled in .github/ community files, self-validating/ k9 templates, and QUICKSTART-MAINTAINER.adoc; .machine_readable/ai/PLACEHOLDERS.adoc is the index. Needs a maintainer fill-in pass (just init or manual)." },
 ]
 
 [critical-next-actions]
 actions = [
   "Decide OQ-001: docs-only coordination monorepo (drop RSR code scaffold) vs real proof repo (re-scope proofs).",
-  "Replace remaining template placeholders ({{OWNER}}, {{REPO}}, {{SECURITY_EMAIL}}, ...) per .machine_readable/ai/PLACEHOLDERS.adoc.",
+  "Replace remaining template placeholders (OWNER, REPO, SECURITY_EMAIL, …) per .machine_readable/ai/PLACEHOLDERS.adoc.",
   "Track Tropical.thy extensions (linorder instance, tropical matrices, Kleene algebra) in tropical-resource-typing and mirror progress in nextgen-typing docs.",
   "Track and link the arXiv paper draft on speculative tropical session types once published.",
   "Track typed-wasm aggregate ABI convention adoption in AffineScript/Ephapax integration paths as recursive-type support matures.",
