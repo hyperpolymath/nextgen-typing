@@ -88,7 +88,7 @@ jobs:
           if claude_md.exists():
               in_table = False
               for line in claude_md.read_text(encoding='utf-8').splitlines():
-                  if re.search(r'TypeScript [Ee]xemptions', line):
+                  if re.search(r'^[#=]+\s+.*TypeScript [Ee]xemptions', line):
                       in_table = True
                       continue
                   if in_table and line.startswith(('### ', '## ', '# ')):
