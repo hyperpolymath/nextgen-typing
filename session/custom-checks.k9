@@ -1,4 +1,18 @@
+K9!
+# SPDX-License-Identifier: MPL-2.0
 # Local repository session checks (thin policy layer)
+#
+# K9 pedigree (required by hyperpolymath/k9-validate-action): the magic
+# first line above plus this pedigree block. Data-only policy layer —
+# no network/write/subprocess access.
+pedigree = {
+  name = "session-custom-checks",
+  schema_version = "1.0.0",
+  component_type = "session-checks",
+  leash = "Kennel",
+  security_level = "data-only",
+}
+
 version: "0.1"
 
 checks:
