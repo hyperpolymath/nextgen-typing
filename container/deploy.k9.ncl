@@ -1,3 +1,4 @@
+K9!
 # SPDX-License-Identifier: MPL-2.0
 # deploy.k9.ncl — {{PROJECT_NAME}} deployment component (Hunt level)
 #
@@ -14,6 +15,14 @@
 
 # The component's pedigree (self-description across five layers)
 let component_pedigree = {
+  # Top-level identity fields — duplicated from metadata so the K9
+  # validator (which inspects the literal `pedigree = { ... }` block
+  # at the toplevel of the file rather than the resolved Nickel value)
+  # can locate name / version / security_level without resolving the
+  # `component_pedigree` indirection.
+  name = "{{SERVICE_NAME}}-deploy",
+  version = "{{VERSION}}",
+
   # ─────────────────────────────────────────────────────────────
   # L1: The Snout — Identity
   # ─────────────────────────────────────────────────────────────
@@ -39,6 +48,7 @@ let component_pedigree = {
   # L3: The Leash — Security
   # ─────────────────────────────────────────────────────────────
   security = {
+    leash = 'Hunt,
     trust_level = 'Hunt,
     allow_network = true,
     allow_filesystem_write = true,
