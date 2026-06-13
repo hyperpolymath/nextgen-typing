@@ -6,7 +6,7 @@
 
 [metadata]
 version = "0.1.0"
-last-updated = "2026-06-05"
+last-updated = "2026-06-12"
 
 [project]
 name = "nextgen-typing"
@@ -21,6 +21,7 @@ projects = [
   { name = "katagoria", relationship = "coordinates", notes = "Research upstream of the pipeline. Type theory prototypes before promotion to production. Repository created 2026-04-11." },
   { name = "typell", relationship = "coordinates", notes = "TypeLL verification kernel. Open-ended progressive type safety. Powers PanLL port 7800." },
   { name = "typed-wasm", relationship = "coordinates", notes = "TypeLL applied to WasmGC memory safety + aggregate library for AffineScript/Ephapax." },
+  { name = "echo-types", relationship = "integrated", notes = "Fiber-based structured-loss formalization integrated into the typesystem (#33, 2026-06-12)." },
   { name = "panll", relationship = "downstream-consumer", notes = "eNSAID reference env. TypeLL runs inside PanLL. Not owned by nextgen-typing." },
   { name = "nextgen-languages/affinescript", relationship = "co-product", notes = "Compiles to typed WasmGC. TypeLL grounds its type system." },
   { name = "nextgen-languages/ephapax", relationship = "co-product", notes = "Compiles to typed WasmGC. TypeLL grounds its dyadic linear/affine system." },

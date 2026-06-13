@@ -71,9 +71,10 @@ actions = [
 
 [maintenance-status]
 last-run-utc = "2026-06-12T00:00:00Z"
-last-result = "governance-checkpoint"
+last-result = "pass"  # CRG Grade C: dogfood-gate, hypatia-scan, static-analysis-gate green (READINESS.md); governance checkpoint 2026-06-12
 open-warnings = 0
 open-failures = 0
+recent-activity = "2026-05-30 CI/governance hardening: reusable-workflow wrappers (scorecard, secret-scanner, mirror, rust-ci, hypatia-scan), SHA repinning to live commits, stale ReScript fixture removal, tech-debt audit findings recorded."
 
 [recent-activity]
 events = [
