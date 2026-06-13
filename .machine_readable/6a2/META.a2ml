@@ -5,7 +5,7 @@
 # Architecture decisions, design rationale, governance.
 
 [metadata]
-version = "0.1.0"
+version = "0.1.1"
 last-updated = "2026-06-12"
 
 [project-info]
@@ -14,19 +14,49 @@ languages = []             # e.g. ["rust", "zig", "idris2"]
 license = "MPL-2.0"
 author = "Jonathan D.A. Jewell (hyperpolymath)"
 
-[architecture-decisions]
-adrs = [
-  { id = "ADR-001", title = "Coordination monorepo, no compiler code", status = "accepted", date = "2026-04-11",
-    rationale = "nextgen-typing documents relationships and hosts cross-cutting research artefacts. Compiler code lives in the constituent repos (typell, typed-wasm). Follows the nextgen-languages and nextgen-databases precedent." },
-  { id = "ADR-002", title = "TypeLL is open-ended progressive, not capped at 10 levels", status = "accepted", date = "2026-04-11",
-    rationale = "Earlier docs described TypeLL as a '10-level hierarchy'. This is incorrect. TypeLL progressively adds levels as the type theory demands. L1-L10 is the current initial mapping, not a ceiling. The ROADMAP.adoc in typell was updated to reflect this." },
-  { id = "ADR-003", title = "typed-wasm has dual role (ADR-004 in typed-wasm)", status = "accepted", date = "2026-04-11",
-    rationale = "typed-wasm is both the TypeLL WASM safety application AND the aggregate library for AffineScript+Ephapax cross-language binary conventions. Both roles are first-class. See typed-wasm/.machine_readable/6a2/META.a2ml#ADR-004." },
-  { id = "ADR-004", title = "katagoria is the research upstream of typell", status = "accepted", date = "2026-04-11",
-    rationale = "Type theory ideas need an origination space before promotion to production repos. katagoria is that space: Idris2/Lean proofs-of-concept, reading notes, prototype formalizations. The repository was created on 2026-04-11 and is now active in the pipeline." },
-  { id = "ADR-005", title = "Licence migrated from PMPL-1.0-or-later to MPL-2.0", status = "accepted", date = "2026-05-22",
-    rationale = "Repo-wide licence migration to the Palimpsest License (MPL-2.0) (commit 7a84a1d). All SPDX headers now read MPL-2.0; LICENSE body is the Palimpsest variant." },
-]
+# Architecture decisions (array-of-tables; one [[architecture-decisions.adrs]] per ADR)
+
+[[architecture-decisions.adrs]]
+id = "ADR-001"
+title = "Coordination monorepo, no compiler code"
+status = "accepted"
+date = "2026-04-11"
+rationale = "nextgen-typing documents relationships and hosts cross-cutting research artefacts. Compiler code lives in the constituent repos (typell, typed-wasm). Follows the nextgen-languages and nextgen-databases precedent."
+
+[[architecture-decisions.adrs]]
+id = "ADR-002"
+title = "TypeLL is open-ended progressive, not capped at 10 levels"
+status = "accepted"
+date = "2026-04-11"
+rationale = "Earlier docs described TypeLL as a '10-level hierarchy'. This is incorrect. TypeLL progressively adds levels as the type theory demands. L1-L10 is the current initial mapping, not a ceiling. The ROADMAP.adoc in typell was updated to reflect this."
+
+[[architecture-decisions.adrs]]
+id = "ADR-003"
+title = "typed-wasm has dual role (ADR-004 in typed-wasm)"
+status = "accepted"
+date = "2026-04-11"
+rationale = "typed-wasm is both the TypeLL WASM safety application AND the aggregate library for AffineScript+Ephapax cross-language binary conventions. Both roles are first-class. See typed-wasm/.machine_readable/6a2/META.a2ml#ADR-004."
+
+[[architecture-decisions.adrs]]
+id = "ADR-004"
+title = "katagoria is the research upstream of typell"
+status = "accepted"
+date = "2026-04-11"
+rationale = "Type theory ideas need an origination space before promotion to production repos. katagoria is that space: Idris2/Lean proofs-of-concept, reading notes, prototype formalizations. The repository was created on 2026-04-11 and is now active in the pipeline."
+
+[[architecture-decisions.adrs]]
+id = "ADR-005"
+title = "Licence migrated from PMPL-1.0-or-later to MPL-2.0"
+status = "accepted"
+date = "2026-05-22"
+rationale = "Repo-wide licence migration to the Palimpsest License (MPL-2.0) (commit 7a84a1d). All SPDX headers now read MPL-2.0; LICENSE body is the Palimpsest variant."
+
+[[architecture-decisions.adrs]]
+id = "ADR-006"
+title = "Estate standardization layout adopted (estate-standardization-20260607)"
+status = "accepted"
+date = "2026-06-12"
+rationale = "Merged the estate-standardization-20260607 branch: GOVERNANCE.adoc + MAINTAINERS.adoc + .github/CODEOWNERS at root; anchors/ renamed to 6a2/anchor/; agent_instructions/ renamed to bot_directives/; svc/k9/ renamed to self-validating/; nested + root contractiles replaced by flat .machine_readable/contractiles/{Intentfile,Mustfile,Trustfile,Adjustfile,Dustfile,Bustfile}.a2ml; flake.nix removed (Guix is the primary package manager, estate wave decision). Workflow files kept at origin/main's reusable-wrapper versions."
 
 [development-practices]
 build-tool = "just"

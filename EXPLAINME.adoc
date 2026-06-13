@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 = nextgen-typing — Explainme
 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 :toc:
@@ -22,7 +23,7 @@ The type theory work spans multiple repos:
 * *typed-wasm* — WasmGC type safety + aggregate library (Idris2, Zig)
 * *tropical-resource-typing* — foundational tropical type theory (Isabelle, Lean 4)
 * *protocol-squisher* — transport semilattice (tropical connection)
-* *katagoria* — planned research origination space (not yet created)
+* *katagoria* — research origination space (created 2026-04-11, active)
 
 These repos are logically one pipeline.  Without a coordination layer, AI
 agents and developers working in any single repo lack context for the others.
@@ -48,7 +49,7 @@ repos.  Here we only document:
 | Pipeline overview: the main chain, co-products, key architectural decisions
 
 | `ROADMAP.adoc`
-| What needs doing: katagoria creation, constituent repo updates, research work
+| What's done and what needs doing: katagoria (created), constituent repo updates, research work
 
 | `docs/ARCHITECTURE.adoc`
 | Full pipeline architecture doc (also served as the creation briefing)

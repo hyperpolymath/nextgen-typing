@@ -4,7 +4,7 @@
 # ANCHOR.a2ml - authoritative anchor for this repository
 
 [metadata]
-version = "1.0.0"
+version = "1.0.1"
 last-updated = "2026-06-12"
 
 [anchor]
@@ -20,9 +20,9 @@ purpose = [
 
 [identity]
 project = "nextgen-typing"
-kind = "{{PROJECT_KIND}}"                # language | library | service | tool
+kind = "monorepo"                # coordination monorepo (no compiler code; see META ADR-001)
 one-sentence = "Coordination monorepo for the hyperpolymath type theory pipeline (katagoria → typell → typed-wasm → PanLL)"
-domain = "type theory / type safety"
+domain = "type theory / programming-language research coordination"
 
 [semantic-authority]
 policy = "canonical"
@@ -56,7 +56,21 @@ must-have-anchor = true
 must-have-golden-path = true
 
 [semantic-authority-files]
+# NOTE (2026-06-12): the four paths below are template residue — none of them
+# exist in-tree. Kept verbatim pending maintainer decision (tracked as a
+# proposed issue at the 2026-06-12 governance checkpoint). The real
+# architecture authority files today are docs/ARCHITECTURE.adoc and
+# docs/PIPELINE.adoc.
 language-spec = "SPECIFICATION.md"
 formal-proofs = "docs/proofs/PROOFS.adoc"
 type-theory = "docs/theory/THEORY.adoc"
 algorithms = "docs/theory/ALGORITHMS.adoc"
+
+# Dated realignment entries (most recent last).
+
+[[realignments]]
+date = "2026-06-12"
+what = "Estate standardization + governance checkpoint"
+why = "Adopt the estate-standardization-20260607 layout and refresh machine-readable metadata to current reality"
+evidence = "Merge of origin/estate-standardization-20260607 (workflows kept at main's reusable-wrapper versions); codeql cron monthly cherry-pick; root STATE.a2ml pointer-ized to 6a2/STATE.a2ml; 6a2 STATE/META refreshed to 2026-06-12; bot_directives trio (hypatia, gitbot-fleet, git-private-farm) added; flat contractiles populated with repo-true obligations (content ported from nested must/trust/dust/bust and root *.contractile files)"
+

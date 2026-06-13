@@ -1,0 +1,34 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+#
+# hypatia.a2ml — directives for the hypatia security scanner in this repo.
+
+[metadata]
+repo = "hyperpolymath/nextgen-typing"
+last-updated = "2026-06-12"
+owner = "hyperpolymath"
+
+[scanner]
+# No .hypatia-ignore file is present in this repo as of 2026-06-12.
+ignore-file = ".hypatia-ignore"
+ignore-file-present = false
+workflow = ".github/workflows/hypatia-scan.yml"
+# hypatia-scan.yml is a thin wrapper of the standards reusable (PRs #10, #25),
+# repinned to live merge-commit SHAs (PRs #17, #20, #30). It passes
+# GITHUB_TOKEN and runs with --exit-zero (PR #2).
+
+[accepted-findings]
+# Known scanner noise with reasons. Anything not listed here is a real finding.
+findings = [
+  { id = "reusable-caller-advisories", reason = "hypatia-scan, mirror, rust-ci, scorecard, and secret-scanner are thin wrappers of hyperpolymath/standards reusables (PRs #10..#25); timeout-minutes, permissions, and step hygiene live in the reusable, so per-step advisories raised against the thin caller are false positives." },
+  { id = "idris2-believe-me-markers", reason = "6 believe_me markers in scaffold proof files are recorded tech debt (docs/tech-debt-2026-05-26.md, PRs #12/#18), pending the OQ-001 identity decision (coordination monorepo vs proof repo); they are tracked debt, not new security findings." },
+]
+# NOT accepted: instant-sync.yml dispatches with secrets.FARM_DISPATCH_TOKEN
+# without a secret-presence gate (verified 2026-06-12). That is a real
+# finding; proposed as an issue at the 2026-06-12 checkpoint.
+
+[prohibited-actions]
+auto-delete-branches = false
+auto-merge = false
+modify-workflows = false
+escalation = "open an issue, do not spam PR comments"

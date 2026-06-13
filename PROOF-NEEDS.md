@@ -1,5 +1,8 @@
+<!--
+SPDX-License-Identifier: MPL-2.0
+Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+-->
 # Proof Requirements — NEXTGEN_TYPING
-<!-- SPDX-License-Identifier: MPL-2.0 -->
 <!-- Template: rsr-template-repo/PROOF-NEEDS.md -->
 <!-- Authoritative master list: the canonical master list maintained in the hyperpolymath/standards repo -->
 
