@@ -18,7 +18,7 @@ jobs:
   build:
     name: Build Artifacts
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     permissions:
       contents: read
     steps:
@@ -154,6 +154,7 @@ jobs:
   provenance:
     name: SLSA Provenance
     needs: [build]
+    timeout-minutes: 20
     permissions:
       actions: read
       id-token: write
