@@ -148,7 +148,7 @@ Changes to this document require the same process as Significant Changes above.
 
 * link:MAINTAINERS.adoc[Maintainers]
 * link:CODE_OF_CONDUCT.md[Code of Conduct]
-* link:CONTRIBUTING.adoc[Contributing Guide]
+* link:CONTRIBUTING.md[Contributing Guide]
 * link:https://github.com/hyperpolymath/standards/blob/main/LICENCE-POLICY.adoc[Estate License Policy]
 * link:https://github.com/hyperpolymath/standards[rhodium-standard-repositories (TPCF)]
 
