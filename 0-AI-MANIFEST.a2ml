@@ -17,7 +17,9 @@ Pipeline:  katagoria → typell → typed-wasm → PanLL
    See typed-wasm ADR-004.
 3. **No compiler claims here** — correctness/proof/benchmark claims are made
    in constituent repos, never in this coordination layer.
-4. **katagoria does not exist yet** — do not assume files exist there.
+4. **katagoria is the research-origination upstream** — created 2026-04-11 and
+   active in the pipeline (see ECOSYSTEM.a2ml / META.a2ml / ROADMAP.adoc). This
+   coordination repo documents it but does not own it.
 
 ## Canonical Locations
 
