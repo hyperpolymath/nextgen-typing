@@ -5,4 +5,9 @@
   (name "nextgen-typing")
   (type "library")
   (purpose "Coordination monorepo for the hyperpolymath type-theory pipeline (katagoria -> typell -> typed-wasm -> PanLL); hosts cross-project verification and the echo-types typesystem integration.")
-  (related-projects))
+  (related-projects
+    (project
+      (name "echo-types")
+      (url "https://github.com/hyperpolymath/echo-types")
+      (relation "dependency")
+      (detail "verification/proofs/agda/EchoTyping.agda imports echo-types (Echo, EchoLinear) under --safe: AffineScript linear->affine subtyping IS echo weaken (no-section, distinction-forgetting); refinement erasure IS a fiber. Ledger: echo-types docs/bridges/cross-repo-bridge-status.md."))))
