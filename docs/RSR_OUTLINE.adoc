@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 = RSR Template Repository
 
 image:[Palimpsest-MPL-1.0,link="https://github.com/hyperpolymath/palimpsest-license"] image:[Palimpsest,link="https://github.com/hyperpolymath/palimpsest-license"]
@@ -101,7 +103,7 @@ just validate-rsr
 |`AI.a2ml`
 |Claude-specific instructions
 
-|`src/abi/`
+|`src/interface/Abi/`
 |Idris2 ABI definitions (Types, Layout, Foreign)
 
 |`ffi/zig/`
@@ -177,7 +179,7 @@ project/
 │   ├── TOPOLOGY-GUIDE.adoc
 │   ├── generated/
 │   └── man/
-├── src/abi/                   # Idris2 ABI definitions
+├── src/interface/Abi/         # Idris2 ABI definitions
 │   ├── Types.idr
 │   ├── Layout.idr
 │   └── Foreign.idr
@@ -215,7 +217,7 @@ project/
 * `Justfile`
 * `README.adoc`
 * `LICENSE` (MPL-2.0)
-* `.machine_readable/STATE.a2ml`
+* `.machine_readable/6a2/STATE.a2ml`
 * `.well-known/security.txt`
 * `.well-known/ai.txt`
 * `.well-known/humans.txt`

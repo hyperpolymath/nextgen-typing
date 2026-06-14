@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 = ABI/FFI Standards
 {{~ Aditionally delete this line and fill out the template below ~}}
 
@@ -17,7 +19,7 @@ This library follows the **Hyperpolymath RSR Standard** for ABI and FFI design:
 ```
 ┌─────────────────────────────────────────────┐
 │  ABI Definitions (Idris2)                   │
-│  src/abi/                                   │
+│  src/interface/Abi/                         │
 │  - Types.idr      (Type definitions)        │
 │  - Layout.idr     (Memory layout proofs)    │
 │  - Foreign.idr    (FFI declarations)        │
@@ -53,10 +55,11 @@ This library follows the **Hyperpolymath RSR Standard** for ABI and FFI design:
 ```
 nextgen_typing/
 ├── src/
-│   ├── abi/                    # ABI definitions (Idris2)
-│   │   ├── Types.idr           # Core type definitions with proofs
-│   │   ├── Layout.idr          # Memory layout verification
-│   │   └── Foreign.idr         # FFI function declarations
+│   └── interface/
+│       └── Abi/                # ABI definitions (Idris2)
+│           ├── Types.idr       # Core type definitions with proofs
+│           ├── Layout.idr      # Memory layout verification
+│           └── Foreign.idr     # FFI function declarations
 │   └── lib/                    # Core library (any language)
 │
 ├── ffi/
@@ -199,8 +202,8 @@ zig build test                    # Run tests
 ### Generate C Header from Idris2 ABI
 
 ```bash
-cd src/abi
-idris2 --cg c-header Types.idr -o ../../generated/abi/nextgen_typing.h
+cd src/interface/Abi
+idris2 --cg c-header Types.idr -o ../../../generated/abi/nextgen_typing.h
 ```
 
 ### Cross-Compile
@@ -349,14 +352,14 @@ main = do
 
 When modifying the ABI/FFI:
 
-1. **Update ABI first** (`src/abi/*.idr`)
+1. **Update ABI first** (`src/interface/Abi/*.idr`)
    - Modify type definitions
    - Update proofs
    - Ensure backward compatibility
 
 2. **Generate C header**
    ```bash
-   idris2 --cg c-header src/abi/Types.idr -o generated/abi/nextgen_typing.h
+   idris2 --cg c-header src/interface/Abi/Types.idr -o generated/abi/nextgen_typing.h
    ```
 
 3. **Update FFI implementation** (`ffi/zig/src/main.zig`)

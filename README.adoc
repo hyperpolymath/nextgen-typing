@@ -1,5 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 = nextgen-typing — The Hyperpolymath Type Theory Pipeline
+image:https://img.shields.io/badge/OpenSSF-Best_Practices-green?logo=openssourcesecurity[OpenSSF Best Practices,link="https://www.bestpractices.dev/en/projects/new?repo_url=https://github.com/hyperpolymath/nextgen-typing"]
+
 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 :toc:
 :icons: font
@@ -49,6 +52,12 @@ katagoria  →  typell  →  typed-wasm  →  PanLL
   Binary Star: human (Panel-L) + machine (Panel-N) + world (Panel-W).
 |===
 
+TypeFix Zero / TF0 sits beside this chain as a calibration calculus rather than a production stage. It is upstream of design judgement, not downstream infrastructure:
+
+TypeFix Zero → Kategoria/Katagoria design tests → TypeLL partiality/totality boundary checks
+
+It should not be placed between Kategoria/Katagoria and TypeLL as a required dependency. It is a small reference object used to test claims about universes, ordinary types, fixed points, and Turing completeness.
+
 == Co-Products
 
 [cols="1,3"]
@@ -87,3 +96,24 @@ katagoria  →  typell  →  typed-wasm  →  PanLL
   QTT overestimates wall-clock time; tropical grades give the tighter bound.
 
 See `docs/ARCHITECTURE.adoc`, `docs/PIPELINE.adoc`, and `ROADMAP.adoc` for full detail.
+
+== Calibration Calculi.
+
+TypeFix Zero is a proposed standalone calibration calculus for the type-theory pipeline.
+
+It is not a production language and not a replacement for TypeLL. Its role is to mark the lower bound of the estate’s “typed but Turing-complete” design space:
+
+stratified universes / metasets: Type i : Type (i + 1)
+ordinary function types: A -> B
+natural numbers as the minimal observable data type
+lambda abstraction and application
+one explicit fixed-point primitive: fix : (A -> A) -> A
+
+The key distinction is that TF0 separates:
+
+a total mathematical fragment suitable for proof-like reasoning
+an explicitly partial fragment introduced only through fix
+
+This makes TF0 useful as a test object for TypeLL, Kategoria/Katagoria, and typed-Wasm discussions: it exposes exactly where Turing completeness enters and exactly where proof-theoretic totality stops.
+
+Status: proposed standalone repository; design-stage.

@@ -18,6 +18,7 @@ jobs:
   build:
     name: Build Artifacts
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: read
     steps:
@@ -70,7 +71,7 @@ jobs:
           fi
 
       # TODO: Upload build artifacts if needed
-      # - uses: actions/upload-artifact@v4
+      # - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
       #   with:
       #     name: release-artifacts
       #     path: target/release/
@@ -78,6 +79,7 @@ jobs:
   changelog:
     name: Generate Changelog
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
     outputs:
@@ -124,13 +126,14 @@ jobs:
     name: Create GitHub Release
     needs: [build, changelog]
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       # TODO: Download build artifacts if uploading to the release
-      # - uses: actions/download-artifact@v4
+      # - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
       #   with:
       #     name: release-artifacts
       #     path: artifacts/
@@ -151,6 +154,7 @@ jobs:
   provenance:
     name: SLSA Provenance
     needs: [build]
+    timeout-minutes: 20
     permissions:
       actions: read
       id-token: write

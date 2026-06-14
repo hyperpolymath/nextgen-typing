@@ -1,8 +1,0 @@
-;; SPDX-License-Identifier: MPL-2.0
-;; Ecosystem position and relationships
-(ecosystem
-  (version "1.0.0")
-  (name "nextgen-typing")
-  (type "library")
-  (purpose "{{REPO_DESCRIPTION}}")
-  (related-projects))

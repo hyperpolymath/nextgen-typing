@@ -1,0 +1,61 @@
+// SPDX-License-Identifier: MPL-2.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= Bot Directives
+:toc: preamble
+
+Per-repo directives for automated agents, read at session start by any
+AI agent (Claude, Gemini, Copilot, etc.) and by the automation fleet.
+
+*Precedence:* maintainer > these directives > bot defaults.
+
+*Scope:* applies to the hypatia scanner, the gitbot fleet, and
+`.git-private-farm` propagation, plus the methodology layer for
+interactive agents.
+
+== Files
+
+[cols="1,3"]
+|===
+| File | Purpose
+
+| `hypatia.a2ml`
+| Hypatia security-scanner directives — accepted findings (known
+  false-positives with reasons), prohibited actions, escalation path
+
+| `gitbot-fleet.a2ml`
+| Gitbot fleet roster (rhodibot, echidnabot, sustainabot, glambot,
+  seambot, finishbot), branch policy, never-touch paths, per-bot rules
+
+| `git-private-farm.a2ml`
+| Propagation directives for `hyperpolymath/.git-private-farm`
+  (instant-sync workflow, secret NAME, rotation procedure)
+
+| `methodology.a2ml`
+| Default mode, invariants, ring ceiling, priority weights, convergent budget
+
+| `coverage.a2ml`
+| Session coverage tracking — what was visited, what was skipped, what has MUSTs
+
+| `debt.a2ml`
+| Meander debt — things found but not fixed, carried between sessions
+|===
+
+== How Agents Use These
+
+1. Read `methodology.a2ml` at session start — know mode, invariants, ceiling
+2. Read `coverage.a2ml` — know what was visited last time, what was skipped
+3. Read `debt.a2ml` — know what's outstanding from previous sessions
+4. Consult `hypatia.a2ml` / `gitbot-fleet.a2ml` / `git-private-farm.a2ml`
+   before scanner triage, fleet operations, or propagation changes
+5. At session end, update `coverage.a2ml` and `debt.a2ml`
+
+== Relationship to Other Files
+
+* `../6a2/AGENTIC.a2ml` says WHAT agents can do (permissions, gating)
+* `bot_directives/` says HOW agents should work (methodology) and what
+  the automation fleet may do (fleet-specific)
+* `CLAUDE.md` (where present) says how Claude specifically should work
+
+== Reference
+
+ADR-002 in `standards/agentic-a2ml/docs/ADR-002-methodology-layer.adoc`

@@ -22,6 +22,7 @@ jobs:
   a2ml-validate:
     name: Validate A2ML manifests
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout repository
@@ -66,6 +67,7 @@ jobs:
   k9-validate:
     name: Validate K9 contracts
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout repository
@@ -115,6 +117,7 @@ jobs:
   empty-lint:
     name: Empty-linter (invisible characters)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout repository
@@ -179,6 +182,7 @@ jobs:
   groove-check:
     name: Groove manifest check
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout repository
@@ -237,6 +241,7 @@ jobs:
   eclexiaiser-validate:
     name: Validate eclexiaiser manifest
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout repository
@@ -258,26 +263,26 @@ jobs:
 
           # Validate TOML structure using Python 3.11+ tomllib
           python3 -c "
-import tomllib, sys
-with open('eclexiaiser.toml', 'rb') as f:
-    data = tomllib.load(f)
-project = data.get('project', {})
-if not project.get('name', '').strip():
-    print('ERROR: project.name is required', file=sys.stderr)
-    sys.exit(1)
-functions = data.get('functions', [])
-if not functions:
-    print('ERROR: at least one [[functions]] entry is required', file=sys.stderr)
-    sys.exit(1)
-for fn in functions:
-    if not fn.get('name', '').strip():
-        print('ERROR: function name cannot be empty', file=sys.stderr)
-        sys.exit(1)
-    if not fn.get('source', '').strip():
-        print(f'ERROR: function {fn[\"name\"]} has no source path', file=sys.stderr)
-        sys.exit(1)
-print(f'Valid: {project[\"name\"]} ({len(functions)} function(s))')
-" || {
+          import tomllib, sys
+          with open('eclexiaiser.toml', 'rb') as f:
+              data = tomllib.load(f)
+          project = data.get('project', {})
+          if not project.get('name', '').strip():
+              print('ERROR: project.name is required', file=sys.stderr)
+              sys.exit(1)
+          functions = data.get('functions', [])
+          if not functions:
+              print('ERROR: at least one [[functions]] entry is required', file=sys.stderr)
+              sys.exit(1)
+          for fn in functions:
+              if not fn.get('name', '').strip():
+                  print('ERROR: function name cannot be empty', file=sys.stderr)
+                  sys.exit(1)
+              if not fn.get('source', '').strip():
+                  print(f'ERROR: function {fn[\"name\"]} has no source path', file=sys.stderr)
+                  sys.exit(1)
+          print(f'Valid: {project[\"name\"]} ({len(functions)} function(s))')
+          " || {
             echo "::error file=eclexiaiser.toml::Invalid eclexiaiser.toml — see step output for details"
             exit 1
           }
@@ -300,6 +305,7 @@ print(f'Valid: {project[\"name\"]} ({len(functions)} function(s))')
   dogfood-summary:
     name: Dogfooding compliance summary
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     needs: [a2ml-validate, k9-validate, empty-lint, groove-check, eclexiaiser-validate]
     if: always()
 
