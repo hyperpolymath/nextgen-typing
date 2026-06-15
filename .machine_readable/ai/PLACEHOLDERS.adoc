@@ -21,7 +21,7 @@ validates the result, and runs k9-svc checks if available.
 # If you prefer manual replacement (run from repo root)
 
 sed -i 's/Jonathan D.A. Jewell/Jane Doe/g' $(grep -rl 'Jonathan D.A. Jewell' .)
-sed -i 's/6759885+hyperpolymath@users.noreply.github.com/jane@example.org/g' $(grep -rl '6759885+hyperpolymath@users.noreply.github.com' .)
+sed -i 's/j.d.a.jewell@open.ac.uk/jane@example.org/g' $(grep -rl 'j.d.a.jewell@open.ac.uk' .)
 sed -i 's/hyperpolymath/my-org/g' $(grep -rl 'hyperpolymath' .)
 sed -i 's/nextgen-typing/my-project/g' $(grep -rl 'nextgen-typing' .)
 sed -i 's/NEXTGEN_TYPING/MY_PROJECT/g' $(grep -rl 'NEXTGEN_TYPING' .)
@@ -39,7 +39,7 @@ sed -i "s/2026-04-11/$(date +%Y-%m-%d)/g" $(grep -rl '2026-04-11' .)
 | Placeholder | Description | Example | Files |
 |---|---|---|---|
 | `Jonathan D.A. Jewell` | Full legal name | `Jane Doe` | SPDX headers (all files), MAINTAINERS.md, .mailmap, .reuse/dep5, docs/AI-CONVENTIONS.md |
-| `6759885+hyperpolymath@users.noreply.github.com` | Primary contact email | `jane@example.org` | SPDX headers (all files), .mailmap, .reuse/dep5, .well-known/humans.txt |
+| `j.d.a.jewell@open.ac.uk` | Primary contact email | `jane@example.org` | SPDX headers (all files), .mailmap, .reuse/dep5, .well-known/humans.txt |
 | `{{AUTHOR_EMAIL_ALT}}` | Previous/secondary email (for .mailmap) | `old@example.com` | .mailmap |
 | `{{AUTHOR_ORG}}` | Author's organization/affiliation | `Acme University` | project-metadata.k9.ncl |
 | `{{AUTHOR_LAST}}` | Author surname (for citations) | `Doe` | docs/CITATIONS.adoc |

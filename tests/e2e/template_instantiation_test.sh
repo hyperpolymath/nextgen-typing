@@ -127,7 +127,7 @@ find "$TEST_REPO_PATH" -type f \
             "{{REPO_DESCRIPTION}}|$TEST_DESCRIPTION"
             "{{PRIMARY_LANGUAGE}}|$TEST_PRIMARY_LANGUAGE"
             "Jonathan D.A. Jewell|$TEST_AUTHOR"
-            "6759885+hyperpolymath@users.noreply.github.com|$TEST_AUTHOR_EMAIL"
+            "j.d.a.jewell@open.ac.uk|$TEST_AUTHOR_EMAIL"
             "2026-04-11|2026-04-04"
         )
 

@@ -2,7 +2,7 @@
 // Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 = AI Conventions
 <!-- SPDX-License-Identifier: MPL-2.0 -->
-<!-- Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <6759885+hyperpolymath@users.noreply.github.com> -->
+<!-- Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk> -->
 
 # AI Conventions (Authoritative Source)
 
@@ -30,8 +30,8 @@ Per-tool config files (.cursorrules, .clinerules, etc.) reference this document.
 ## Author Attribution
 
 - Name: **Jonathan D.A. Jewell**
-- Email: **6759885+hyperpolymath@users.noreply.github.com**
-- Copyright: `Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <6759885+hyperpolymath@users.noreply.github.com>`
+- Email: **j.d.a.jewell@open.ac.uk**
+- Copyright: `Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>`
 
 ## State Files
 
