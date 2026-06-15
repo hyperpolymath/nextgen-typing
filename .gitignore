@@ -112,3 +112,8 @@ deps/
 .cache/
 build/
 dist/
+
+# Idris2 compiled artifacts (verification/proofs/idris2) + Zig build output
+*.ttc
+*.ttm
+zig-out/
