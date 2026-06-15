@@ -16,7 +16,9 @@ Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 
 `nextgen-typing` is the coordination monorepo for the hyperpolymath type
 theory research and production pipeline.  It does not contain compiler
-code.  It documents relationships between type-theoretic repos, tracks
+or application code; it documents and coordinates the pipeline, and hosts
+the cross-project formal-verification proofs in `verification/proofs/`.
+It documents relationships between type-theoretic repos, tracks
 the pipeline roadmap, and hosts research artefacts that span multiple projects.
 
 == The Main Chain

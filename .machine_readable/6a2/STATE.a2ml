@@ -6,7 +6,7 @@
 [metadata]
 project = "nextgen-typing"
 version = "0.1.0"
-last-updated = "2026-06-12"
+last-updated = "2026-06-15"
 status = "active"
 
 [project-context]
@@ -18,15 +18,16 @@ Hosts cross-repo architecture docs, pipeline roadmap, and research artefacts tha
 Does NOT contain compiler code.
 """
 # Reconciled 2026-06-05 (PR #31): the earlier completion=100 was inconsistent with
-# reality. PROOF-STATUS.md records 0 of 7 mandated proofs done (0% proven), and the
-# repo still carries an un-rescoped RSR code scaffold (src/interface/,
-# verification/proofs/). Maturity reflects scaffold/early state, not a finished
-# coordination layer. Recalibration retained at the 2026-06-12 checkpoint: work
-# landed since #31 is CI/governance/docs only — it does not move the scaffold needle.
+# reality. PROOF-STATUS.md records 0 of 7 mandated proofs done (0% proven).
+# OQ-001 RESOLVED 2026-06-15 (option A): the repo is a docs-only coordination
+# monorepo + cross-project verification host. The redundant src/ RSR ABI/FFI
+# scaffold was removed (it was a strict subset of the canonical proofs in
+# verification/proofs/); "no compiler code" is affirmed. Completion still reflects
+# early state: the verification proofs in verification/proofs/ are not yet built in CI.
 completion-percentage = 10
 
 [position]
-phase = "scaffold"
+phase = "coordination + verification-host"
 maturity = "scaffold"
 
 [route-to-mvp]
@@ -55,7 +56,7 @@ summary = [
 
 [blockers-and-issues]
 issues = [
-  { id = "OQ-001", kind = "open-question", status = "open", raised = "2026-06-05", title = "Identity contradiction — coordination monorepo vs RSR proof scaffold", detail = "Narrative/STATE describe a docs-only coordination monorepo (\"does NOT contain compiler code\"), but src/interface/ + verification/proofs/ carry an un-rescoped RSR code scaffold; reconcile (docs-only ⇒ Tier T5/Exempt, drop scaffold) vs (real proof repo ⇒ re-scope). NOT decided here." },
+  { id = "OQ-001", kind = "open-question", status = "resolved", raised = "2026-06-05", resolved = "2026-06-15", title = "Identity contradiction — coordination monorepo vs RSR proof scaffold", detail = "Narrative/STATE describe a docs-only coordination monorepo (\"does NOT contain compiler code\"), but src/interface/ + verification/proofs/ carry an un-rescoped RSR code scaffold; reconcile (docs-only ⇒ Tier T5/Exempt, drop scaffold) vs (real proof repo ⇒ re-scope). NOT decided here.", resolution = "Resolved 2026-06-15 (A): docs-only coordinator + cross-project verification host; the redundant src/ RSR ABI/FFI scaffold was removed (canonical proofs live in verification/proofs/); 'no compiler code' affirmed." },
   { id = "OQ-002", kind = "template-residue", status = "open", raised = "2026-06-12", title = "Unreplaced template placeholders across community-health files", detail = "Template tokens (OWNER, REPO, AUTHOR, SECURITY_EMAIL, CONDUCT_*) remain unfilled in .github/ community files, self-validating/ k9 templates, and QUICKSTART-MAINTAINER.adoc; .machine_readable/ai/PLACEHOLDERS.adoc is the index. Needs a maintainer fill-in pass (just init or manual)." },
 ]
 
