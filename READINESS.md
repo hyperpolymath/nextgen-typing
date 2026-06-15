@@ -1,11 +1,14 @@
-<!-- SPDX-License-Identifier: MPL-2.0 -->
+<!--
+SPDX-License-Identifier: MPL-2.0
+Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+-->
 <!-- Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk> -->
 
 # nextgen-typing Component Readiness Assessment
 
 **Standard:** [Component Readiness Grades (CRG) v2.2](https://github.com/hyperpolymath/standards/tree/main/component-readiness-grades)
 **Current Grade:** C
-**Assessed:** {{DATE}}
+**Assessed:** 2026-06-05
 **Assessor:** Jonathan D.A. Jewell
 
 ---

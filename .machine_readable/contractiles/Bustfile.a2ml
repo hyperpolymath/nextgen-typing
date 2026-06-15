@@ -1,0 +1,95 @@
+# SPDX-License-Identifier: MPL-2.0
+# Bustfile — Breakage / rollback contract for nextgen-typing
+# Author: Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+#
+# Every declared failure mode must have a recovery path.
+# Run with: bust check (list failure modes + recovery status)
+#           bust drill (inject declared failures, verify recovery)
+#
+# Provenance: content ported from the former nested
+# contractiles/bust/Bustfile.a2ml + bust.ncl runner semantics (removed by
+# the estate-standardization merge, 2026-06-12). The old Bustfile was
+# written when this repo coordinated child repos via submodule pointers;
+# the repo holds no submodules today, so those scenarios are kept below
+# with an explicit not-applicable status rather than silently dropped.
+
+@abstract:
+Rollback and failure-recovery contract for nextgen-typing. Declares the
+failure modes this repo can hit, the recovery path for each, the
+escalation ladder, and the durable backup points. A failure mode without
+a working recovery path is a gate failure under the bust verb.
+@end
+
+## Failure Modes (active)
+
+### bad-merge-or-bump
+- description: A bad commit (merge, doc bump, metadata change) lands on main
+- class: rollback
+- recovery: git revert <commit> — reversible, low blast radius; never rewrite published history
+- expected-recovery-time-seconds: 300
+- status: declared
+
+### ci-workflow-breakage
+- description: A workflow edit or upstream reusable change breaks CI (history: fake SHA pins #28, orphan reusable SHAs #30)
+- class: crash
+- recovery: repin the reusable to a live merge-commit SHA from hyperpolymath/standards (pattern of PRs #17, #20, #30) or revert the workflow commit
+- expected-recovery-time-seconds: 1800
+- status: verified
+- notes: Exercised repeatedly in 2026-05/06 (PRs #17, #20, #28, #30)
+
+### secret-leaked
+- description: A credential (e.g. FARM_DISPATCH_TOKEN) is committed or exposed
+- class: panic
+- recovery: hard-rotate the leaked secret immediately (gh secret set FARM_DISPATCH_TOKEN); git-filter-repo or BFG on history; public re-publication only after rotation completes
+- expected-recovery-time-seconds: 3600
+- status: declared
+
+### metadata-corruption
+- description: A .a2ml file becomes unparseable or contradicts reality
+- class: partial_write
+- recovery: restore from git history (git checkout origin/main -- <file>); 6a2/ is canonical, root pointers are derivable
+- expected-recovery-time-seconds: 300
+- status: declared
+
+## Failure Modes (inherited from the submodule era)
+
+### bad-pointer-bump
+- description: Bad submodule pointer bump in meta-repo
+- class: rollback
+- recovery: git revert <bump-commit> in meta-repo; child repo itself untouched
+- status: not-applicable
+- reason: No .gitmodules / submodules in-tree today; retained verbatim from the pre-estate Bustfile in case the coordination role regrows submodule pointers
+
+### submodule-pointer-missing-sha
+- description: Submodule pointer points at missing SHA
+- class: partial_write
+- recovery: git submodule update --init --checkout <path> resets child to parent-recorded SHA; OR revert the stale bump commit
+- status: not-applicable
+- reason: No submodules in-tree today
+
+### submodule-orphan-commit
+- description: Submodule orphan after local-only commit
+- class: rollback
+- recovery: roll back locally with git reset to before the stranded commit; fix remote situation before re-attempting
+- status: not-applicable
+- reason: No submodules in-tree today
+
+### private-content-leaked-to-public-submodule
+- description: Accidental private-repo content leaked to public submodule
+- class: panic
+- recovery: hard-rotate the leaked secret immediately; git-filter-repo or BFG on the submodule's own history; public re-publication only after rotation complete
+- status: not-applicable
+- reason: No submodules in-tree today; the secret-rotation half lives on as the active secret-leaked mode above
+
+## Escalation Ladder
+
+1. revert the offending commit (reversible, low blast radius)
+2. reset the local clone / restore files from origin (affects only local workspace)
+3. force-push to main — PROHIBITED without explicit user confirmation (violates branch protection)
+4. registry-level (delete/archive the GitHub repo) — human-only action, never by AI
+
+## Backup Points
+
+- GitHub (origin/main) is the durable backup for repo history
+- The .git-private-farm mirror lane (instant-sync.yml) provides forge redundancy
+- Local backup tags (backup/pre-<operation>-<date>) retained on risky rewrites

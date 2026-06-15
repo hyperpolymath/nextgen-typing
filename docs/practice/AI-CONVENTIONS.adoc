@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 = AI Conventions
 <!-- SPDX-License-Identifier: MPL-2.0 -->
 <!-- Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <6759885+hyperpolymath@users.noreply.github.com> -->
@@ -10,7 +12,7 @@ Per-tool config files (.cursorrules, .clinerules, etc.) reference this document.
 ## Session Startup
 
 1. Read `0-AI-MANIFEST.a2ml` FIRST (mandatory gatekeeper).
-2. Read `.machine_readable/STATE.a2ml` for current status and blockers.
+2. Read `.machine_readable/6a2/STATE.a2ml` for current status and blockers.
 3. Read `.machine_readable/anchors/ANCHOR.a2ml` for canonical authority boundaries.
 4. Read `.machine_readable/policies/MAINTENANCE-AXES.a2ml` for maintenance/audit sequencing.
 5. Read `.machine_readable/policies/MAINTENANCE-CHECKLIST.a2ml` for baseline controls.
@@ -66,7 +68,7 @@ MAINTENANCE-CHECKLIST.a2ml, or SOFTWARE-DEVELOPMENT-APPROACH.a2ml in the reposit
 
 ## ABI/FFI Standard
 
-- ABI definitions: **Idris2** with dependent types (`src/abi/`).
+- ABI definitions: **Idris2** with dependent types (`src/interface/Abi/`).
 - FFI implementation: **Zig** with C ABI compatibility (`ffi/zig/`).
 - Generated C headers: `generated/abi/`.
 
@@ -78,7 +80,7 @@ Use `just` (Justfile) for all build, test, lint, and format tasks.
 
 - `0-AI-MANIFEST.a2ml` -- universal AI entry point
 - `.machine_readable/AGENTIC.a2ml` -- agent permissions and constraints
-- `.machine_readable/STATE.a2ml` -- current project state
+- `.machine_readable/6a2/STATE.a2ml` -- current project state
 - `.machine_readable/anchors/ANCHOR.a2ml` -- canonical authority and policy boundary
 - `.machine_readable/policies/MAINTENANCE-AXES.a2ml` -- canonical axis sequencing and audit requirements
 - `.machine_readable/policies/MAINTENANCE-CHECKLIST.a2ml` -- baseline maintenance checklist policy

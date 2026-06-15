@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 = Component Readiness Grades (CRG) Criteria
 :toc: preamble
 :icons: font
@@ -36,4 +38,4 @@ This document defines the quality assessment criteria for individual project com
 6. Has it been tested on 6+ diverse external targets? (Broad → **B**)
 7. Do external users confirm it works and is useful? (Field-proven → **A**)
 
-See link:READINESS.adoc[READINESS.adoc] for the current project assessment.
+See link:../../READINESS.md[READINESS.md] for the current project assessment.

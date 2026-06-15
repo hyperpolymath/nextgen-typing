@@ -1,0 +1,76 @@
+# SPDX-License-Identifier: MPL-2.0
+# Dustfile — Cleanup and hygiene contract for nextgen-typing
+# Author: Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+#
+# What should be cleaned up or removed from this repository.
+# These are housekeeping items, not blockers.
+# Run with: dust check
+#
+# Provenance: content ported from the former nested
+# contractiles/dust/Dustfile.a2ml (removed by the estate-standardization
+# merge, 2026-06-12), with repo-true additions for the post-merge layout.
+
+@abstract:
+Housekeeping contract for nextgen-typing. Tracks stale files, retired
+formats, build artifacts, and format duplicates. Advisory severity —
+dust items accumulate as warnings, they do not gate.
+@end
+
+## Stale Files
+
+### no-stale-snapshots
+- description: No dated status/completion files in root
+- run: "! ls *-STATUS-*.md *-COMPLETION-*.md *-COMPLETE.md *-VERIFIED-*.md 2>/dev/null | head -1 | grep -q ."
+- severity: info
+
+### no-ai-djot
+- description: AI.djot is superseded by 0-AI-MANIFEST.a2ml
+- run: test ! -f AI.djot
+- severity: warning
+
+### no-next-steps
+- description: NEXT_STEPS.md superseded by ROADMAP
+- run: test ! -f NEXT_STEPS.md
+- severity: info
+
+### no-root-scm-state
+- description: Root S-expr state files retired — 6a2 A2ML is canonical; root STATE.a2ml is a pointer only (2026-06-12)
+- run: "! grep -l '^(state' .machine_readable/*.a2ml 2>/dev/null | head -1 | grep -q ."
+- severity: warning
+- notes: Root META.a2ml / ECOSYSTEM.a2ml still carry S-expr bodies duplicating 6a2/; proposed for the same pointer-ization (see 2026-06-12 checkpoint report)
+
+## Build Artifacts
+
+### no-tracked-artifacts
+- description: No build artifacts tracked in git
+- run: "! git ls-files target/release/ _build/ zig-out/ zig-cache/ 2>/dev/null | head -1 | grep -q ."
+- severity: warning
+
+## Format Duplicates
+
+### no-duplicate-contributing
+- description: Only one CONTRIBUTING format (keep .md)
+- run: "! (test -f CONTRIBUTING.md && test -f CONTRIBUTING.adoc)"
+- severity: warning
+
+### no-duplicate-readme
+- description: Only one README format
+- run: "! (test -f README.md && test -f README.adoc && [ $(wc -l < README.md) -gt 5 ])"
+- severity: warning
+
+## Retired Layouts (post estate-standardization)
+
+### no-nested-contractile-dirs
+- description: Nested contractiles/{must,trust,dust,bust}/ retired in favour of flat files (2026-06-12)
+- run: test ! -d .machine_readable/contractiles/must && test ! -d .machine_readable/contractiles/trust && test ! -d .machine_readable/contractiles/dust && test ! -d .machine_readable/contractiles/bust
+- severity: warning
+
+### no-agent-instructions-dir
+- description: agent_instructions/ renamed to bot_directives/ (2026-06-12)
+- run: test ! -d .machine_readable/agent_instructions
+- severity: warning
+
+### no-svc-dir
+- description: svc/k9/ renamed to self-validating/ (2026-06-12)
+- run: test ! -d .machine_readable/svc
+- severity: warning

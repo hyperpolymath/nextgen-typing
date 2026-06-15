@@ -1,0 +1,49 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+#
+# gitbot-fleet.a2ml — directives for the gitbot fleet operating on this repo.
+
+[metadata]
+repo = "hyperpolymath/nextgen-typing"
+last-updated = "2026-06-12"
+owner = "hyperpolymath"
+
+[fleet]
+bots = ["rhodibot", "echidnabot", "sustainabot", "glambot", "seambot", "finishbot"]
+
+[fleet.roles]
+rhodibot = "git operations"
+echidnabot = "code quality"
+sustainabot = "dependency updates"
+glambot = "documentation"
+seambot = "integration"
+finishbot = "task completion"
+
+[branch-policy]
+working-branch-pattern = "<bot-name>/<topic-slug>"
+draft-PRs-only = true
+ci-green-before-merge = true
+# Adapted for nextgen-typing: no .claude/CLAUDE.md exists here (listed
+# defensively), proofs live under verification/proofs/, and the ABI scaffold
+# under src/interface/ is frozen pending the OQ-001 identity decision
+# (see 6a2/STATE.a2ml). The anchor is maintainer-only.
+never-touch = [
+  ".claude/CLAUDE.md",
+  "verification/proofs/",
+  "src/interface/",
+  ".machine_readable/6a2/anchor/ANCHOR.a2ml",
+  "LICENSE",
+]
+
+[per-bot]
+# Defaults apply fleet-wide. Repo-specific notes:
+
+[per-bot.finishbot]
+# finishbot validates AI-install docs; PLACEHOLDERS.adoc documents the
+# just validate-ai-install check for [TODO-AI-INSTALL] markers.
+allow = ["just validate-ai-install"]
+
+[per-bot.sustainabot]
+# Dependency updates ride Dependabot + the auto-merge lane restored in
+# commit b5a0b05; reusable-workflow SHA repins follow the standards repo.
+deny = ["major-version-bumps-without-issue"]

@@ -1,0 +1,51 @@
+// SPDX-License-Identifier: MPL-2.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= Project Status
+:toc: preamble
+:icons: font
+
+Dated status entries for nextgen-typing. Newest first. Canonical
+machine-readable state lives in `.machine_readable/6a2/STATE.a2ml`.
+
+== 2026-06-12 — Estate standardization + governance checkpoint
+
+* Merged `estate-standardization-20260607`: `GOVERNANCE.adoc`,
+  `MAINTAINERS.adoc`, `.github/CODEOWNERS` at root; `anchors/` →
+  `6a2/anchor/`; `agent_instructions/` → `bot_directives/`; `svc/k9/` →
+  `self-validating/`; nested + root contractiles replaced by flat
+  `.machine_readable/contractiles/*.a2ml`; `flake.nix` removed (Guix is
+  the primary package manager). Workflow files kept at main's
+  reusable-wrapper versions.
+* CodeQL cron reduced weekly → monthly.
+* Governance checkpoint layer: root `STATE.a2ml` pointer-ized to the
+  canonical `6a2/STATE.a2ml`; 6a2 STATE/META refreshed; bot_directives
+  trio added (`hypatia.a2ml`, `gitbot-fleet.a2ml`,
+  `git-private-farm.a2ml`); flat contractiles populated with repo-true
+  obligations (content ported from the old nested and root contractile
+  files).
+
+== 2026-06-09 — TypeFix Zero proposed
+
+* `README.adoc` gains the TypeFix Zero (TF0) calibration-calculus
+  section: a proposed standalone calibration calculus sitting beside the
+  main chain (upstream of design judgement, not a pipeline stage).
+  Status: proposed standalone repository; design-stage.
+
+== 2026-06-06 — 6a2 STATE reconciliation (PR #31)
+
+* Completion/identity reconciled: the repo is a scaffold-stage
+  coordination monorepo (completion 10%), not a finished template.
+  Open question OQ-001 records the identity contradiction between the
+  docs-only narrative and the leftover RSR proof scaffold.
+
+== 2026-05 — CI reusable-wrapper wave + licence migration
+
+* hypatia-scan, mirror, rust-ci, scorecard, and secret-scanner converted
+  to thin wrappers of `hyperpolymath/standards` reusables (PRs #10–#25);
+  reusable SHAs repinned to live merge commits (PRs #17, #20, #30); fake
+  action-SHA pins swept from e2e template stubs (PR #28).
+* Licence migrated from PMPL-1.0-or-later to MPL-2.0 repo-wide
+  (2026-05-22, commit 7a84a1d).
+* Estate-wide tech-debt audit findings recorded in
+  `docs/tech-debt-2026-05-26.md` (PRs #12, #18): combined severity LOW;
+  6 Idris2 `believe_me` markers in scaffold proof files pending OQ-001.

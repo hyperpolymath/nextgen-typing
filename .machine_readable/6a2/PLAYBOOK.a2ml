@@ -6,14 +6,14 @@
 
 [metadata]
 version = "0.1.0"
-last-updated = "2026-04-11"
+last-updated = "2026-06-12"
 
 [deployment]
 # method = "gitops"  # gitops | manual | ci-triggered
 # target = "container"  # container | binary | library | wasm
 
 [incident-response]
-# 1. Check .machine_readable/STATE.a2ml for current status
+# 1. Check .machine_readable/6a2/STATE.a2ml for current status
 # 2. Review recent commits and CI results
 # 3. Run `just validate` to check compliance
 # 4. Run `just security` to audit for vulnerabilities

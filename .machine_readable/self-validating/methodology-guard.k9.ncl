@@ -1,9 +1,10 @@
+K9!
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (c) {{CURRENT_YEAR}} {{AUTHOR}} ({{OWNER}}) <{{AUTHOR_EMAIL}}>
 #
 # K9 Validator: Methodology Guard
 # Checks that agent work respects methodology constraints declared in
-# agent_instructions/methodology.a2ml.
+# bot_directives/methodology.a2ml.
 #
 # Usage: k9 validate methodology-guard
 
@@ -11,6 +12,23 @@ let methodology_guard = {
   name = "methodology-guard",
   version = "1.0.0",
   description = "Validates that agent work respects declared methodology constraints",
+
+  # Required by K9 validators (hyperpolymath/k9-validate-action): the magic
+  # first line above and this pedigree. Data-only guard — no network/write/
+  # subprocess access. (Defect found via januskey's "Validate K9 contracts"
+  # gate when this template was adopted there.)
+  pedigree = {
+    name = "methodology-guard",
+    schema_version = "1.0.0",
+    component_type = "methodology-validator",
+    security = {
+      leash = 'Kennel,
+      trust_level = "data-only",
+      allow_network = false,
+      allow_filesystem_write = false,
+      allow_subprocess = false,
+    },
+  },
 
   checks = {
     divergent_invariant_language = {
@@ -50,7 +68,7 @@ let methodology_guard = {
     coverage_updated = {
       description = "coverage.a2ml should be updated within 30 days",
       severity = "info",
-      file = ".machine_readable/agent_instructions/coverage.a2ml",
+      file = ".machine_readable/bot_directives/coverage.a2ml",
       staleness_days = 30,
     },
   },

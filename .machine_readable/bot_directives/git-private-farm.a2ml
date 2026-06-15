@@ -1,0 +1,29 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+#
+# git-private-farm.a2ml — propagation directives for .git-private-farm.
+
+[metadata]
+repo = "hyperpolymath/nextgen-typing"
+last-updated = "2026-06-12"
+owner = "hyperpolymath"
+
+[propagation]
+workflow = ".github/workflows/instant-sync.yml"
+enabled = true
+target = "hyperpolymath/.git-private-farm"
+event-type = "propagate"
+# Secret NAME only — value lives in GitHub Actions secrets.
+secret-name = "FARM_DISPATCH_TOKEN"
+# Verified 2026-06-12: the dispatch step has NO if-guard checking the secret
+# is present; a fork/secretless run would fail rather than skip. Proposed as
+# an issue at the 2026-06-12 checkpoint.
+presence-gated = false
+triggers = ["push to main/master", "release published"]
+
+[never-propagate]
+items = ["secrets", "unmerged branches", "work-in-progress"]
+
+[on-token-rotation]
+command = "gh secret set FARM_DISPATCH_TOKEN --repo hyperpolymath/nextgen-typing"
+note = "Name only; never store the token value in-repo."

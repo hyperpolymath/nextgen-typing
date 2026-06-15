@@ -1,4 +1,17 @@
+K9!
+# SPDX-License-Identifier: MPL-2.0
 # Thin coordination bindings for central session-management standards
+#
+# K9 pedigree (required by hyperpolymath/k9-validate-action): the magic
+# first line above plus this pedigree block. Data-only policy binding —
+# no network/write/subprocess access.
+pedigree = {
+  name = "session-coordination",
+  schema_version = "1.0.0",
+  component_type = "session-coordination",
+  leash = "Kennel",
+  security_level = "data-only",
+}
 
 session_management:
   source_of_truth: "standards/session-management-standards"

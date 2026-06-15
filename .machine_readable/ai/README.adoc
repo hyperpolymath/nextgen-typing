@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+// Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 = AI Guidance Directory
 
 Put AI-facing instructions in this folder.
@@ -18,5 +20,5 @@ Recommended machine read order:
 * `.machine_readable/policies/MAINTENANCE-AXES.a2ml`
 * `.machine_readable/policies/MAINTENANCE-CHECKLIST.a2ml`
 * `.machine_readable/policies/SOFTWARE-DEVELOPMENT-APPROACH.a2ml`
-* `.machine_readable/STATE.a2ml`
-* `.machine_readable/META.a2ml`
+* `.machine_readable/6a2/STATE.a2ml`
+* `.machine_readable/6a2/META.a2ml`
