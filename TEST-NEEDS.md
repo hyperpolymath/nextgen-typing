@@ -90,7 +90,7 @@ Build System:         PASS (zig build succeeds)
 
 - **Coverage**: 6/6 test categories (unit, integration, E2E, workflow, validation, benchmarks)
 - **Documentation**: All test files have SPDX headers + inline documentation
-- **Author Attribution**: Jonathan D.A. Jewell <6759885+hyperpolymath@users.noreply.github.com>
+- **Author Attribution**: Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 - **License**: MPL-2.0 on all new files
 - **Automation**: All scripts executable + working
 
