@@ -19,7 +19,11 @@ jobs:
   trigger-boj:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    if: ${{ vars.BOJ_SERVER_URL != '' || secrets.BOJ_SERVER_URL != '' }}
+    # No job-level enablement gate: the `secrets` context is not available in
+    # `if:` (referencing it invalidates the whole workflow), and gating on
+    # `vars` alone would silently drop a secret-only configuration. The
+    # "Trigger BoJ Server" step shell-guards on an empty BOJ_URL and exits 0,
+    # so an unconfigured repo is a fast no-op regardless of secret-or-var.
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
