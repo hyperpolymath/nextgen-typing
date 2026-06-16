@@ -1,0 +1,305 @@
+// SPDX-License-Identifier: MPL-2.0
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= AFFIRMATION — nextgen-typing, as of 2026-06-16
+:toc: macro
+:toclevels: 2
+
+_the No-Bullshit file: what we affirm was true and checkable at this moment_
+
+[NOTE]
+====
+*Genre.* An *affirmation* is a solemn declaration of the truth of a statement,
+made by someone who _declines to swear an oath_. That is exactly what this is:
+our truth-as-best-believed at a stamped instant — binding on our honesty, not a
+claim of infallibility. It is not the README and not the EXPLAINME:
+
+[cols="1,3,2",options="header"]
+|===
+| File | Answers | Tense
+| `README.adoc`      | _Where is this going, and why?_ — the pipeline overview and steering | future / aspirational
+| `EXPLAINME.adoc`   | _How is it built, and what's the evidence?_ — the coordination mechanism | descriptive / mechanism
+| *`AFFIRMATION.adoc`* (this file) | _What can we honestly affirm was *true and checkable* at a stamped moment?_ | a frozen instant, falsifiable
+|===
+
+`nextgen-typing` is a *coordination monorepo*, not a compiler or a proof
+project. The affirmation that matters here is about the coordination layer
+itself: that its registry and cross-file invariants build and are internally
+consistent, and that it holds *no* proofs of its own — by design.
+====
+
+toc::[]
+
+== What this is, and how it is designed to work
+
+*What it is.* A short, dated, jointly-signed snapshot of what we can _honestly
+and verifiably_ claim about this repo at one exact commit. Nothing here is
+marketing (that is the README) and nothing is engineering evidence for a
+constituent repo's compiler or proofs (those claims belong in those repos).
+This file is the receipt for the coordination layer.
+
+*How it is designed to work.* Three moving parts make it trustworthy:
+
+. *Ground truth, not memory.* Every claim below was produced by _running the
+  tool in the session that wrote this file_ (the pipeline-drift guard, the
+  must/trust gates, the template-residue check, and the proof-checker harness
+  this repo ships). Where a status doc said otherwise, the live run wins and we
+  flag the contradiction.
+. *A frozen anchor.* The file names the exact commit SHA, branch, UTC
+  timestamp, and toolchain (see <<Verifiable anchor>>), so "true" always means
+  "true _at this point_". Move the SHA and this file becomes a draft until
+  re-run.
+. *A real signature.* It is landed by a *signed git commit*; that signature
+  over this content at the anchored SHA is what makes the affirmation
+  tamper-evident and attributable — not the prose alone.
+
+*We are fallible.* We can be wrong, stale, or simply mistaken about our own
+work. This file is our best honest belief, not a proof of its own correctness.
+Treat it as a falsifiable claim, not gospel.
+
+== The epistemic contract (read this before you trust _or_ attack)
+
+This document records our *best joint belief* at the timestamp below. It is
+*not a guarantee of correctness.* We may be wrong. We may have missed
+something — a drifted doc, a stale registry line, a public description that
+overruns the tree.
+
+*No intentional overclaim.* That is the only guarantee here: we have not
+_knowingly_ inflated anything. This repo makes *no* compiler-correctness,
+proof-soundness, or benchmark claim, and this file does not invent one. Where a
+checker passed, we say "passed". Where one failed, we say "failed" and why.
+Where the in-tree proof files are unconfigured RSR template residue, we say so
+plainly. If you find an honest claim here that turns out false, that is an
+error to be fixed — not a lie.
+
+*Standing invitation to refute.* You are _invited_ to bulldoze any claim in
+this file. We want that. But the fair form of the attack is:
+
+. Read this file at the stamped commit.
+. Reproduce (or fail to reproduce) the checks in <<reproduce,Reproduce it yourself>>.
+. _Then_ tell us where the discrepancy is, against the artefact as it stood at
+  this moment — so we can either justify it or concede it on the record.
+
+An attack that skips steps 1–2 is attacking a strawman of a different date.
+
+*No fights before the facts are cleared up.* We are not interested in a dispute
+over a claim until the discrepancy has actually been checked against the
+artefact at this commit and we have had the chance to either justify it or
+concede it on the record. Good faith both ways: bring a reproducible
+discrepancy and we will fix the claim, the doc, or the registry — promptly and
+without defensiveness. The goal is a corrected record, not a won argument.
+
+== Verifiable anchor
+
+[cols="1,3"]
+|===
+| *Repo*        | `hyperpolymath/nextgen-typing` (the type-theory pipeline *coordination monorepo* — contains no compiler code)
+| *Branch*      | `main`
+| *Commit (HEAD)* | `e9897daf4ba1d2104f78abd5f660a870279eda5b`
+| *Permalink*   | https://github.com/hyperpolymath/nextgen-typing/tree/e9897daf4ba1d2104f78abd5f660a870279eda5b
+| *Verified (UTC)* | 2026-06-16T12:28:36Z
+| *Working-tree delta at verification* | Clean (`git status --porcelain` empty) at the moment the checks below were run. This AFFIRMATION file is then added as a new untracked file; it does not change any check result above it. The results recorded here are HEAD as-is.
+| *Toolchain*   | just 1.50.0 · bash 5.2.21 · git 2.43.0 · Idris2 0.8.0 · Lean 4.13.0 · Agda 2.8.0 · Coq 8.18.0 · TLA+ `tlc` not installed
+| *HEAD commit signature* | GPG-signed (RSA `9639451754496E51D6B537CAD119017EBF695AB1`, "hyperpolymath", `j.d.a.jewell@open.ac.uk`) — "Good signature" reported by `git log --show-signature`.
+|===
+
+[IMPORTANT]
+If you are reading this at a _later_ commit, the claims may have drifted.
+Re-run <<reproduce>> and write a fresh affirmation; do not trust a stale one.
+
+== Companion documents and repo metadata (cross-check)
+
+This affirmation should be read against the repo's own public claims. Where they
+drift from what we verified, we say so here rather than quietly leave the reader
+to find out.
+
+* *`README.adoc`* — _present_. link:README.adoc[_"nextgen-typing — The
+  Hyperpolymath Type Theory Pipeline"_]. States plainly: "It does not contain
+  compiler code." Verified consistent with the tree.
+* *`EXPLAINME.adoc`* — _present_. link:EXPLAINME.adoc[]. Explicitly: "This repo
+  makes *no claims* about compiler correctness, proof soundness, or benchmark
+  results." Verified consistent with what we ran.
+* *`0-AI-MANIFEST.a2ml`* — _present_. The repo's read-first invariant file;
+  invariant #3 is "No compiler claims here". This AFFIRMATION upholds that
+  invariant rather than breaching it.
+* *GitHub repo description* (fetched in-session via `gh repo view`) —
+  _"Coordination monorepo for the Hyperpolymath type-theory pipeline —
+  Kategoria/Katagoria, TypeLL, typed-Wasm, PanLL, and minimal calibration
+  calculi such as TypeFix Zero."_ *Drift:* the strings "Kategoria", "TypeFix
+  Zero", and "calibration calculi" do *not* appear anywhere in the tree at this
+  commit (the README's main chain spells it "katagoria", which it also flags as
+  *not yet created*). The description is ahead of the artefact; treat it as
+  steering, not a tree claim.
+* *GitHub topics* — `dependent-types`, `formal-methods`, `linear-types`,
+  `partiality`, `turing-completeness`, `type-theory`, `typed-wasm`,
+  `universe-hierarchy`. *Caveat:* these describe the _pipeline this repo
+  coordinates_, not artefacts in this repo. None of `partiality`,
+  `turing-completeness`, or `universe-hierarchy` corresponds to any
+  proved-here content — they are properties of the constituent repos
+  (typell / typed-wasm / tropical-resource-typing), not of this coordination
+  layer.
+
+== The honest state (one breath)
+
+*nextgen-typing is a documentation-and-registry coordination layer for the
+`katagoria → typell → typed-wasm → PanLL` pipeline. Its job is to keep the
+cross-repo story consistent, and at this commit that job is being done: the
+pipeline-drift guard and the must/trust correctness gates pass green. It holds
+no proofs of its own — the proof directory is unconfigured RSR-template residue
+that does not compile as shipped, and every real proof obligation lives in the
+constituent repos, exactly as the manifest says it should.*
+
+=== What is solid (and how we checked)
+
+* *The pipeline-drift registry guard passes — verified green this moment.*
+  `just validate-pipeline-drift` → `scripts/check-pipeline-drift.sh` exits *0*,
+  with *every* check PASS: all six canonical files present
+  (`README.adoc`, `docs/ARCHITECTURE.adoc`, `docs/PIPELINE.adoc`, and the three
+  `.machine_readable/6a2/` A2ML files); the canonical chain
+  `katagoria → typell → typed-wasm → PanLL` matches exactly across README,
+  ARCHITECTURE, PIPELINE, STATE and ECOSYSTEM; the "open-ended TypeLL" framing
+  is consistent across README/ARCHITECTURE/PIPELINE/META; katagoria marked
+  Active consistently; dates synchronized (all read `2026-04-12`); and no stale
+  status phrases. _This is the core "is the coordination internally consistent?"
+  check, and it is green._
+* *The "must" correctness gate passes.* `just must-check` exits *0*: LICENSE
+  present, README present, no banned `Dockerfile`/`Makefile`, and SPDX-header
+  presence on source files.
+* *Licence is MPL-2.0, internally consistent.* `just trust-license-content`
+  passes; the in-tree `LICENSE` is the Mozilla Public License Version 2.0 and
+  in-tree source/doc files carry `SPDX-License-Identifier: MPL-2.0`. (Note: the
+  `trust-verify` _aggregate_ recipe fails — see loud-failures — but that is a
+  Containerfile-pinning rule, not a licence problem.)
+* *No secrets committed.* `just trust-no-secrets-committed` passes (no `.env`,
+  `credentials.json`, or `.env.local`).
+* *The Coq template proof, taken alone, compiles.* `just proof-check-coq` exits
+  *0* (`coqc verification/proofs/coq/TypeSafety.v` → exit 0). *But read the
+  nuance below before reading anything into this:* it proves a toy
+  expression-language `type_soundness` theorem labelled "Template — replace with
+  your project's type system", _not_ any nextgen-typing claim.
+
+=== The honest nuance you must not lose (proved-CORE vs unproved-IMPLEMENTATION)
+
+*This repo proves nothing about the typing pipeline, and that is correct by
+design.* The distinction here is sharper than the usual "proved core vs tested
+implementation":
+
+* The `verification/proofs/` tree (`idris2/`, `lean4/`, `agda/`, `coq/`,
+  `tlaplus/`) is *unconfigured RSR template residue*. The files say so in their
+  own headers — e.g. `verification/proofs/idris2/Types.idr` line 5: "Template —
+  replace with your project's core types." They prove generic example lemmas
+  (a bounded-`Nat`, a toy expression language), not pipeline properties.
+* `PROOF-STATUS.md` reports *0% proven* (0 of 7 obligations) — and the live run
+  *confirms* this rather than contradicting it: there is no nextgen-typing proof
+  to run.
+* The genuine proof obligations for this pipeline live *in the constituent
+  repos* (`typell`, `typed-wasm`, `tropical-resource-typing`, `katagoria`), and
+  this coordination layer makes no claim to have discharged them. Anyone reading
+  the presence of `.idr`/`.lean`/`.agda`/`.v` files here as "nextgen-typing has
+  formal proofs" is overclaiming on the repo's behalf.
+
+=== Known-incomplete but honestly fenced (loud failures, never silent)
+
+These three checks *fail loudly* at this commit. They are real findings, fenced
+here so no reader mistakes them for green:
+
+* *`just proof-check-idris2` FAILS (exit 1).* The Idris2 template proofs do not
+  even compile as shipped: `Module name Types does not match file name
+  "verification/proofs/idris2/Types.idr"` (and the same module-vs-path mismatch
+  for every `ABI/*.idr`). So the Idris2 "proofs" prove *nothing* right now — a
+  loud, visible failure, not a silent pass. (`proof-check-all` therefore also
+  surfaces these failures.)
+* *`just proof-scan-dangerous` FAILS (exit 1) — but on false positives.* It
+  flags 8 files for "dangerous patterns", yet every hit is the _warning comment_
+  itself (e.g. the line "All proofs MUST be constructive (no believe_me, no
+  assert_total)" trips the `believe_me`/`assert_total` matcher). There is no
+  actual `believe_me`, `sorry`, `Admitted`, or `postulate` in proof position —
+  the scanner is matching its own documentation. A scanner bug, recorded as
+  such; not evidence of unsound proofs (there are no load-bearing proofs to be
+  unsound).
+* *`just verify-template` FAILS (exit 1).* Unreplaced `{{PLACEHOLDER}}` template
+  tokens remain in `QUICKSTART-MAINTAINER.adoc`, `QUICKSTART-DEV.adoc`,
+  `READINESS.md`, `TEST-NEEDS.md`, `TEMPLATE-STANDARDS-AUDIT.adoc`, and
+  `container/compose.toml`; the Justfile still references `rsr-template-repo`;
+  and the Groove manifest still has port `0`. This repo is a partly-uninstantiated
+  RSR template — honest, visible debt.
+* *`just trust-verify` FAILS (exit 1)* at `trust-container-images-pinned`: the
+  `Containerfile` base images are not digest-pinned (`@sha256:`). A supply-chain
+  hygiene gap, not a coordination-correctness problem.
+
+=== Outstanding / weak / refuted (no spin)
+
+* *Public GitHub description over-runs the tree (drift).* It advertises
+  "Kategoria/Katagoria … TypeFix Zero … minimal calibration calculi", none of
+  which exist in the repo at this commit. Not refuted-as-false-claim (it is
+  steering text), but flagged so the reader is not misled.
+* *`katagoria` is declared "✅ Active" in the README table* yet the manifest
+  (invariant #4) and EXPLAINME both say it "does not exist yet / not yet
+  created". Internal tension between the status glyph and the prose; the
+  honest reading is "planned, not created".
+* *No nextgen-typing-specific proof exists* — by design, but stated plainly so
+  no one infers otherwise from the populated `verification/proofs/` tree.
+* *TLA+ cannot be checked in this environment* (`tlc` not installed), so
+  `verification/proofs/tlaplus/StateMachine.tla` was not exercised at all.
+
+[#reproduce]
+== Reproduce it yourself
+
+From the repo root, at the commit above:
+
+[source,sh]
+----
+git rev-parse HEAD                  # expect e9897daf4ba1d2104f78abd5f660a870279eda5b
+git status --porcelain              # expect empty (clean) before adding this file
+
+just validate-pipeline-drift        # expect exit 0 — "PASS: no pipeline drift detected."
+just must-check                     # expect exit 0 — "All must checks passed"
+just proof-check-coq                # expect exit 0 — toy TEMPLATE proof compiles (not a pipeline claim)
+
+# The loud failures (expected to FAIL — that is the honest state, not a regression):
+just proof-check-idris2             # expect exit 1 — module-name vs file-path mismatch in template .idr files
+just proof-scan-dangerous           # expect exit 1 — false positives on the warning COMMENTS, no real dangerous tactics
+just verify-template                # expect exit 1 — unreplaced {{PLACEHOLDER}} tokens + rsr-template-repo refs
+just trust-verify                   # expect exit 1 — Containerfile base images not @sha256-pinned
+----
+
+To confirm the no-proofs-here invariant directly: the files under
+`verification/proofs/` self-identify as templates (`grep -n Template
+verification/proofs/idris2/Types.idr`), and `PROOF-STATUS.md` reports
+*0% proven (0 of 7)*.
+
+== One-line characterisation (quote this)
+
+[quote]
+____
+"A type-theory pipeline *coordination monorepo* whose registry/docs consistency
+guard (`validate-pipeline-drift`) and `must`/licence gates pass green this
+moment, that holds *no* proofs of its own — the in-tree proof tree is
+unconfigured RSR template residue that does not compile, and all real proof
+obligations live in the constituent repos — with honest, loudly-failing
+template-instantiation debt (`verify-template`, Idris2 module paths,
+Containerfile pinning) still on the queue. A coordination layer, not a verified
+artefact. No intentional overclaim."
+____
+
+== Joint attestation
+
+We, the undersigned, assert that *to the best of our joint belief at the
+timestamp above, every claim in this file is true and was checked as described*
+— with no intentional overclaim, and with the open gaps stated rather than
+hidden.
+
+* *Engineering party (AI):* Claude Opus 4.8 (`claude-opus-4-8[1m]`) — ran the
+  build/test/proof checks recorded here on 2026-06-16T12:28:36Z and stands
+  behind this wording as a faithful report of those runs.
+* *Owner / maintainer:* Jonathan D.A. Jewell — _signs by committing this file
+  with `-S` (`id_ed25519_signing`); the git commit signature over this content,
+  at the commit SHA recorded above, is the cryptographic form of this
+  affirmation._
++
+Signed-off-date: ____________________  (fill on signing)
+
+[TIP]
+The authoritative, tamper-evident signature is the *signed git commit* that
+lands this file. If the SHA in <<Verifiable anchor>> matches the parent of that
+commit and the commit verifies, this affirmation is anchored. If they don't
+match, treat the file as a draft.
