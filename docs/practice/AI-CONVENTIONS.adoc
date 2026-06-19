@@ -9,6 +9,11 @@
 All AI coding agents working in this repository MUST follow these rules.
 Per-tool config files (.cursorrules, .clinerules, etc.) reference this document.
 
+**⛔ Placement first:** `nextgen-typing` is a *coordination repo*. Do not add
+compiler/application code or single-project proofs here — route them to the
+owning repo per `.machine_readable/bot_directives/placement.a2ml` (CI-enforced).
+See `AGENTS.md` for the routing table.
+
 ## Session Startup
 
 1. Read `0-AI-MANIFEST.a2ml` FIRST (mandatory gatekeeper).
@@ -66,11 +71,17 @@ MAINTENANCE-CHECKLIST.a2ml, or SOFTWARE-DEVELOPMENT-APPROACH.a2ml in the reposit
 - File: **Containerfile** (never Dockerfile).
 - Base images: `cgr.dev/chainguard/wolfi-base:latest` or `cgr.dev/chainguard/static:latest`.
 
-## ABI/FFI Standard
+## Coordination Boundary (what may be created here)
 
-- ABI definitions: **Idris2** with dependent types (`src/interface/Abi/`).
-- FFI implementation: **Zig** with C ABI compatibility (`ffi/zig/`).
-- Generated C headers: `generated/abi/`.
+`nextgen-typing` is a coordination repo: it holds coordination/architecture
+docs, `.machine_readable/` state, estate governance/CI scaffold, and
+*cross-project* proofs (importing ≥2 constituent repos) under
+`verification/proofs/`. It contains NO compiler/application code and NO
+single-project proofs — those belong in the owning repo.
+
+Routing is defined in `.machine_readable/bot_directives/placement.a2ml`
+(authoritative) and enforced by `scripts/check-coordination-boundary.sh`.
+ABI/FFI and memory-layout proofs in particular belong in `typed-wasm`, not here.
 
 ## Build System
 

@@ -22,6 +22,10 @@ can-create-files = true
 # - Never use banned languages (TypeScript, Python, Go, etc.)
 # - Never place state files in repository root (must be in .machine_readable/)
 # - Never use AGPL license (use MPL-2.0)
+# - Never add compiler/application code or single-project proofs to this
+#   coordination repo; route them to the owning repo per
+#   .machine_readable/bot_directives/placement.a2ml (CI-enforced by
+#   scripts/check-coordination-boundary.sh).
 
 [maintenance-integrity]
 fail-closed = true

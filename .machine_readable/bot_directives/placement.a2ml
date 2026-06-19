@@ -1,0 +1,83 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+#
+# placement.a2ml — content-routing directive (authoritative)
+#
+# WHERE content belongs in the type-theory estate. This is the machine-readable
+# source of truth behind AGENTS.md / CLAUDE.md and the coordination-boundary CI
+# check (scripts/check-coordination-boundary.sh). Agents MUST consult this
+# before creating files in nextgen-typing.
+
+[metadata]
+version = "1.0.0"
+last-updated = "2026-06-19"
+applies-to = "nextgen-typing"
+precedence = "maintainer > this directive > bot defaults"
+
+[identity]
+repo = "nextgen-typing"
+role = "coordination-monorepo"
+rule = """
+nextgen-typing documents and connects the type-theory pipeline
+(katagoria -> typell -> typed-wasm -> PanLL). It contains NO compiler, kernel,
+language, or single-project code -- including single-project proofs, benchmarks,
+and tests. If content implements or proves something about ONE project, it
+belongs in that project's repo, not here.
+"""
+
+# What this repo accepts. Anything not matching belongs elsewhere (see [routing]).
+[accepts]
+allowed = [
+  "Coordination & architecture docs (README, ROADMAP, TOPOLOGY, docs/ARCHITECTURE, docs/PIPELINE, docs/decisions ADRs)",
+  "Machine-readable pipeline state (.machine_readable/)",
+  "Estate governance / CI scaffold",
+  "Cross-project formal proofs in verification/proofs/ that import or relate >=2 constituent repos",
+  "Research artefacts that genuinely span multiple projects",
+]
+
+# What this repo rejects -> route to the owning repo.
+[rejects]
+disallowed = [
+  "Compiler / kernel / language implementation code",
+  "Single-project formal proofs (proofs about exactly one constituent repo)",
+  "Single-project ABI/FFI definitions, benchmarks, or tests",
+  "A code scaffold (src/, crates/, Cargo.toml) of any kind",
+]
+
+# Routing table. `owns` = the canonical repo for that subject matter.
+[routing]
+rules = [
+  { subject = "type-theory research prototypes, Idris2/Lean PoCs, reading notes", owns = "kategoria" },
+  { subject = "TypeLL kernel: dependent/linear/session types, QTT, proof-carrying code, effects", owns = "typell" },
+  { subject = "WasmGC memory-safety proofs, verified convergence ABI, aggregate-library conventions", owns = "typed-wasm" },
+  { subject = "echo-types library: fiber-based structured loss (Echo/EchoLinear/EchoResidue/EchoCharacteristic)", owns = "echo-types", companion = "EchoTypes.jl" },
+  { subject = "choreographic / multiparty session types", owns = "choreographic-types" },
+  { subject = "TypeFix Zero / micro-Type-0 calibration calculus", owns = "typefix-zero" },
+  { subject = "AffineScript language code", owns = "affinescript" },
+  { subject = "Ephapax language code / region calculus", owns = "ephapax" },
+  { subject = "query-language type safety (SQL/GraphQL/Cypher/SPARQL/VQL)", owns = "typedqliser", also = "vcl-ut" },
+  { subject = "tropical / semiring type theory (Isabelle/Lean)", owns = "tropical-resource-typing" },
+  { subject = "transport-adapter / max-plus pathfinding", owns = "protocol-squisher" },
+  { subject = "eNSAID reference env (downstream consumer of TypeLL)", owns = "panll" },
+]
+
+# Cross-project proofs are the ONLY proofs allowed in verification/proofs/.
+# A proof qualifies only if it imports/relates >=2 constituent repos. New
+# entries require a conscious decision: add the path here AND to the allowlist
+# in scripts/check-coordination-boundary.sh.
+[verification]
+cross-project-only = true
+allowed-proofs = [
+  "verification/proofs/agda/EchoTyping.agda",   # relates echo-types <-> AffineScript/typed-wasm pipeline
+  "verification/proofs/agda/Verification.agda", # aggregator that typechecks the cross-project set
+  "verification/proofs/agda/nextgen-typing.agda-lib",
+]
+route-elsewhere = [
+  "ABI/FFI/memory-layout proofs -> typed-wasm",
+  "TypeLL kernel proofs -> typell",
+  "echo-types library proofs -> echo-types",
+  "single-project type-soundness proofs -> the owning repo",
+]
+
+[on-uncertainty]
+action = "Open an issue in nextgen-typing proposing where the content should live. Do NOT commit code or single-project proofs here on spec."

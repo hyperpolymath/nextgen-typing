@@ -2,60 +2,44 @@
 SPDX-License-Identifier: MPL-2.0
 Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 -->
-# Proof Requirements — NEXTGEN_TYPING
-<!-- Template: rsr-template-repo/PROOF-NEEDS.md -->
-<!-- Authoritative master list: the canonical master list maintained in the hyperpolymath/standards repo -->
+# Proof Requirements — nextgen-typing
+
+> **nextgen-typing is a coordination repo.** It does not own compiler or
+> application code, so it has **no single-project proof obligations**. The
+> RSR-template "mandatory ABI/FFI + typing proofs" do **not** apply here —
+> those obligations live in the repos that own the code (e.g. ABI/FFI and
+> memory-layout proofs belong in `typed-wasm`; kernel proofs in `typell`).
+>
+> This repo hosts only **cross-project** proofs — proofs that import or relate
+> two or more constituent repos. Routing: `.machine_readable/bot_directives/placement.a2ml`.
 
 ## Proof Tier
 
-<!-- Assign one: T1 (Critical), T2 (High), T3 (Standard), T4 (Light), T5 (Exempt) -->
-**Tier**: T3 — Standard
+**Tier**: T5 — Exempt (coordination layer; no owned code to prove).
+Cross-project proofs are hosted, not mandated.
 
-## Proof Categories
+## Cross-Project Proofs (the only category that applies here)
 
-| Code | Meaning | Applies? |
-|------|---------|----------|
-| **TP** | Typing Proofs (type soundness, type safety) | Yes |
-| **INV** | Invariant Proofs (state machines, monotonicity, bounds) | |
-| **SEC** | Security Proofs (crypto, injection freedom, access control) | |
-| **CONC** | Concurrency Proofs (linearizability, deadlock freedom) | |
-| **ALG** | Algorithm Proofs (termination, correctness, bounds) | |
-| **ABI** | ABI/FFI Proofs (memory layout, pointer safety, platform compat) | Yes |
-| **DOM** | Domain-Specific Proofs (bespoke to this project) | |
+| # | Proof | Spans | Prover | Status | File |
+|---|-------|-------|--------|--------|------|
+| XP-1 | Pipeline information-loss = echo-types fibers (affine weakening + refinement erasure) | echo-types ↔ affinescript ↔ typed-wasm | Agda | Present | `verification/proofs/agda/EchoTyping.agda` |
 
-## Mandatory Proofs (All RSR Repos)
+A proof qualifies for this list only if it relates ≥2 constituent repos. When
+adding one, register it in `[verification].allowed-proofs` of
+`placement.a2ml` and in `ALLOWED_PROOFS` of
+`scripts/check-coordination-boundary.sh`.
 
-These proofs come from the rsr-template-repo and MUST be present in every repo:
+## Where single-project proofs go (NOT here)
 
-### ABI/FFI Boundary Proofs (Idris2)
+| Subject | Owning repo |
+|---------|-------------|
+| ABI/FFI, memory layout, pointer safety, C-ABI compliance, WasmGC safety | `typed-wasm` |
+| TypeLL kernel: dependent/linear/session types, QTT, proof-carrying code | `typell` |
+| echo-types library internals (Echo/EchoLinear/EchoResidue) | `echo-types` |
+| Research prototypes / PoCs | `kategoria` |
+| Tropical / semiring type theory | `tropical-resource-typing` |
 
-| # | Proof | Status | File |
-|---|-------|--------|------|
-| ABI-1 | Non-null pointer proofs (`So (ptr /= 0)`) | Needed | `verification/proofs/idris2/ABI/Pointers.idr` |
-| ABI-2 | Memory layout correctness (`HasSize`, `HasAlignment`) | Needed | `verification/proofs/idris2/ABI/Layout.idr` |
-| ABI-3 | Platform type size proofs (per platform) | Needed | `verification/proofs/idris2/ABI/Platform.idr` |
-| ABI-4 | FFI function return type proofs | Needed | `verification/proofs/idris2/ABI/Foreign.idr` |
-| ABI-5 | C ABI compliance (`CABICompliant`, `FieldsAligned`) | Needed | `verification/proofs/idris2/ABI/Compliance.idr` |
-
-### Typing Proofs (Prover Varies)
-
-| # | Proof | Status | File |
-|---|-------|--------|------|
-| TP-1 | Core data type well-formedness | Needed | `verification/proofs/idris2/Types.idr` |
-| TP-2 | Public API type safety (exported functions) | Needed | `verification/proofs/lean4/ApiTypes.lean` |
-
-## Project-Specific Proofs
-
-<!-- Fill in proofs specific to this project. Copy from PROOF-REQUIREMENTS-MASTER.md -->
-<!-- Delete this section for T4/T5 repos -->
-
-| # | Proof Needed | Category | Prover | Priority | File(s) |
-|---|-------------|----------|--------|----------|---------|
-| | | | | | |
-
-## Dangerous Patterns (BANNED)
-
-The following MUST NOT appear anywhere in proof files:
+## Dangerous Patterns (BANNED in any hosted proof)
 
 | Pattern | Language | Meaning |
 |---------|----------|---------|
@@ -66,41 +50,11 @@ The following MUST NOT appear anywhere in proof files:
 | `Admitted` | Coq | Incomplete proof |
 | `unsafeCoerce` | Haskell | Unsafe type cast |
 | `Obj.magic` | OCaml/ReScript | Unsafe type cast |
-| `unsafe` (unaudited) | Rust | Unsafe block without safety comment |
 
-CI will reject any PR introducing these patterns (enforced by `panic-attack assail`).
-
-## Prover Selection Guide
-
-| Use Case | Recommended Prover | Why |
-|----------|-------------------|-----|
-| ABI/FFI boundaries | **Idris2** | Dependent types model layouts precisely |
-| Type system proofs | **Coq** or **Lean4** | Mature proof assistants for metatheory |
-| Algebraic properties | **Lean4** | Good mathlib support |
-| Inductive/coinductive | **Agda** | Native support for (co)induction |
-| Distributed systems | **TLA+** | Model checking for protocols |
-| Numerical properties | **Isabelle** | Strong real analysis library |
-
-## Proof File Locations
-
-```
-verification/proofs/
-├── idris2/          # Idris2 proofs (ABI, dependent types)
-│   ├── ABI/         # ABI-specific proofs
-│   └── *.idr        # Project-specific Idris2 proofs
-├── lean4/           # Lean4 proofs (algebra, lattices)
-│   └── *.lean
-├── agda/            # Agda proofs (induction, metatheory)
-│   └── *.agda
-├── coq/             # Coq proofs (type systems, compilation)
-│   └── *.v
-└── tlaplus/         # TLA+ specs (distributed protocols)
-    └── *.tla
-```
+CI rejects any PR introducing these (`panic-attack assail`).
 
 ## References
 
-- Master list: the canonical master list maintained in the hyperpolymath/standards repo
+- Routing table: `.machine_readable/bot_directives/placement.a2ml`
+- CI guard: `scripts/check-coordination-boundary.sh` / `.github/workflows/coordination-boundary.yml`
 - Proof status tracking: `PROOF-STATUS.md` (this repo)
-- Proven library: `proven` repo (Idris2 verified foundations)
-- Template: `rsr-template-repo/PROOF-NEEDS.md`
