@@ -8,6 +8,21 @@ theory pipeline.  It does NOT contain compiler code.
 
 Pipeline:  katagoria → typell → typed-wasm → PanLL
 
+## STOP — Placement Rule (the most common mistake here)
+
+Before creating ANY file, confirm it belongs in a coordination repo. This repo
+holds ONLY: coordination/architecture docs, `.machine_readable/` state, estate
+governance/CI scaffold, and CROSS-project proofs (importing ≥2 constituent
+repos) under `verification/proofs/`.
+
+If the content implements or proves something about ONE project, it belongs in
+that project's repo — NOT here. Route it with the table in
+`.machine_readable/bot_directives/placement.a2ml` (authoritative; CI-enforced
+by `scripts/check-coordination-boundary.sh`). Examples: TypeLL kernel →
+`typell`; ABI/WasmGC → `typed-wasm`; echo-types library → `echo-types`;
+research PoCs → `kategoria`; μType₀ → `typefix-zero`; choreographic types →
+`choreographic-types`. When unsure, open an issue — do not commit code on spec.
+
 ## Critical Invariants
 
 1. **TypeLL is open-ended** — never say "TypeLL is a 10-level system". The
@@ -27,6 +42,7 @@ Pipeline:  katagoria → typell → typed-wasm → PanLL
 - Current state + blockers: `.machine_readable/6a2/STATE.a2ml`
 - ADRs: `.machine_readable/6a2/META.a2ml`
 - Ecosystem relationships: `.machine_readable/6a2/ECOSYSTEM.a2ml`
+- Content routing (what goes where): `.machine_readable/bot_directives/placement.a2ml`
 - Human overview: `README.adoc`
 - What-is-this explainer: `EXPLAINME.adoc`
 

@@ -7,6 +7,18 @@ Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 
 # Copilot Instructions
 
+## ⛔ Before Writing Anything — Placement Boundary
+
+`nextgen-typing` is a **coordination repo**, not a code repo. Do NOT add
+compiler/application code or single-project proofs here. If content implements
+or proves something about ONE project, put it in that project's repo. Routing
+table: `.machine_readable/bot_directives/placement.a2ml` (enforced in CI by
+`scripts/check-coordination-boundary.sh`). Full guidance: `AGENTS.md`.
+
+Only these belong here: coordination/architecture docs, `.machine_readable/`
+state, estate governance/CI scaffold, and CROSS-project proofs (importing ≥2
+constituent repos) under `verification/proofs/`.
+
 ## Before Writing Code
 
 - Read `0-AI-MANIFEST.a2ml` in the repo root for canonical file locations.
@@ -46,12 +58,6 @@ Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 - Use Podman, never Docker.
 - Name the file `Containerfile`, never `Dockerfile`.
 - Base image: `cgr.dev/chainguard/wolfi-base:latest`.
-
-## ABI/FFI
-
-- ABI definitions in Idris2 (`src/interface/abi/`).
-- FFI implementations in Zig (`src/interface/ffi/`).
-- Generated C headers in `src/interface/generated/`.
 
 ## State Files
 

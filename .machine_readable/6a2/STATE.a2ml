@@ -6,7 +6,7 @@
 [metadata]
 project = "nextgen-typing"
 version = "0.1.0"
-last-updated = "2026-06-15"
+last-updated = "2026-06-19"
 status = "active"
 
 [project-context]
@@ -24,6 +24,11 @@ Does NOT contain compiler code.
 # scaffold was removed (it was a strict subset of the canonical proofs in
 # verification/proofs/); "no compiler code" is affirmed. Completion still reflects
 # early state: the verification proofs in verification/proofs/ are not yet built in CI.
+# 2026-06-19: the "7 mandated proofs" were RSR template residue (ABI/TP proofs
+# owned by typed-wasm/typell); PROOF-NEEDS/PROOF-STATUS reconciled to track only
+# cross-project proofs. The coordination boundary is now CI-enforced
+# (scripts/check-coordination-boundary.sh) and documented in AGENTS.md/CLAUDE.md
+# + .machine_readable/bot_directives/placement.a2ml.
 completion-percentage = 10
 
 [position]
@@ -84,6 +89,7 @@ events = [
   { date = "2026-05-30", kind = "ci", detail = "CI reusable-wrapper rework (2026-05-26..2026-05-30): hypatia-scan, scorecard, secret-scanner, rust-ci, and mirror workflows converted to thin wrappers of standards reusables; reusable SHA pins repinned to live merge-commit SHAs (commit 4a848fd)." },
   { date = "2026-06-09", kind = "docs", detail = "README.adoc: TypeFix Zero (TF0) calibration-calculus section added (commits f11cc29..ec3496f)." },
   { date = "2026-06-12", kind = "governance", detail = "Estate standardization merged (governance docs, bot_directives, self-validating, flat contractiles, flake.nix removal); codeql cron monthly; checkpoint layer: dual STATE reconciled (root pointer-ized to 6a2), bot_directives trio added, contractiles populated with repo-true obligations." },
+  { date = "2026-06-19", kind = "governance", detail = "Coordination-boundary remediation: added AGENTS.md/CLAUDE.md + root .clinerules/.cursorrules/.windsurfrules, placement.a2ml routing directive, and a coordination-boundary CI guard + pre-commit hook; stripped the RSR src/interface ABI/FFI instructions from copilot-instructions/cline/cursor/windsurf/AI-CONVENTIONS and rewrote the template-residue AI.a2ml; removed the RSR ABI/TP proof scaffold from verification/proofs/ (owned by typed-wasm/typell), keeping the cross-project echo-types proof; reconciled PROOF-NEEDS/PROOF-STATUS." },
 ]
 
 [ecosystem]

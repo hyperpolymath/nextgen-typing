@@ -1,0 +1,32 @@
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+#
+# Coordination-boundary guard: nextgen-typing must stay docs + machine-readable
+# state + estate scaffold + CROSS-project proofs only — no compiler/application
+# code and no single-project proofs. Routing table:
+#   .machine_readable/bot_directives/placement.a2ml
+name: Coordination Boundary
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: coord-boundary-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  boundary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Enforce coordination boundary
+        run: bash scripts/check-coordination-boundary.sh

@@ -2,83 +2,44 @@
 SPDX-License-Identifier: MPL-2.0
 Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 -->
-# Proof Status — NEXTGEN_TYPING
-<!-- Template: rsr-template-repo/PROOF-STATUS.md -->
-<!-- Tracks proof completion. Requirements defined in PROOF-NEEDS.md -->
+# Proof Status — nextgen-typing
+
+> Coordination repo. The only proofs tracked here are **cross-project** proofs
+> (spanning ≥2 constituent repos). Single-project proof status is tracked in the
+> owning repos. Requirements: `PROOF-NEEDS.md`.
 
 ## Summary
 
-| Category | Total | Done | In Progress | Blocked | Remaining |
-|----------|-------|------|-------------|---------|-----------|
-| ABI/FFI (ABI) | 5 | 0 | 0 | 0 | 5 |
-| Typing (TP) | 2 | 0 | 0 | 0 | 2 |
-| Invariant (INV) | 0 | 0 | 0 | 0 | 0 |
-| Security (SEC) | 0 | 0 | 0 | 0 | 0 |
-| Concurrency (CONC) | 0 | 0 | 0 | 0 | 0 |
-| Algorithm (ALG) | 0 | 0 | 0 | 0 | 0 |
-| Domain (DOM) | 0 | 0 | 0 | 0 | 0 |
-| **Total** | **7** | **0** | **0** | **0** | **7** |
+| Category | Total | Done | In Progress | Remaining |
+|----------|-------|------|-------------|-----------|
+| Cross-project (XP) | 1 | 1 | 0 | 0 |
+| **Total** | **1** | **1** | **0** | **0** |
 
-**Overall**: 0% proven
+The earlier "0 of 7" RSR ABI/TP figure was template residue: it counted
+mandatory ABI/FFI + typing proofs that belong in `typed-wasm` / `typell`, not in
+this coordination layer. Those scaffold files were removed (the ABI proof
+obligations are owned by `typed-wasm`).
 
-## Proofs Done
+## Proofs Present
 
-<!-- Format: -->
-<!-- | ID | Proof | Prover | File | Date | Verified By | -->
-<!-- | ABI-1 | Non-null pointer proofs | Idris2 | verification/proofs/idris2/ABI/Pointers.idr | 2026-XX-XX | idris2 --check | -->
+| ID | Proof | Spans | Prover | File | Verified By |
+|----|-------|-------|--------|------|-------------|
+| XP-1 | Pipeline information-loss = echo-types fibers | echo-types ↔ affinescript ↔ typed-wasm | Agda (`--safe --without-K`) | `verification/proofs/agda/EchoTyping.agda` | `agda Verification.agda` |
 
-| ID | Proof | Prover | File | Date | Verified By |
-|----|-------|--------|------|------|-------------|
-| — | No proofs completed yet | — | — | — | — |
-
-## Proofs In Progress
-
-| ID | Proof | Prover | Assignee | Started | Blocker |
-|----|-------|--------|----------|---------|---------|
-| — | — | — | — | — | — |
-
-## Proofs Blocked
-
-| ID | Proof | Blocked By | Notes |
-|----|-------|------------|-------|
-| — | — | — | — |
-
-## Proofs Remaining
-
-| ID | Proof | Category | Prover | Priority | Est. Effort |
-|----|-------|----------|--------|----------|-------------|
-| ABI-1 | Non-null pointer proofs | ABI | Idris2 | P1 | 2h |
-| ABI-2 | Memory layout correctness | ABI | Idris2 | P1 | 4h |
-| ABI-3 | Platform type size proofs | ABI | Idris2 | P1 | 2h |
-| ABI-4 | FFI function return type proofs | ABI | Idris2 | P1 | 2h |
-| ABI-5 | C ABI compliance | ABI | Idris2 | P1 | 4h |
-| TP-1 | Core data type well-formedness | TP | Idris2 | P1 | 4h |
-| TP-2 | Public API type safety | TP | Lean4 | P2 | 4h |
-
-## Verification Commands
+## Verification
 
 ```bash
-# Check all Idris2 proofs
-just proof-check-idris2
+# Typecheck the cross-project Agda set (requires the echo-types library on the
+# Agda include path; see verification/proofs/agda/nextgen-typing.agda-lib)
+agda verification/proofs/agda/Verification.agda
 
-# Check all Lean4 proofs
-just proof-check-lean4
-
-# Check all Agda proofs
-just proof-check-agda
-
-# Check all Coq proofs
-just proof-check-coq
-
-# Run all proof checks
-just proof-check-all
-
-# Scan for dangerous patterns
-panic-attack assail --proofs-only
+# Enforce the coordination boundary (no project code / non-allowlisted proofs)
+bash scripts/check-coordination-boundary.sh
 ```
 
 ## Changelog
 
 | Date | Change | By |
 |------|--------|-----|
+| 2026-06-19 | Reconciled to coordination reality: removed RSR ABI/TP scaffold proofs (owned by typed-wasm/typell); tracking cross-project proofs only | maintainer |
 | 2026-04-04 | Initial proof status tracking | Template |

@@ -1,60 +1,64 @@
 // SPDX-License-Identifier: MPL-2.0
 // Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
-= Formal Verification Proofs
+= Cross-Project Formal Proofs
 
-This directory contains formal proofs organised by proof assistant.
+This directory hosts *cross-project* formal proofs only — proofs that import
+or relate **two or more** constituent repos of the type-theory pipeline.
 
-== Directory Structure
+[IMPORTANT]
+====
+`nextgen-typing` is a coordination repo. *Single-project* proofs do **not**
+belong here — they belong in the repo that owns the subject matter:
+
+* TypeLL kernel proofs (dependent/linear/session types, QTT) → `typell`
+* WasmGC memory-safety / ABI / FFI / memory-layout proofs → `typed-wasm`
+* The echo-types library's own proofs (Echo/EchoLinear/EchoResidue) → `echo-types`
+* Research prototype proofs → `kategoria`
+
+The authoritative routing table is
+`.machine_readable/bot_directives/placement.a2ml`, and CI enforces this
+boundary via `.github/workflows/coordination-boundary.yml`
+(`scripts/check-coordination-boundary.sh`).
+====
+
+== Current contents
 
 [source]
 ----
 proofs/
-├── idris2/          # Idris2 proofs (ABI, dependent types)
-│   ├── ABI/         # ABI-specific proofs (mandatory)
-│   │   ├── Pointers.idr    # Non-null pointer safety
-│   │   ├── Layout.idr      # Memory layout correctness
-│   │   ├── Platform.idr    # Platform type size proofs
-│   │   ├── Foreign.idr     # FFI return type proofs
-│   │   └── Compliance.idr  # C ABI compliance
-│   └── Types.idr    # Core data type well-formedness
-├── lean4/           # Lean4 proofs (algebra, lattices)
-│   └── ApiTypes.lean
-├── agda/            # Agda proofs (induction, metatheory)
-│   └── Properties.agda
-├── coq/             # Coq proofs (type systems, compilation)
-│   └── TypeSafety.v
-└── tlaplus/         # TLA+ specs (distributed protocols)
-    └── StateMachine.tla
+└── agda/
+    ├── EchoTyping.agda          # echo-types <-> AffineScript/typed-wasm pipeline
+    ├── Verification.agda        # aggregator: `agda Verification.agda` checks the set
+    └── nextgen-typing.agda-lib  # depends on: standard-library, echo-types
 ----
 
-== Verification Commands
+`EchoTyping.agda` is the worked example of a qualifying proof: it depends on the
+`hyperpolymath/echo-types` Agda library and proves that the pipeline's
+information-losing typing operations (AffineScript affine weakening; refinement
+erasure into the typed-wasm/kernel layer) are instances of echo-types' fiber
+construction. It genuinely spans `echo-types`, `affinescript`, and `typed-wasm`,
+so it is coordination material rather than any one project's.
 
-[source,bash]
-----
-just proof-check-all       # Run all proof checkers
-just proof-check-idris2    # Idris2 only
-just proof-check-lean4     # Lean4 only
-just proof-check-agda      # Agda only
-just proof-check-coq       # Coq only
-----
+== Adding a proof here
 
-== Banned Patterns
+Before adding anything, check the gate:
+
+. *Does it import or relate two or more constituent repos?* If not, it is a
+  single-project proof — put it in the owning repo (see `placement.a2ml`).
+. If it qualifies, add the file under the appropriate prover subdirectory, then
+  register it in **both**:
+  * `[verification].allowed-proofs` in `.machine_readable/bot_directives/placement.a2ml`, and
+  * `ALLOWED_PROOFS` in `scripts/check-coordination-boundary.sh`.
+. Ensure `--safe` / `%default total` / no escape hatches (see Banned Patterns).
+
+== Banned patterns
 
 The following MUST NOT appear in any proof file:
 
-- `believe_me` (Idris2)
-- `assert_total` (Idris2)
-- `postulate` (Idris2/Agda)
-- `sorry` (Lean4)
-- `Admitted` (Coq)
-- `unsafeCoerce` (Haskell)
+* `believe_me`, `assert_total` (Idris2)
+* `postulate` (Idris2/Agda)
+* `sorry` (Lean4)
+* `Admitted` (Coq)
+* `unsafeCoerce` (Haskell)
 
 CI enforces this via `panic-attack assail --proofs-only`.
-
-== Adding New Proofs
-
-1. Choose the appropriate prover (see PROOF-NEEDS.md)
-2. Create the `.idr`/`.lean`/`.agda`/`.v`/`.tla` file in the right directory
-3. Ensure `%default total` (Idris2) or equivalent
-4. Run the verification command
-5. Update PROOF-STATUS.md
