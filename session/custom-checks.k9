@@ -10,7 +10,7 @@ pedigree = {
   schema_version = "1.0.0",
   component_type = "session-checks",
   leash = "Kennel",
-  security_level = "data-only",
+  security_level = "kennel",
 }
 
 version: "0.1"

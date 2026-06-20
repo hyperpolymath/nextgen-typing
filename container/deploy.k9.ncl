@@ -14,7 +14,7 @@ K9!
 #   k9-svc deploy container/deploy.k9.ncl --env production
 
 # The component's pedigree (self-description across five layers)
-let component_pedigree = {
+let pedigree = {
   # Top-level identity fields — duplicated from metadata so the K9
   # validator (which inspects the literal `pedigree = { ... }` block
   # at the toplevel of the file rather than the resolved Nickel value)
@@ -22,6 +22,7 @@ let component_pedigree = {
   # `component_pedigree` indirection.
   name = "{{SERVICE_NAME}}-deploy",
   version = "{{VERSION}}",
+  security_level = "hunt",
 
   # ─────────────────────────────────────────────────────────────
   # L1: The Snout — Identity
@@ -153,7 +154,7 @@ echo "K9: Rollback complete."
 
 # Export the component
 {
-  pedigree = component_pedigree,
+  pedigree = pedigree,
   deployment = deployment,
   scripts = scripts,
 
