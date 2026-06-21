@@ -2,12 +2,18 @@
 # Rust CI — thin wrapper calling the shared estate reusable in
 # hyperpolymath/standards. Configure once, propagate everywhere.
 # See: docs/CI-REUSABLE-WORKFLOWS.adoc in standards.
+#
+# nextgen-typing is a coordination repo with NO Rust code, so the reusable had
+# nothing to build and failed. Path-gated to Rust artefacts so it only runs if
+# Rust is ever added here (currently never), instead of failing on every push.
 name: Rust CI
 
 on:
   push:
     branches: [main, master]
+    paths: ['**/*.rs', '**/Cargo.toml', '**/Cargo.lock', 'crates/**']
   pull_request:
+    paths: ['**/*.rs', '**/Cargo.toml', '**/Cargo.lock', 'crates/**']
 
 permissions:
   contents: read
