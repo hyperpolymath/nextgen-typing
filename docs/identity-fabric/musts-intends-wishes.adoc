@@ -1,0 +1,67 @@
+// SPDX-License-Identifier: MPL-2.0
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= nextgen-typing — Normative Scope (Must / Intend / Wish)
+:toc: preamble
+:revdate: 2026-06-19
+
+[abstract]
+Per-repo normative-scope record for nextgen-typing (the coordination monorepo for
+the Hyperpolymath *type-theory pipeline*). It is also the *home of the canonical
+AFFIRMATION exemplar* the estate's No-Bullshit discipline was modelled on. Estate
+rule (2026-06-19): every repo carries its own scoped table; crossover content is
+duplicated and marked until resolved, then wired into the other relevant repos.
+`◇` marks proposals not yet canonical.
+
+== Levels
+
+* *MUST* — required to be what it is (RFC 2119 normative).
+* *INTEND* — committed direction.
+* *WISH* — aspirational.
+
+== nextgen-typing (own)
+
+[cols="1,5", options="header"]
+|===
+| Level | nextgen-typing
+
+| *MUST*
+| Be the *coordination monorepo for the type-theory pipeline* — coordinate the
+  estate's typing disciplines and their hand-offs (the type-safe lowering through
+  TangleIR, affine typing in AffineScript, structured-loss typing in echo-types),
+  with implementations living in their own repos; uphold the *AFFIRMATION
+  discipline it exemplifies* (dated, signed, falsifiable, *no intentional
+  overclaim*); estate governance — LICENSE/SPDX, no banned files; honest
+  coordination (coordinate, do not silently absorb per-component code).
+
+| *INTEND*
+| Keep the pipeline components in sync as each evolves; raise READINESS above `C`;
+  finish RSR-template instantiation where residue remains; coordinate one coherent
+  *type-safety narrative* across the estate (tangle's proven small-step core →
+  AffineScript's affine guarantees → echo-types' graded/structured-loss reading);
+  keep the `verification/`, `features/`, and `benches/` coordination surfaces
+  honest and evidenced.
+
+| *WISH*
+| A unified, navigable type-theory pipeline with *verified* hand-offs between
+  components ◇; a shared conformance surface for typing guarantees across the
+  estate ◇; the pipeline cited as the estate's canonical type-safety map ◇.
+|===
+
+== Cross-repo wiring
+
+nextgen-typing is the *type-theory coordination* node — one of three coordination
+monorepos alongside *nextgen-databases* (database/query/identity) and
+*nextgen-languages* (the language catalog). It coordinates rather than implements:
+the proving and type-checking live in *tangle* (TangleIR + the Lean-checked
+type-safe core), the affine-type guarantees in *AffineScript* (catalogued under
+nextgen-languages), and the type-theoretic structured-loss work in *echo-types*.
+The confirmed KRL-stack ladder (maintainer-confirmed 2026-06-19) — *krl →
+tangle/TangleIR → VerisimCore → Skein.jl / quandledb* — depends on tangle's
+type-safety, which this pipeline coordinates.
+
+Sibling repos' key concerns (keep in sync as crossover resolves): *tangle* —
+TangleIR + type-safe core; *echo-types* — structured-loss theory + the
+identity-fabric framing (Conway·Fichte / Bruner / Ricoeur); *nextgen-languages* —
+language catalog (AffineScript et al.); *nextgen-databases* — database/identity
+coordination; the KRL-stack faces *krl* / *quandledb* / *Skein.jl*. See
+`../../AFFIRMATION.adoc` (the canonical exemplar at this repo's root).
