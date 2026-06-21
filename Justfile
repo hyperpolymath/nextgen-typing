@@ -19,9 +19,9 @@ set positional-arguments := true
 import? "contractile.just"
 
 # Project metadata — customize these
-project := "rsr-template-repo"
+project := "nextgen-typing"
 OWNER := "hyperpolymath"
-REPO := "rsr-template-repo"
+REPO := "nextgen-typing"
 version := "0.1.0"
 tier := "infrastructure"  # 1 | 2 | infrastructure
 
