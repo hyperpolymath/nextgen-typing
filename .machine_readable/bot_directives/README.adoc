@@ -38,10 +38,17 @@ interactive agents.
 
 | `debt.a2ml`
 | Meander debt — things found but not fixed, carried between sessions
+
+| `placement.a2ml`
+| Content-routing directive — WHERE content belongs in the estate. What this
+  coordination repo accepts vs what must be routed to a constituent repo.
+  Authoritative source behind AGENTS.md and the coordination-boundary CI check.
 |===
 
 == How Agents Use These
 
+0. Consult `placement.a2ml` BEFORE creating any file — confirm it belongs in a
+   coordination repo; if it implements or proves one project, route it out.
 1. Read `methodology.a2ml` at session start — know mode, invariants, ceiling
 2. Read `coverage.a2ml` — know what was visited last time, what was skipped
 3. Read `debt.a2ml` — know what's outstanding from previous sessions

@@ -153,7 +153,19 @@ echo "K9: Rollback complete."
 
 # Export the component
 {
-  pedigree = component_pedigree,
+  pedigree = {
+    # k9-validate scans for a literal `pedigree = { … }` field (it cannot
+    # follow the `let component_pedigree` indirection). This visible block
+    # carries the required identity/security fields; `& component_pedigree`
+    # then layers on the full L1–L5 component pedigree.
+    schema_version = "1.0.0",
+    component_type = "deployment",
+    security_level = "hunt",
+    metadata = {
+      name = "{{SERVICE_NAME}}-deploy",
+      version = "{{VERSION}}",
+    },
+  } & component_pedigree,
   deployment = deployment,
   scripts = scripts,
 

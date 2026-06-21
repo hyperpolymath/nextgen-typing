@@ -12,5 +12,4 @@
 
 module Verification where
 
-open import Properties
 open import EchoTyping

@@ -50,3 +50,13 @@ repos:
     rev: v8.24.3
     hooks:
       - id: gitleaks
+
+  # --- Coordination boundary (this repo is coordination-only) ---
+  - repo: local
+    hooks:
+      - id: coordination-boundary
+        name: Coordination boundary (no project code / single-project proofs)
+        entry: scripts/check-coordination-boundary.sh
+        language: script
+        pass_filenames: false
+        always_run: true

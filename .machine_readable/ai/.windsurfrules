@@ -34,10 +34,11 @@
 # File: Containerfile (never Dockerfile).
 # Base: cgr.dev/chainguard/wolfi-base:latest or cgr.dev/chainguard/static:latest.
 
-# ABI/FFI
-# ABI: Idris2 with dependent types (src/interface/abi/).
-# FFI: Zig with C ABI (src/interface/ffi/).
-# Headers: src/interface/generated/.
+# COORDINATION REPO — NO PROJECT CODE
+# nextgen-typing is coordination-only: docs, .machine_readable/ state, estate
+# scaffold, and CROSS-project proofs (>=2 constituent repos) in
+# verification/proofs/. Do NOT add compiler/app code or single-project proofs.
+# Route per .machine_readable/bot_directives/placement.a2ml (CI-enforced).
 
 # BUILD: Use just (justfile) for all tasks.
 # STYLE: Descriptive names. Document all files. SPDX headers everywhere.
