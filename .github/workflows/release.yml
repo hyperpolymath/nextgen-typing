@@ -154,7 +154,6 @@ jobs:
   provenance:
     name: SLSA Provenance
     needs: [build]
-    timeout-minutes: 20
     permissions:
       actions: read
       id-token: write
