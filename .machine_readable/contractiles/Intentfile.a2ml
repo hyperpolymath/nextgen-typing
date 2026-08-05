@@ -77,7 +77,7 @@ If you are unsure whether a change is in scope, ask. Sensitive areas:
 
 ### placeholder-fill
 - description: Replace remaining template placeholders per .machine_readable/ai/PLACEHOLDERS.adoc
-- probe: "! grep -rl '{{OWNER}}' .github/ 2>/dev/null | head -1 | grep -q ."
+- probe: "! grep -rl 'hyperpolymath' .github/ 2>/dev/null | head -1 | grep -q ."
 - status: declared
 - notes: Tracked as OQ-002 in 6a2/STATE.a2ml
 
