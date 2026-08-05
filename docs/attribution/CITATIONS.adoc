@@ -8,7 +8,7 @@
 [source,bibtex]
 ----
 @software{nextgen-typing_2026,
-  author = {{{AUTHOR_LAST}}, {{AUTHOR_FIRST}}},
+  author = {Jewell, Jonathan},
   title = {nextgen-typing},
   year = {2026},
   url = {https://github.com/hyperpolymath/nextgen-typing},
@@ -18,7 +18,7 @@
 
 == Harvard Style
 
-{{AUTHOR_LAST}}, {{AUTHOR_INITIALS}} (2026) _nextgen-typing_ [Computer software]. Available at: https://github.com/hyperpolymath/nextgen-typing
+Jewell, JDJ (2026) _nextgen-typing_ [Computer software]. Available at: https://github.com/hyperpolymath/nextgen-typing
 
 == OSCOLA
 
@@ -26,11 +26,11 @@ Jonathan D.A. Jewell, 'nextgen-typing' (2026) <https://github.com/hyperpolymath/
 
 == MLA
 
-{{AUTHOR_LAST}}, {{AUTHOR_FIRST}} "nextgen-typing." 2026, github.com/hyperpolymath/nextgen-typing.
+Jewell, Jonathan "nextgen-typing." 2026, github.com/hyperpolymath/nextgen-typing.
 
 == APA 7
 
-{{AUTHOR_LAST}}, {{AUTHOR_INITIALS}} (2026). _nextgen-typing_ [Computer software]. GitHub. https://github.com/hyperpolymath/nextgen-typing
+Jewell, JDJ (2026). _nextgen-typing_ [Computer software]. GitHub. https://github.com/hyperpolymath/nextgen-typing
 
 == See Also
 
