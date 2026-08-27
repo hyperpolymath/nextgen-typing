@@ -6,6 +6,8 @@ workflows:
     '.github/workflows/e2e.yml': []
     '.github/workflows/governance.yml': []
     '.github/workflows/hypatia-scan.yml': []
+    '.github/workflows/label-triage.yml': []
+    '.github/workflows/labels.yml': []
     '.github/workflows/mirror.yml': []
     '.github/workflows/rust-ci.yml': []
     '.github/workflows/scorecard.yml': []
