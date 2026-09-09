@@ -68,8 +68,12 @@ jobs:
           GH_CONFIG_DIR: ${{ runner.temp }}/workflow-linter-gh
           XDG_DATA_HOME: ${{ runner.temp }}/workflow-linter-data
         run: |
-          gh extension install github/gh-actions-lock --pin v0.1.6
-          gh actions-lock --verify-local
+          # Binary extensions accept release tags, not source commit pins.
+          # Verify the v0.1.6 linux-amd64 release bytes before executing them.
+          gh release download v0.1.6 --repo github/gh-actions-lock --pattern linux-amd64 --output "$RUNNER_TEMP/gh-actions-lock"
+          echo "4181ec1da5408b34b9a542a7ee5c6ce3a4d6ac815c7d0206a00ceca8a817f4e3  $RUNNER_TEMP/gh-actions-lock" | sha256sum --check --strict
+          chmod +x "$RUNNER_TEMP/gh-actions-lock"
+          "$RUNNER_TEMP/gh-actions-lock" --verify-local
 
       - name: Check for Duplicate Workflows
         run: |
