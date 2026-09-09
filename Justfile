@@ -1066,12 +1066,15 @@ validate-rsr:
 
 # Validate STATE.a2ml syntax
 validate-state:
-    @if [ -f ".machine_readable/descriptiles/STATE.a2ml" ]; then \
-        grep -q '^\[metadata\]' .machine_readable/descriptiles/STATE.a2ml && \
-        grep -q 'project\s*=' .machine_readable/descriptiles/STATE.a2ml && \
-        echo "STATE.a2ml: valid" || echo "STATE.a2ml: INVALID (missing required sections)"; \
-    else \
+    @if [ ! -f ".machine_readable/descriptiles/STATE.a2ml" ]; then \
         echo "No .machine_readable/descriptiles/STATE.a2ml found"; \
+        exit 1; \
+    elif grep -q '^\[metadata\]' .machine_readable/descriptiles/STATE.a2ml && \
+        grep -q 'project\s*=' .machine_readable/descriptiles/STATE.a2ml; then \
+        echo "STATE.a2ml: valid"; \
+    else \
+        echo "STATE.a2ml: INVALID (missing required sections)"; \
+        exit 1; \
     fi
 
 # Validate pipeline doc/A2ML synchronization drift
@@ -1082,7 +1085,7 @@ validate-pipeline-drift:
 type-map:
     dot -Tsvg docs/images/type-connections.dot -o docs/images/type-connections.svg
     sed -i '2i<!-- SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk> -->' docs/images/type-connections.svg
-    sed -i '2i<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->' docs/images/type-connections.svg
+    sed -i '2i<!-- SPDX-License-Identifier: MPL-2.0 -->' docs/images/type-connections.svg
 
 # Check the boundary between coordination and project implementation
 validate-coordination:

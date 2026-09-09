@@ -1,10 +1,10 @@
-// SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-License-Identifier: MPL-2.0
 // SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 digraph TypeConnections {
   graph [rankdir=TB, bgcolor="#f5f7fb", pad="0.35", nodesep="0.45", ranksep="0.8", splines=polyline,
     fontname="DejaVu Sans", fontsize=22, fontcolor="#17243b", labelloc=t,
     label="Type research: questions and connections\n\nnextgen-typing · coordination map · September 2026",
-    comment="SPDX-License-Identifier: CC-BY-SA-4.0; SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell"];
+    comment="SPDX-License-Identifier: MPL-2.0; SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell"];
   node [shape=box, style="rounded,filled", fillcolor="#ffffff", color="#a6b4c9",
     fontname="DejaVu Sans", fontsize=13, fontcolor="#17243b", margin="0.22,0.2", penwidth=1.4];
   edge [style=dashed, color="#61738e", fontcolor="#465773", fontname="DejaVu Sans", fontsize=10, arrowsize=0.65];
