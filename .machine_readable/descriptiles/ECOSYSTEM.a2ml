@@ -6,7 +6,7 @@
 
 [metadata]
 version = "0.1.0"
-last-updated = "2026-06-12"
+last-updated = "2026-09-09"
 
 [project]
 name = "nextgen-typing"
@@ -22,14 +22,24 @@ projects = [
   { name = "typell", relationship = "coordinates", notes = "TypeLL verification kernel. Open-ended progressive type safety. Powers PanLL port 7800." },
   { name = "typed-wasm", relationship = "coordinates", notes = "TypeLL applied to WasmGC memory safety + aggregate library for AffineScript/Ephapax." },
   { name = "echo-types", relationship = "integrated", notes = "Fiber-based structured-loss formalization integrated into the typesystem (#33, 2026-06-12)." },
+  { name = "epistemic-types", relationship = "research-coordination", notes = "Standpoint-indexed modalities, warrants and explicit soundness. Mapped in docs/TYPE-CONNECTIONS.adoc; no new integration certified by the map." },
+  { name = "residual-evidence-types", relationship = "research-coordination", notes = "Public work in progress: evidence-refined candidate worlds, assessment and finite explorer. Formal library pending; proposed connections to Echo and Epistemic Types." },
+  { name = "choreographic-types", relationship = "research-coordination", notes = "Projection, retained distinctions, resource bounds and warrant transport; general K-CUT remains open in reviewed documentation." },
   { name = "panll", relationship = "downstream-consumer", notes = "eNSAID reference env. TypeLL runs inside PanLL. Not owned by nextgen-typing." },
   { name = "nextgen-languages/affinescript", relationship = "co-product", notes = "Compiles to typed WasmGC. TypeLL grounds its type system." },
   { name = "nextgen-languages/ephapax", relationship = "co-product", notes = "Compiles to typed WasmGC. TypeLL grounds its dyadic linear/affine system." },
-  { name = "tropical-resource-typing", relationship = "research-artefact", notes = "Isabelle/HOL + Lean 4 tropical type theory work. Feeds into protocol-squisher." },
+  { name = "tropical-types", relationship = "research-artefact", notes = "Canonical GitHub name resolved 2026-09-09 from tropical-resource-typing. Resource algebras and bounds; distinct from Echo structure." },
   { name = "protocol-squisher", relationship = "co-product", notes = "Transport semilattice; adapter path search is Dijkstra on max-plus semiring (tropical)." },
   { name = "nextgen-languages", relationship = "sibling-standard", notes = "Sibling coordination monorepo for the language family." },
   { name = "nextgen-databases", relationship = "sibling-standard", notes = "Sibling coordination monorepo for the database family." },
 ]
+
+[type-research-map]
+guide = "docs/TYPE-CONNECTIONS.adoc"
+edge-semantics = "Conceptual relationships and proposed obligations; not imports, integrations, equivalences or proof receipts"
+name-resolution-date = "2026-09-09"
+former-tropical-name = "tropical-resource-typing -> tropical-types"
+historical-research-name = "katagoria -> ideas-to-alphas; distinct from kategoria"
 
 [integration-points]
 integrations = [

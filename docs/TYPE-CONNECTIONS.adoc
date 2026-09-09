@@ -1,0 +1,205 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+= Type research: connections and shared meanings
+:toc:
+:icons: font
+
+This is the shared reading guide for the five research families in the map.
+It coordinates vocabulary and ownership; the owning repositories define
+their formal interfaces and carry their proof evidence.
+
+image::images/type-connections.svg[Five type research families connected by explicitly conceptual arrows, width=1100]
+
+*Read every dashed arrow as a conceptual use or a proposed research task.*
+An arrow does not assert a package dependency, a checked bridge, an
+equivalence, or a theorem. In particular, the connections into Residual
+Evidence Types are a research direction: its initial public import has an
+assessment and a JavaScript explorer, with the formal library still pending.
+
+== What each family means
+
+[cols="1,2,2",options="header"]
+|===
+|Family and owner |Question and object |Boundary
+
+|https://github.com/hyperpolymath/echo-types[Echo Types]
+|Which possible origins lie over an output after a transformation?
+`Echo f y = Σ (x : A), f x ≡ y` retains a witness in the ordinary preimage
+fibre. The research concerns structured information loss and retained distinctions.
+|An output need not identify its actual origin. A numeric measure of a
+residue does not determine the residue's structure.
+
+|https://github.com/hyperpolymath/epistemic-types[Epistemic Types]
+|From which standpoint is a claim available, and with what evidence?
+`E κ A` indexes access to a claim by a standpoint; warrants record evidence,
+and factivity or soundness requires additional structure.
+|Possessing evidence is not automatically a proof of its claim. Belief,
+knowledge and a sound warrant have different interfaces.
+
+|https://github.com/hyperpolymath/tropical-types[Tropical Types]
+|How do resource bounds compose? A declared resource algebra supplies
+operations and laws: max-plus can combine alternatives with `max` and
+sequential costs with `+`; bottleneck paths use a different algebra.
+|The algebra and cost semantics must be stated. A bound is neither a
+probability nor the identity of an information residue.
+
+|https://github.com/hyperpolymath/residual-evidence-types[Residual Evidence Types]
+|Which worlds satisfy both an observation and its evidence constraints?
+`Candidate observe r E = Σ (w : W), (observe w ≡ r) × E w`.
+Presence and value identification are questions over all admissible worlds.
+|The world is not recovered just by constructing a candidate. Real-world
+soundness also needs the premise that the actual world is admissible.
+The formal library is work in progress.
+
+|https://github.com/hyperpolymath/choreographic-types[Choreographic Types]
+|What happens to retained distinctions, resource bounds and warrants when
+a global interaction protocol is projected to local participants?
+|The general K-CUT result is open in the reviewed project description.
+A causal-order frontier called a cut is not Gentzen cut-elimination;
+it is also not a statistical causal-identification result.
+|===
+
+These are complementary research questions, not successive ranks in a
+universal hierarchy of type-system strength. They may be expressible using
+ordinary dependent, refinement, modal or graded constructions. A name alone
+does not establish a new primitive type or a novelty claim.
+
+== Shared glossary
+
+[cols="1,3",options="header"]
+|===
+|Term |Meaning in this guide
+|Observation |The result of a declared observation function. Keeping only
+its sign or magnitude changes that function and can merge distinctions.
+|Fibre / fiber |Origins paired with evidence that the observation function
+maps them to the specified output. The two spellings mean the same thing.
+|Candidate world |One world with evidence of observation compatibility and
+the declared constraints. It is an admissible explanation, not an assertion
+that this world actually occurred.
+|Residual |A discrepancy relative to a declared model. In the imported
+example it is `r = u + n`. Additivity is an assumption of that example.
+|Residue |Information retained after a transformation. An Echo residue is
+not synonymous with a numerical residual or an error term.
+|Evidence constraint |A predicate restricting candidate worlds. Choosing
+a bound in an explorer does not establish that real observations obey it.
+|Standpoint |The agent, observer or evidence state from which a claim is
+available. It is an explicit index, not necessarily a probability.
+|Warrant |Evidence for a claim from a standpoint. Soundness needs a separate
+map from that evidence to the specified claim meaning.
+|Soundness |A stated guarantee connecting evidence or a successful check to
+the meaning of a claim, under explicit premises.
+|Presence |Every admissible world has a nonzero contribution. A meaningful
+case also requires evidence that at least one world is admissible.
+|Value identification |The queried contribution has the same value in every
+admissible world. This does not identify a source or its causal role.
+|Confounding |A prospective causal specialisation, requiring a causal model
+and its identification assumptions. An unresolved additive contribution alone
+does not establish a confounder.
+|Inconsistency |No candidate satisfies the declared model and constraints.
+The explorer reports a conflict and issues no presence or identification claim;
+it does not use an empty candidate set as a useful warrant for every claim.
+|Resource grade |An element of a declared resource algebra used for compositional
+usage or cost accounting. Which operations compose which behaviours is explicit.
+|Echo index |An index of retained information or allowed degradation. It is
+distinct from a resource grade and from a numerical measure of a residue.
+|Residue measure |An observation of retained information into a measuring
+domain. Equal measured values need not mean equal retained information.
+|===
+
+== What each connection asks us to establish
+
+[cols="1,2,2",options="header"]
+|===
+|Connection |Conceptual relationship |Evidence needed for a stronger claim
+|Echo → Residual Evidence
+|Refine the observation fibre with the evidence predicate `E`.
+|An explicit encoding into the chosen Echo interface, with laws showing
+what refinement, coarsening and composition preserve.
+|Epistemic → Residual Evidence
+|Make the meaning and evidence obligations of candidate-wide claims explicit.
+|A sound warrant for the exact model-relative claim; separate evidence of
+nonemptiness and actual-world admissibility where required.
+|Echo → Choreographic
+|Track the distinctions retained by projection to participants.
+|A projection model and correspondence theorem. An informal loss number
+cannot stand in for the structure of an Echo residue.
+|Epistemic → Choreographic
+|Transport warrants with declared standpoint and soundness conditions.
+|The relevant K-CUT-WARRANT statement and its proof, including its side conditions.
+|Tropical → Choreographic
+|Compose bounds for interactions using a stated resource algebra.
+|A grading semantics and a projection theorem. A result in another proof
+assistant needs a proved correspondence or a port with its laws re-proved.
+|===
+
+The Choreographic README reviewed for this guide uses the phrase
+"echo loss-grade". The Echo foundation contract explicitly separates Echo
+indices, residue measures and resource grades. This map preserves that
+distinction; reconciling the choreographic interface is an open coordination
+task, not an equivalence asserted here.
+
+== Where things belong
+
+* `nextgen-typing`: this map, the shared glossary, ownership routing, comparisons
+  and explicitly cross-project integration obligations.
+* `residual-evidence-types`: the residual model, research plan, explorer,
+  future Agda core, and tests or proofs specific to that model.
+* `echo-types`, `epistemic-types`, `tropical-types`, `choreographic-types`:
+  each family's definitions, implementations and own proof evidence.
+* `kategoria`: language-development experiments. It is a separate project
+  from the old `katagoria` repository name, which GitHub now resolves to
+  `ideas-to-alphas`.
+* `typell`: verification-kernel implementation; `typed-wasm`: target and ABI
+  work; `panll`: the consuming environment. A conceptual connection in this
+  guide does not establish that any family is integrated into these projects.
+
+The machine-readable ownership rules are in
+link:../.machine_readable/bot_directives/placement.a2ml[placement.a2ml].
+
+== Recommended first residual milestone
+
+Start with the smallest complete argument: *presence without identification*.
+
+. In `residual-evidence-types`, recover the separate starter archive described
+  by the assessment if it is available. Until then, treat its reported Agda
+  results as unverified source claims and record any newly written core as new work.
+. Define the evidence-refined fibre, an inhabited case, a predicate holding
+  for every candidate, and identification of a query. Prove the natural-number
+  `r = u + n = 2` example both without a noise bound and with `n ≤ 1`.
+. Include explicit counterexamples: residual alone does not force presence;
+  presence does not force a unique value. Handle inconsistent constraints explicitly.
+. Compare the result against direct use of Echo's fibre and Epistemic's warrant
+  interfaces before expanding the calculus. Then take on dependency-preserving
+  composition, evidence revision, and correspondence with the finite explorer.
+
+That gives the project a concrete first result and a precise comparison with
+its neighbours. Causal specialisations and probability adapters can follow
+when their models and obligations are stated.
+
+== Sources and review boundary
+
+Reviewed on 2026-09-09: the local README files for the six type-set projects
+`echo-types`, `epistemic-types`, `tropical-types`, `choreographic-types`,
+`kategoria` and `typell`; the imported residual assessment and explorer; and
+the coordination repository's placement, architecture and roadmap documents.
+The Epistemic checkout includes local work in progress; this map makes no
+claim that its local integration files have been published or checked.
+No constituent proof suite was rerun for this documentation change.
+
+Primary project entry points:
+
+* https://github.com/hyperpolymath/echo-types[Echo Types README and foundation contract]
+* https://github.com/hyperpolymath/epistemic-types[Epistemic Types README]
+* https://github.com/hyperpolymath/tropical-types[Tropical Types README]
+* https://github.com/hyperpolymath/choreographic-types[Choreographic Types README]
+* https://github.com/hyperpolymath/residual-evidence-types/blob/main/residual-evidence-assessment.md[Imported residual assessment]
+
+GitHub repository API lookups on that date resolved `tropical-resource-typing`
+to `tropical-types` and `katagoria` to `ideas-to-alphas`, while `kategoria`
+resolved to its own repository. The historical pipeline documents retain
+the `katagoria` spelling; do not silently conflate it with `kategoria`.
+
+The graphic is a checked-in SVG so it displays in the AsciiDoc README without
+JavaScript or a diagram service. Its editable source is
+link:images/type-connections.dot[type-connections.dot]. Rebuild it with
+`just type-map` (Graphviz required).

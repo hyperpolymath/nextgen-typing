@@ -1,0 +1,42 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
+digraph TypeConnections {
+  graph [rankdir=TB, bgcolor="#f5f7fb", pad="0.35", nodesep="0.45", ranksep="0.8", splines=polyline,
+    fontname="DejaVu Sans", fontsize=22, fontcolor="#17243b", labelloc=t,
+    label="Type research: questions and connections\n\nnextgen-typing · coordination map · September 2026",
+    comment="SPDX-License-Identifier: CC-BY-SA-4.0; SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell"];
+  node [shape=box, style="rounded,filled", fillcolor="#ffffff", color="#a6b4c9",
+    fontname="DejaVu Sans", fontsize=13, fontcolor="#17243b", margin="0.22,0.2", penwidth=1.4];
+  edge [style=dashed, color="#61738e", fontcolor="#465773", fontname="DejaVu Sans", fontsize=10, arrowsize=0.65];
+
+  subgraph foundations {
+    rank=same;
+    echo [label=<<B>Echo Types</B><BR/><BR/>Which origins remain compatible<BR/>after information loss?<BR/><BR/><FONT POINT-SIZE="10">echo-types · Agda research library</FONT>>,
+      URL="https://github.com/hyperpolymath/echo-types"];
+    epistemic [label=<<B>Epistemic Types</B><BR/><BR/>Who has access to a claim,<BR/>with what evidence and soundness?<BR/><BR/><FONT POINT-SIZE="10">epistemic-types · Agda prototype</FONT>>,
+      URL="https://github.com/hyperpolymath/epistemic-types"];
+    tropical [label=<<B>Tropical Types</B><BR/><BR/>How do declared resource<BR/>bounds compose?<BR/><BR/><FONT POINT-SIZE="10">tropical-types · Lean research library</FONT>>,
+      URL="https://github.com/hyperpolymath/tropical-types"];
+  }
+
+  subgraph research {
+    rank=same;
+    residual [color="#bf7515", fillcolor="#fff4de", penwidth=2,
+      label=<<B>Residual Evidence Types</B><BR/><BR/>Which explanations satisfy the observation<BR/>and evidence, and what holds for all of them?<BR/><BR/><FONT POINT-SIZE="10"><B>WORK IN PROGRESS</B> · finite explorer<BR/>residual-evidence-types · formal library pending</FONT>>,
+      URL="https://github.com/hyperpolymath/residual-evidence-types"];
+    choreographic [fillcolor="#ebf3fd", color="#7f9bbb",
+      label=<<B>Choreographic Types</B><BR/><BR/>What is preserved when a global protocol<BR/>is projected to its participants?<BR/><BR/><FONT POINT-SIZE="10">choreographic-types · research programme<BR/><B>K-CUT remains open</B></FONT>>,
+      URL="https://github.com/hyperpolymath/choreographic-types"];
+  }
+
+  echo -> residual [label="refine the fibre\nwith evidence"];
+  epistemic -> residual [label="state claim meanings\nand soundness obligations"];
+  echo -> choreographic [label="retain distinctions\nthrough projection"];
+  epistemic -> choreographic [label="transport warrants\nunder conditions"];
+  tropical -> choreographic [label="compose bounds\nfor interactions"];
+
+  boundaries [shape=box, color="#c7d1df", fillcolor="#e8edf4",
+    label=<<B>Keep the meanings separate</B><BR/><BR/>Resource grade &#8800; Echo index &#8800; residue measure<BR/>Evidence token &#8800; sound proof &#160;&#183;&#160; Presence &#8800; identified value &#8800; causal role<BR/><BR/><FONT POINT-SIZE="10">Dashed arrows show conceptual use or proposed research.<BR/>They do not certify imports, integration, equivalence, or proved transport.</FONT>>];
+  residual -> boundaries [style=invis];
+  choreographic -> boundaries [style=invis];
+}

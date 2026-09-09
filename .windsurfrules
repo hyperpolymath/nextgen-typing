@@ -17,7 +17,7 @@
 # state, estate governance/CI scaffold, and CROSS-project proofs in
 # verification/proofs/ that import >=2 constituent repos (e.g. agda/EchoTyping.agda).
 
-# Then: read 0-AI-MANIFEST.a2ml, then .machine_readable/6a2/STATE.a2ml.
+# Then: read 0-AI-MANIFEST.a2ml, then .machine_readable/descriptiles/STATE.a2ml.
 # Licence MPL-2.0 (never AGPL) + SPDX header on every file.
 # Banned langs: TypeScript->ReScript, npm/Node->Deno, Go->Rust, Python->Julia/Rust.
 # Containers: Podman + Containerfile. Build via just.

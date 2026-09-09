@@ -22,7 +22,7 @@
 # Provenance: repo-true rewrite at the 2026-06-12 governance checkpoint.
 # The former root INTENT.contractile was an unfilled rsr-template stub
 # ({{ONE_PARAGRAPH_PURPOSE}} placeholders); purpose/anti-purpose below are
-# populated from README.adoc, EXPLAINME.adoc and 6a2/META.a2ml ADRs.
+# populated from README.adoc, EXPLAINME.adoc and descriptiles/META.a2ml ADRs.
 
 @abstract:
 North-star contractile for nextgen-typing, the coordination monorepo for
@@ -62,7 +62,7 @@ This repository is NOT:
 ## If In Doubt
 
 If you are unsure whether a change is in scope, ask. Sensitive areas:
-- .machine_readable/ contractile definitions and 6a2/anchor/
+- .machine_readable/ contractile definitions and descriptiles/anchor/
 - verification/proofs/ + src/interface/ (frozen pending OQ-001)
 - Governance docs (GOVERNANCE.adoc, MAINTAINERS.adoc, CODEOWNERS)
 - License policy documents
@@ -71,7 +71,7 @@ If you are unsure whether a change is in scope, ask. Sensitive areas:
 
 ### decide-oq-001
 - description: Decide the identity contradiction — docs-only coordination monorepo vs real proof repo (drop or re-scope the RSR code scaffold)
-- probe: grep -q 'OQ-001.*status = "open"' .machine_readable/6a2/STATE.a2ml && echo open
+- probe: grep -q 'OQ-001.*status = "open"' .machine_readable/descriptiles/STATE.a2ml && echo open
 - status: declared
 - notes: Raised 2026-06-05 (PR #31); blocks proof-debt resolution (6 believe_me markers)
 
@@ -79,7 +79,7 @@ If you are unsure whether a change is in scope, ask. Sensitive areas:
 - description: Replace remaining template placeholders per .machine_readable/ai/PLACEHOLDERS.adoc
 - probe: "! grep -rl 'hyperpolymath' .github/ 2>/dev/null | head -1 | grep -q ."
 - status: declared
-- notes: Tracked as OQ-002 in 6a2/STATE.a2ml
+- notes: Tracked as OQ-002 in descriptiles/STATE.a2ml
 
 ### track-tropical-extensions
 - description: Track Tropical.thy extensions (linorder instance, tropical matrices, Kleene algebra) in tropical-resource-typing and mirror in docs
@@ -102,7 +102,7 @@ If you are unsure whether a change is in scope, ask. Sensitive areas:
 - notes: Proposed in README.adoc (2026-06-09); design-stage
 
 #### drift-scan-automation
-- description: Periodic automated drift scan keeping README/ARCHITECTURE/PIPELINE/6a2 synchronized
+- description: Periodic automated drift scan keeping README/ARCHITECTURE/PIPELINE/descriptiles synchronized
 - horizon: near
 - status: declared
 

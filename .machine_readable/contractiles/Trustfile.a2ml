@@ -62,7 +62,7 @@ explicitly told otherwise.
 
 ## Sensitive Areas (explicit approval required)
 
-- .machine_readable/6a2/anchor/ANCHOR.a2ml — maintainer-only authority record
+- .machine_readable/descriptiles/anchor/ANCHOR.a2ml — maintainer-only authority record
 - GOVERNANCE.adoc / MAINTAINERS.adoc / .github/CODEOWNERS — governance
 - verification/proofs/ + src/interface/ — frozen pending OQ-001 decision
 - .github/workflows/ — thin wrappers of standards reusables; changes ride

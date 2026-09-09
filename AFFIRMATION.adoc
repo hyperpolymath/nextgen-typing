@@ -154,7 +154,7 @@ constituent repos, exactly as the manifest says it should.*
   `just validate-pipeline-drift` → `scripts/check-pipeline-drift.sh` exits *0*,
   with *every* check PASS: all six canonical files present
   (`README.adoc`, `docs/ARCHITECTURE.adoc`, `docs/PIPELINE.adoc`, and the three
-  `.machine_readable/6a2/` A2ML files); the canonical chain
+  `.machine_readable/descriptiles/` A2ML files); the canonical chain
   `katagoria → typell → typed-wasm → PanLL` matches exactly across README,
   ARCHITECTURE, PIPELINE, STATE and ECOSYSTEM; the "open-ended TypeLL" framing
   is consistent across README/ARCHITECTURE/PIPELINE/META; katagoria marked

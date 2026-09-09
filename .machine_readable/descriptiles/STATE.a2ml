@@ -6,7 +6,7 @@
 [metadata]
 project = "nextgen-typing"
 version = "0.1.0"
-last-updated = "2026-06-19"
+last-updated = "2026-09-09"
 status = "active"
 
 [project-context]
@@ -72,7 +72,7 @@ actions = [
   "Track Tropical.thy extensions (linorder instance, tropical matrices, Kleene algebra) in tropical-resource-typing and mirror progress in nextgen-typing docs.",
   "Track and link the arXiv paper draft on speculative tropical session types once published.",
   "Track typed-wasm aggregate ABI convention adoption in AffineScript/Ephapax integration paths as recursive-type support matures.",
-  "Run periodic drift scans so README.adoc, docs/ARCHITECTURE.adoc, docs/PIPELINE.adoc, and .machine_readable/6a2/{STATE,META,ECOSYSTEM}.a2ml stay synchronized.",
+  "Run periodic drift scans so README.adoc, docs/ARCHITECTURE.adoc, docs/PIPELINE.adoc, and .machine_readable/descriptiles/{STATE,META,ECOSYSTEM}.a2ml stay synchronized.",
 ]
 
 [maintenance-status]
@@ -96,3 +96,15 @@ events = [
 part-of = ["hyperpolymath coordination infrastructure"]
 coordinates = ["typell", "typed-wasm", "katagoria", "tropical-resource-typing", "protocol-squisher"]
 downstream-consumers = ["panll", "nextgen-languages/affinescript", "nextgen-languages/ephapax"]
+
+[type-research-map]
+review-date = "2026-09-09"
+guide = "docs/TYPE-CONNECTIONS.adoc"
+graphic = "docs/images/type-connections.svg"
+editable-source = "docs/images/type-connections.dot"
+families = ["echo-types", "epistemic-types", "tropical-types", "residual-evidence-types", "choreographic-types"]
+status = "Documentation map and glossary; arrows are conceptual, not integration or proof claims"
+residual-status = "Work in progress: assessment and finite JavaScript explorer; formal library pending"
+next-residual-milestone = "Presence without value identification, with inhabited cases and explicit counterexamples, in residual-evidence-types"
+proof-validation = "Constituent proof suites not rerun for this documentation change"
+metadata-location = ".machine_readable/descriptiles/"

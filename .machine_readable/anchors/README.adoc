@@ -2,6 +2,6 @@
 // Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 = anchors Registry
 
-MOVED: the anchor record now lives at `.machine_readable/6a2/anchor/ANCHOR.a2ml`
+MOVED: the anchor record now lives at `.machine_readable/descriptiles/anchor/ANCHOR.a2ml`
 (estate-standardization layout, 2026-06-12). This directory remains only as a
 forwarding stub for older references.

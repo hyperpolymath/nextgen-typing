@@ -2,7 +2,7 @@
 // Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 = nextgen-typing: Pipeline Architecture
 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
-2026-04-12
+2026-09-09
 :toc:
 :icons: font
 
@@ -18,6 +18,13 @@ code.  It contains:
 * Research artefacts that don't belong in a single language repo
 
 It follows the pattern of `nextgen-languages` and `nextgen-databases`.
+
+The link:TYPE-CONNECTIONS.adoc[type-research map and glossary] positions Echo,
+Epistemic, Tropical, Residual Evidence and Choreographic Types by their
+questions and explicit research obligations. Its arrows are conceptual;
+they do not add an implemented dependency to the historical pipeline below.
+The map's name-resolution note distinguishes the old `katagoria` name
+(now `ideas-to-alphas`) from the separate `kategoria` project.
 
 == The Main Chain
 
@@ -113,7 +120,7 @@ part of the main chain:
 
 Each constituent repo receives:
 
-* A reference to `nextgen-typing` in their `.machine_readable/6a2/ECOSYSTEM.a2ml`
+* A reference to `nextgen-typing` in their `.machine_readable/descriptiles/ECOSYSTEM.a2ml`
 * Their place in the pipeline described in their own docs
 * The open-ended TypeLL invariant documented in their own ROADMAP
 

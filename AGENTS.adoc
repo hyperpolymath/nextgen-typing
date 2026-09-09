@@ -88,7 +88,7 @@ CI by `+.github/workflows/coordination-boundary.yml+`.
 
 [arabic]
 . Read `+0-AI-MANIFEST.a2ml+`, then
-`+.machine_readable/6a2/STATE.a2ml+`.
+`+.machine_readable/descriptiles/STATE.a2ml+`.
 . Full rules: `+docs/practice/AI-CONVENTIONS.adoc+`.
 . Licence *MPL-2.0* + SPDX header on every file (never AGPL).
 . Banned languages: TypeScript→ReScript, npm/Node→Deno, Go→Rust,

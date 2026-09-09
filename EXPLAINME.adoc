@@ -56,13 +56,13 @@ repos.  Here we only document:
 | `docs/ARCHITECTURE.adoc`
 | Full pipeline architecture doc (also served as the creation briefing)
 
-| `.machine_readable/6a2/STATE.a2ml`
+| `.machine_readable/descriptiles/STATE.a2ml`
 | Current state: milestones, blockers, next actions
 
-| `.machine_readable/6a2/META.a2ml`
+| `.machine_readable/descriptiles/META.a2ml`
 | ADRs: open-ended TypeLL, dual-role typed-wasm, katagoria upstream
 
-| `.machine_readable/6a2/ECOSYSTEM.a2ml`
+| `.machine_readable/descriptiles/ECOSYSTEM.a2ml`
 | All related projects and their relationship types
 |===
 
@@ -70,5 +70,5 @@ repos.  Here we only document:
 
 Start with `README.adoc` for a 60-second overview.  Read
 `docs/ARCHITECTURE.adoc` for the full pipeline description.  Check
-`ROADMAP.adoc` for what is and isn't done.  Read `.machine_readable/6a2/STATE.a2ml`
+`ROADMAP.adoc` for what is and isn't done.  Read `.machine_readable/descriptiles/STATE.a2ml`
 for blockers and next actions.

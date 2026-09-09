@@ -4,6 +4,22 @@
 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 :toc:
 
+== Type Research Map (2026-09-09)
+
+* [x] Add a README graphic and shared glossary for Echo, Epistemic, Tropical,
+  Residual Evidence and Choreographic Types, with explicit arrow meanings.
+* [x] Route residual-specific models, proofs and tests to `residual-evidence-types`.
+* [ ] Recover the separate residual starter archive if available; otherwise
+  build and verify a new minimal core in the owning repository.
+* [ ] Establish presence without identification, with counterexamples and
+  explicit nonemptiness, before expanding the calculus.
+* [ ] Compare residual refinement and claim transport with the actual Echo
+  and Epistemic interfaces; record any checked correspondence with its receipt.
+* [ ] Reconcile choreographic "echo loss-grade" vocabulary with the separate
+  resource-grade, Echo-index and residue-measure meanings.
+
+See link:docs/TYPE-CONNECTIONS.adoc[connections, meanings and ownership].
+
 == Near-Term (This Sprint)
 
 * [x] Create `katagoria` repo from rsr-template-repo
@@ -11,7 +27,7 @@ Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 * [x] Add `typed-wasm` reference to `nextgen-languages/` monorepo
 * [x] Write/clean up `docs/ARCHITECTURE.adoc` (pure architecture doc, no briefing framing)
 * [x] Add `docs/PIPELINE.adoc` (machine-readable A2ML pipeline spec)
-* [x] Populate `.machine_readable/6a2/` files with real project state (STATE, META, ECOSYSTEM)
+* [x] Populate `.machine_readable/descriptiles/` files with real project state (STATE, META, ECOSYSTEM)
 * [x] Add nextgen-typing + katagoria ecosystem references to typell and typed-wasm ECOSYSTEM.a2ml
 * [x] Add ecosystem references to all constituent repos (affinescript, ephapax, tropical-resource-typing, protocol-squisher)
 * [x] katagoria: first research artefact structure (research/level-candidates/)
