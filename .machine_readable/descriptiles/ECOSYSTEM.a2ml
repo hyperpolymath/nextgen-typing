@@ -23,7 +23,7 @@ projects = [
   { name = "typed-wasm", relationship = "coordinates", notes = "TypeLL applied to WasmGC memory safety + aggregate library for AffineScript/Ephapax." },
   { name = "echo-types", relationship = "integrated", notes = "Fiber-based structured-loss formalization integrated into the typesystem (#33, 2026-06-12)." },
   { name = "epistemic-types", relationship = "research-coordination", notes = "Standpoint-indexed modalities, warrants and explicit soundness. Mapped in docs/TYPE-CONNECTIONS.adoc; no new integration certified by the map." },
-  { name = "residual-evidence-types", relationship = "research-coordination", notes = "Public work in progress: evidence-refined candidate worlds, assessment and finite explorer. Formal library pending; proposed connections to Echo and Epistemic Types." },
+  { name = "residual-evidence-types", relationship = "research-coordination", notes = "Public work in progress: minimal Agda core proves presence without identification. Narrow Echo fibre and Epistemic SoundWarrant comparisons checked; broader composition, revision and explorer correspondence pending. Receipts in docs/TYPE-CONNECTIONS.adoc." },
   { name = "choreographic-types", relationship = "research-coordination", notes = "Projection, retained distinctions, resource bounds and warrant transport; general K-CUT remains open in reviewed documentation." },
   { name = "panll", relationship = "downstream-consumer", notes = "eNSAID reference env. TypeLL runs inside PanLL. Not owned by nextgen-typing." },
   { name = "nextgen-languages/affinescript", relationship = "co-product", notes = "Compiles to typed WasmGC. TypeLL grounds its type system." },

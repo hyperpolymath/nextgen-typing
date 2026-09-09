@@ -9,12 +9,14 @@ Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 * [x] Add a README graphic and shared glossary for Echo, Epistemic, Tropical,
   Residual Evidence and Choreographic Types, with explicit arrow meanings.
 * [x] Route residual-specific models, proofs and tests to `residual-evidence-types`.
-* [ ] Recover the separate residual starter archive if available; otherwise
-  build and verify a new minimal core in the owning repository.
-* [ ] Establish presence without identification, with counterexamples and
+* [x] Build and verify a new minimal residual core in its owning repository;
+  the separate starter archive remains unrecovered.
+* [x] Establish presence without identification, with counterexamples and
   explicit nonemptiness, before expanding the calculus.
-* [ ] Compare residual refinement and claim transport with the actual Echo
-  and Epistemic interfaces; record any checked correspondence with its receipt.
+* [x] Check candidate packaging against actual Echo and a conditional warrant
+  against actual Epistemic; link the bounded proof receipts in the shared guide.
+* [ ] Develop dependency-preserving composition and evidence revision/retraction
+  in `residual-evidence-types`, then a certified finite checker.
 * [ ] Reconcile choreographic "echo loss-grade" vocabulary with the separate
   resource-grade, Echo-index and residue-measure meanings.
 

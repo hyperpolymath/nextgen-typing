@@ -29,14 +29,14 @@
 <!-- residual -->
 <g id="node4" class="node">
 <title>residual</title>
-<g id="a_node4"><a xlink:href="https://github.com/hyperpolymath/residual-evidence-types" xlink:title="&lt;B&gt;Residual Evidence Types&lt;/B&gt;&lt;BR/&gt;&lt;BR/&gt;Which explanations satisfy the observation&lt;BR/&gt;and evidence, and what holds for all of them?&lt;BR/&gt;&lt;BR/&gt;&lt;FONT POINT&#45;SIZE=&quot;10&quot;&gt;&lt;B&gt;WORK IN PROGRESS&lt;/B&gt; · finite explorer&lt;BR/&gt;residual&#45;evidence&#45;types · formal library pending&lt;/FONT&gt;">
+<g id="a_node4"><a xlink:href="https://github.com/hyperpolymath/residual-evidence-types" xlink:title="&lt;B&gt;Residual Evidence Types&lt;/B&gt;&lt;BR/&gt;&lt;BR/&gt;Which explanations satisfy the observation&lt;BR/&gt;and evidence, and what holds for all of them?&lt;BR/&gt;&lt;BR/&gt;&lt;FONT POINT&#45;SIZE=&quot;10&quot;&gt;&lt;B&gt;WORK IN PROGRESS&lt;/B&gt; · minimal Agda core checked&lt;BR/&gt;residual&#45;evidence&#45;types · finite explorer separate&lt;/FONT&gt;">
 <path fill="#fff4de" stroke="#bf7515" stroke-width="2" d="M764,-285C764,-285 450,-285 450,-285 444,-285 438,-279 438,-273 438,-273 438,-184 438,-184 438,-178 444,-172 450,-172 450,-172 764,-172 764,-172 770,-172 776,-178 776,-184 776,-184 776,-273 776,-273 776,-279 770,-285 764,-285"/>
 <text text-anchor="start" x="518" y="-261.6" font-family="DejaVu Sans" font-weight="bold" font-size="13.00" fill="#17243b">Residual Evidence Types</text>
 <text text-anchor="start" x="464" y="-235.6" font-family="DejaVu Sans" font-size="13.00" fill="#17243b">Which explanations satisfy the observation</text>
 <text text-anchor="start" x="454" y="-222.6" font-family="DejaVu Sans" font-size="13.00" fill="#17243b">and evidence, and what holds for all of them?</text>
-<text text-anchor="start" x="510.5" y="-199" font-family="DejaVu Sans" font-weight="bold" font-size="10.00" fill="#17243b">WORK IN PROGRESS</text>
-<text text-anchor="start" x="625.5" y="-199" font-family="DejaVu Sans" font-size="10.00" fill="#17243b"> · finite explorer</text>
-<text text-anchor="start" x="489" y="-189" font-family="DejaVu Sans" font-size="10.00" fill="#17243b">residual&#45;evidence&#45;types · formal library pending</text>
+<text text-anchor="start" x="477" y="-199" font-family="DejaVu Sans" font-weight="bold" font-size="10.00" fill="#17243b">WORK IN PROGRESS</text>
+<text text-anchor="start" x="592" y="-199" font-family="DejaVu Sans" font-size="10.00" fill="#17243b"> · minimal Agda core checked</text>
+<text text-anchor="start" x="486.5" y="-189" font-family="DejaVu Sans" font-size="10.00" fill="#17243b">residual&#45;evidence&#45;types · finite explorer separate</text>
 </a>
 </g>
 </g>

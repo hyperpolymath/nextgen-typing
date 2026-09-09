@@ -12,9 +12,9 @@ image::images/type-connections.svg[Five type research families connected by expl
 
 *Read every dashed arrow as a conceptual use or a proposed research task.*
 An arrow does not assert a package dependency, a checked bridge, an
-equivalence, or a theorem. In particular, the connections into Residual
-Evidence Types are a research direction: its initial public import has an
-assessment and a JavaScript explorer, with the formal library still pending.
+equivalence, or a theorem. Residual Evidence Types now has a checked minimal
+Agda core and two narrow interface comparisons, described below with proof
+receipts. Those results do not discharge every obligation represented by an arrow.
 
 == What each family means
 
@@ -113,12 +113,13 @@ domain. Equal measured values need not mean equal retained information.
 |Connection |Conceptual relationship |Evidence needed for a stronger claim
 |Echo → Residual Evidence
 |Refine the observation fibre with the evidence predicate `E`.
-|An explicit encoding into the chosen Echo interface, with laws showing
-what refinement, coarsening and composition preserve.
+|The first core checks an encoding into `Echo.Echo` and both round trips.
+Coarsening and dependency-preserving composition laws remain open.
 |Epistemic → Residual Evidence
 |Make the meaning and evidence obligations of candidate-wide claims explicit.
-|A sound warrant for the exact model-relative claim; separate evidence of
-nonemptiness and actual-world admissibility where required.
+|The first core checks a `SoundWarrant` for a candidate-wide claim, with an
+inhabited case and explicit actual-world premises. Evidence revision and
+retraction remain open.
 |Echo → Choreographic
 |Track the distinctions retained by projection to participants.
 |A projection model and correspondence theorem. An informal loss number
@@ -143,7 +144,7 @@ task, not an equivalence asserted here.
 * `nextgen-typing`: this map, the shared glossary, ownership routing, comparisons
   and explicitly cross-project integration obligations.
 * `residual-evidence-types`: the residual model, research plan, explorer,
-  future Agda core, and tests or proofs specific to that model.
+  Agda core, and tests or proofs specific to that model.
 * `echo-types`, `epistemic-types`, `tropical-types`, `choreographic-types`:
   each family's definitions, implementations and own proof evidence.
 * `kategoria`: language-development experiments. It is a separate project
@@ -156,25 +157,32 @@ task, not an equivalence asserted here.
 The machine-readable ownership rules are in
 link:../.machine_readable/bot_directives/placement.a2ml[placement.a2ml].
 
-== Recommended first residual milestone
+== First residual milestone: checked, with limits
 
-Start with the smallest complete argument: *presence without identification*.
+The first argument is *presence without identification*. In natural numbers,
+`u+n=2` alone admits both `(0,2)` and `(2,0)`. Adding `n≤1` proves `u≠0`,
+but `(1,1)` and `(2,0)` still disagree on the value of `u`. Adding `u=0`
+then makes the constraints inconsistent, so no inhabited case can be built.
 
-. In `residual-evidence-types`, recover the separate starter archive described
-  by the assessment if it is available. Until then, treat its reported Agda
-  results as unverified source claims and record any newly written core as new work.
-. Define the evidence-refined fibre, an inhabited case, a predicate holding
-  for every candidate, and identification of a query. Prove the natural-number
-  `r = u + n = 2` example both without a noise bound and with `n ≤ 1`.
-. Include explicit counterexamples: residual alone does not force presence;
-  presence does not force a unique value. Handle inconsistent constraints explicitly.
-. Compare the result against direct use of Echo's fibre and Epistemic's warrant
-  interfaces before expanding the calculus. Then take on dependency-preserving
-  composition, evidence revision, and correspondence with the finite explorer.
+The new core also checks ordinary evidence-refined fibre round trips,
+conditional actual-world soundness, and claim transport under evidence
+refinement. Three deliberately invalid modules must be rejected by Agda.
+Both actual sibling interfaces are imported by the comparison modules:
+Echo's fibre packaging round-trips, and Epistemic's `SoundWarrant` requires
+explicit actual-world premises.
 
-That gives the project a concrete first result and a precise comparison with
-its neighbours. Causal specialisations and probability adapters can follow
-when their models and obligations are stated.
+https://github.com/hyperpolymath/residual-evidence-types/blob/4325198c10e2e689f084c2f64a27213685a1ffd2/PROOF-STATUS.adoc[The proof record at the checked revision]
+lists the theorem names, commands, pinned sibling revisions and standard-library
+warnings. The https://github.com/hyperpolymath/residual-evidence-types/actions/runs/34400282291[hosted Agda proof job]
+passed the core, all three rejection controls and both comparisons on 2026-09-09.
+This is newly written work; the separate starter archive mentioned in the
+imported assessment has not been recovered.
+
+Next, investigate dependency-preserving composition and evidence revision or
+retraction, then prove correspondence with a finite checker. The JavaScript
+explorer uses bounded signed integers and has no proved correspondence to the
+natural-number core. Causal specialisations and probability adapters require
+their own models and obligations.
 
 == Sources and review boundary
 
@@ -182,9 +190,10 @@ Reviewed on 2026-09-09: the local README files for the six type-set projects
 `echo-types`, `epistemic-types`, `tropical-types`, `choreographic-types`,
 `kategoria` and `typell`; the imported residual assessment and explorer; and
 the coordination repository's placement, architecture and roadmap documents.
-The Epistemic checkout includes local work in progress; this map makes no
-claim that its local integration files have been published or checked.
-No constituent proof suite was rerun for this documentation change.
+The residual core and its two direct comparison modules were checked locally
+and in the linked hosted job with Agda 2.6.4.3 under `--safe --without-K`.
+This is a bounded result: the complete constituent proof suites were not
+rerun, and unrelated local Epistemic work is outside the receipt.
 
 Primary project entry points:
 

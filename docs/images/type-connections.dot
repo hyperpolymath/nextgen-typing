@@ -22,7 +22,7 @@ digraph TypeConnections {
   subgraph research {
     rank=same;
     residual [color="#bf7515", fillcolor="#fff4de", penwidth=2,
-      label=<<B>Residual Evidence Types</B><BR/><BR/>Which explanations satisfy the observation<BR/>and evidence, and what holds for all of them?<BR/><BR/><FONT POINT-SIZE="10"><B>WORK IN PROGRESS</B> · finite explorer<BR/>residual-evidence-types · formal library pending</FONT>>,
+      label=<<B>Residual Evidence Types</B><BR/><BR/>Which explanations satisfy the observation<BR/>and evidence, and what holds for all of them?<BR/><BR/><FONT POINT-SIZE="10"><B>WORK IN PROGRESS</B> · minimal Agda core checked<BR/>residual-evidence-types · finite explorer separate</FONT>>,
       URL="https://github.com/hyperpolymath/residual-evidence-types"];
     choreographic [fillcolor="#ebf3fd", color="#7f9bbb",
       label=<<B>Choreographic Types</B><BR/><BR/>What is preserved when a global protocol<BR/>is projected to its participants?<BR/><BR/><FONT POINT-SIZE="10">choreographic-types · research programme<BR/><B>K-CUT remains open</B></FONT>>,

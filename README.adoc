@@ -27,8 +27,10 @@ image::docs/images/type-connections.svg[Echo, Epistemic and Tropical Types conne
 
 *The dashed arrows describe conceptual uses and research obligations.* They
 do not certify package dependencies, integration, equivalence or proved
-transport. Residual Evidence Types is *work in progress*: its current import
-contains a research assessment and a finite explorer; the formal library is pending.
+transport. Residual Evidence Types is *work in progress*: its minimal Agda core
+now checks presence without value identification, plus narrow Echo and Epistemic
+interface comparisons. The guide links the exact proof receipts; the finite
+explorer and broader composition/revision programme remain separate obligations.
 
 [cols="1,3",options="header"]
 |===
