@@ -47,7 +47,7 @@ a working recovery path is a gate failure under the bust verb.
 ### metadata-corruption
 - description: A .a2ml file becomes unparseable or contradicts reality
 - class: partial_write
-- recovery: restore from git history (git checkout origin/main -- <file>); 6a2/ is canonical, root pointers are derivable
+- recovery: restore from git history (git checkout origin/main -- <file>); descriptiles/ is canonical, root pointers are derivable
 - expected-recovery-time-seconds: 300
 - status: declared
 

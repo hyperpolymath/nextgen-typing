@@ -26,12 +26,12 @@ ci-green-before-merge = true
 # Adapted for nextgen-typing: no .claude/CLAUDE.md exists here (listed
 # defensively), proofs live under verification/proofs/, and the ABI scaffold
 # under src/interface/ is frozen pending the OQ-001 identity decision
-# (see 6a2/STATE.a2ml). The anchor is maintainer-only.
+# (see descriptiles/STATE.a2ml). The anchor is maintainer-only.
 never-touch = [
   ".claude/CLAUDE.md",
   "verification/proofs/",
   "src/interface/",
-  ".machine_readable/6a2/anchor/ANCHOR.a2ml",
+  ".machine_readable/descriptiles/anchor/ANCHOR.a2ml",
   "LICENSE",
 ]
 

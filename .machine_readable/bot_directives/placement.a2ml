@@ -10,7 +10,7 @@
 
 [metadata]
 version = "1.0.0"
-last-updated = "2026-06-19"
+last-updated = "2026-09-09"
 applies-to = "nextgen-typing"
 precedence = "maintainer > this directive > bot defaults"
 
@@ -51,12 +51,15 @@ rules = [
   { subject = "TypeLL kernel: dependent/linear/session types, QTT, proof-carrying code, effects", owns = "typell" },
   { subject = "WasmGC memory-safety proofs, verified convergence ABI, aggregate-library conventions", owns = "typed-wasm" },
   { subject = "echo-types library: fiber-based structured loss (Echo/EchoLinear/EchoResidue/EchoCharacteristic)", owns = "echo-types", companion = "EchoTypes.jl" },
+  { subject = "standpoint-indexed access, warrants and sound proof transport", owns = "epistemic-types" },
+  { subject = "evidence-indexed residual models, explorer, candidate-world proofs and tests", owns = "residual-evidence-types" },
+  { subject = "cross-project type-family map, shared glossary and connection obligations", owns = "nextgen-typing" },
   { subject = "choreographic / multiparty session types", owns = "choreographic-types" },
   { subject = "TypeFix Zero / micro-Type-0 calibration calculus", owns = "typefix-zero" },
   { subject = "AffineScript language code", owns = "affinescript" },
   { subject = "Ephapax language code / region calculus", owns = "ephapax" },
   { subject = "query-language type safety (SQL/GraphQL/Cypher/SPARQL/VQL)", owns = "typedqliser", also = "vcl-ut" },
-  { subject = "tropical / semiring type theory (Isabelle/Lean)", owns = "tropical-resource-typing" },
+  { subject = "tropical / semiring type theory (Isabelle/Lean)", owns = "tropical-types", former-name = "tropical-resource-typing" },
   { subject = "transport-adapter / max-plus pathfinding", owns = "protocol-squisher" },
   { subject = "eNSAID reference env (downstream consumer of TypeLL)", owns = "panll" },
 ]

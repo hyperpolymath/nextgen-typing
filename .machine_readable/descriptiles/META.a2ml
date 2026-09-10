@@ -6,7 +6,7 @@
 
 [metadata]
 version = "0.1.1"
-last-updated = "2026-06-12"
+last-updated = "2026-09-09"
 
 [project-info]
 type = "monorepo"  # library | binary | monorepo | service | website
@@ -35,7 +35,7 @@ id = "ADR-003"
 title = "typed-wasm has dual role (ADR-004 in typed-wasm)"
 status = "accepted"
 date = "2026-04-11"
-rationale = "typed-wasm is both the TypeLL WASM safety application AND the aggregate library for AffineScript+Ephapax cross-language binary conventions. Both roles are first-class. See typed-wasm/.machine_readable/6a2/META.a2ml#ADR-004."
+rationale = "typed-wasm is both the TypeLL WASM safety application AND the aggregate library for AffineScript+Ephapax cross-language binary conventions. Both roles are first-class. See typed-wasm/.machine_readable/descriptiles/META.a2ml#ADR-004."
 
 [[architecture-decisions.adrs]]
 id = "ADR-004"

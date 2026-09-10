@@ -33,13 +33,13 @@ jobs:
           failed=0
           for file in .github/workflows/*.yml .github/workflows/*.yaml; do
             [ -f "$file" ] || continue
-            if ! head -1 "$file" | grep -q "^# SPDX-License-Identifier:"; then
+            if ! awk '/^#/ { if ($0 ~ /^# SPDX-License-Identifier:/) found=1; next } /^[[:space:]]*$/ { next } { exit } END { exit !found }' "$file"; then
               echo "ERROR: $file missing SPDX header"
               failed=1
             fi
           done
           if [ $failed -eq 1 ]; then
-            echo "Add '# SPDX-License-Identifier: MPL-2.0' as first line"
+            echo "Add '# SPDX-License-Identifier: MPL-2.0' to the opening comment header"
             exit 1
           fi
           echo "All workflows have SPDX headers"
@@ -62,24 +62,18 @@ jobs:
           fi
           echo "All workflows have permissions declared"
 
-      - name: Check SHA-Pinned Actions
+      - name: Verify action lockfile coverage
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_CONFIG_DIR: ${{ runner.temp }}/workflow-linter-gh
+          XDG_DATA_HOME: ${{ runner.temp }}/workflow-linter-data
         run: |
-          echo "=== Checking Action Pinning ==="
-          # Find any uses: lines that don't have @SHA format
-          # Pattern: uses: owner/repo@<40-char-hex>
-          unpinned=$(grep -rnE "^[[:space:]]+uses:" .github/workflows/ | \
-            grep -v "@[a-f0-9]\{40\}" | \
-            grep -v "uses: \./\|uses: docker://\|uses: actions/github-script" || true)
-
-          if [ -n "$unpinned" ]; then
-            echo "ERROR: Found unpinned actions:"
-            echo "$unpinned"
-            echo ""
-            echo "Replace version tags with SHA pins, e.g.:"
-            echo "  uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.1"
-            exit 1
-          fi
-          echo "All actions are SHA-pinned"
+          # Binary extensions accept release tags, not source commit pins.
+          # Verify the v0.1.6 linux-amd64 release bytes before executing them.
+          gh release download v0.1.6 --repo github/gh-actions-lock --pattern linux-amd64 --output "$RUNNER_TEMP/gh-actions-lock"
+          echo "4181ec1da5408b34b9a542a7ee5c6ce3a4d6ac815c7d0206a00ceca8a817f4e3  $RUNNER_TEMP/gh-actions-lock" | sha256sum --check --strict
+          chmod +x "$RUNNER_TEMP/gh-actions-lock"
+          "$RUNNER_TEMP/gh-actions-lock" --verify-local
 
       - name: Check for Duplicate Workflows
         run: |

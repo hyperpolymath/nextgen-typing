@@ -3,7 +3,7 @@
 # Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
 #
 # Pipeline drift guard for nextgen-typing.
-# Ensures canonical pipeline docs and 6a2 machine-readable state stay aligned.
+# Ensures canonical pipeline docs and descriptiles machine-readable state stay aligned.
 
 set -euo pipefail
 
@@ -13,9 +13,9 @@ ERRORS=0
 README="$REPO_ROOT/README.adoc"
 ARCHITECTURE="$REPO_ROOT/docs/ARCHITECTURE.adoc"
 PIPELINE="$REPO_ROOT/docs/PIPELINE.adoc"
-STATE="$REPO_ROOT/.machine_readable/6a2/STATE.a2ml"
-META="$REPO_ROOT/.machine_readable/6a2/META.a2ml"
-ECOSYSTEM="$REPO_ROOT/.machine_readable/6a2/ECOSYSTEM.a2ml"
+STATE="$REPO_ROOT/.machine_readable/descriptiles/STATE.a2ml"
+META="$REPO_ROOT/.machine_readable/descriptiles/META.a2ml"
+ECOSYSTEM="$REPO_ROOT/.machine_readable/descriptiles/ECOSYSTEM.a2ml"
 
 CANON_CHAIN="katagoria → typell → typed-wasm → PanLL"
 CHAIN_REGEX='katagoria[[:space:]]*→[[:space:]]*typell[[:space:]]*→[[:space:]]*typed-wasm[[:space:]]*→[[:space:]]*PanLL'

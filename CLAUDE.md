@@ -63,7 +63,7 @@ The machine-readable form of this table is the source of truth:
 
 ## After the boundary, follow the estate conventions
 
-1. Read `0-AI-MANIFEST.a2ml`, then `.machine_readable/6a2/STATE.a2ml`.
+1. Read `0-AI-MANIFEST.a2ml`, then `.machine_readable/descriptiles/STATE.a2ml`.
 2. Full rules: `docs/practice/AI-CONVENTIONS.adoc`.
 3. Licence **MPL-2.0** + SPDX header on every file (never AGPL).
 4. Banned languages: TypeScript→ReScript, npm/Node→Deno, Go→Rust, Python→Julia/Rust.

@@ -24,9 +24,9 @@ output this repo produces (docs, CLI tooling, diagrams).
 ## Documentation Drift
 
 ### readme-state-sync
-- description: README.adoc, docs/ARCHITECTURE.adoc, docs/PIPELINE.adoc and 6a2/{STATE,META,ECOSYSTEM}.a2ml should agree
-- tolerance: No contradictions between narrative docs and 6a2 metadata
-- corrective: Run the periodic drift scan listed in 6a2/STATE.a2ml critical-next-actions
+- description: README.adoc, docs/ARCHITECTURE.adoc, docs/PIPELINE.adoc and descriptiles/{STATE,META,ECOSYSTEM}.a2ml should agree
+- tolerance: No contradictions between narrative docs and descriptiles metadata
+- corrective: Run the periodic drift scan listed in descriptiles/STATE.a2ml critical-next-actions
 - severity: advisory
 
 ### pipeline-currency
@@ -40,7 +40,7 @@ output this repo produces (docs, CLI tooling, diagrams).
 - tolerance: 0 {{PLACEHOLDER}} markers outside .machine_readable/ai/PLACEHOLDERS.adoc
 - corrective: Fill per PLACEHOLDERS.adoc (just init or manual sed pass)
 - severity: advisory
-- notes: As of 2026-06-12 placeholders remain in .github/ community files, self-validating/ k9 templates, and QUICKSTART-MAINTAINER.adoc (tracked as OQ-002 in 6a2/STATE.a2ml)
+- notes: As of 2026-06-12 placeholders remain in .github/ community files, self-validating/ k9 templates, and QUICKSTART-MAINTAINER.adoc (tracked as OQ-002 in descriptiles/STATE.a2ml)
 
 ## Structural Drift
 
