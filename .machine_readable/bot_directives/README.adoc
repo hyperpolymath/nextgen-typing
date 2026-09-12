@@ -58,7 +58,7 @@ interactive agents.
 
 == Relationship to Other Files
 
-* `../6a2/AGENTIC.a2ml` says WHAT agents can do (permissions, gating)
+* `../descriptiles/AGENTIC.a2ml` says WHAT agents can do (permissions, gating)
 * `bot_directives/` says HOW agents should work (methodology) and what
   the automation fleet may do (fleet-specific)
 * `CLAUDE.md` (where present) says how Claude specifically should work

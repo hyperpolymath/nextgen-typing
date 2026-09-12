@@ -39,9 +39,9 @@ research PoCs → `kategoria`; μType₀ → `typefix-zero`; choreographic types
 ## Canonical Locations
 
 - Pipeline architecture: `docs/ARCHITECTURE.adoc`
-- Current state + blockers: `.machine_readable/6a2/STATE.a2ml`
-- ADRs: `.machine_readable/6a2/META.a2ml`
-- Ecosystem relationships: `.machine_readable/6a2/ECOSYSTEM.a2ml`
+- Current state + blockers: `.machine_readable/descriptiles/STATE.a2ml`
+- ADRs: `.machine_readable/descriptiles/META.a2ml`
+- Ecosystem relationships: `.machine_readable/descriptiles/ECOSYSTEM.a2ml`
 - Content routing (what goes where): `.machine_readable/bot_directives/placement.a2ml`
 - Human overview: `README.adoc`
 - What-is-this explainer: `EXPLAINME.adoc`
@@ -49,7 +49,7 @@ research PoCs → `kategoria`; μType₀ → `typefix-zero`; choreographic types
 ## Startup Sequence For AI Agents
 
 1. Read this manifest.
-2. Read `.machine_readable/6a2/STATE.a2ml` for blockers and next actions.
+2. Read `.machine_readable/descriptiles/STATE.a2ml` for blockers and next actions.
 3. Read `docs/ARCHITECTURE.adoc` for the full pipeline picture.
 4. Read `ROADMAP.adoc` for what is and isn't done.
 
@@ -64,14 +64,14 @@ research PoCs → `kategoria`; μType₀ → `typefix-zero`; choreographic types
 ## PRIORITY ACTION — this repository is not fully initialised
 
 22 substitution token(s) still have no value. **Read
-`REQUIRES_INITIALISATION.md` in the repository root before doing anything
+`REQUIRES_INITIALISATION.adoc` in the repository root before doing anything
 else here** — it lists every outstanding token, what it means, and which
 files it belongs in.
 
 Do not fabricate values for them, and do not delete the sections that
 contain them to quiet a gate. They are unfilled because they need a
 decision, not because they were overlooked. Resolve what you legitimately
-can, leave the rest, and delete `REQUIRES_INITIALISATION.md` only when
+can, leave the rest, and delete `REQUIRES_INITIALISATION.adoc` only when
 nothing outstanding remains.
 
 <!-- END requires-initialisation -->

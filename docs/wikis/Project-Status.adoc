@@ -5,7 +5,7 @@
 :icons: font
 
 Dated status entries for nextgen-typing. Newest first. Canonical
-machine-readable state lives in `.machine_readable/6a2/STATE.a2ml`.
+machine-readable state lives in `.machine_readable/descriptiles/STATE.a2ml`.
 
 == 2026-06-12 — Estate standardization + governance checkpoint
 

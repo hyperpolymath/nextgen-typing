@@ -10,7 +10,7 @@
 # Folds the former nested contractiles/must/Mustfile.a2ml checks and the
 # universal invariants of the former root MUST.contractile (both removed
 # by the estate-standardization merge). Directory checks updated to the
-# post-merge flat layout (no nested bust/dust dirs; 6a2/anchor singular).
+# post-merge flat layout (no nested bust/dust dirs; descriptiles/anchor singular).
 
 @abstract:
 Physical-state invariants for nextgen-typing, the coordination monorepo
@@ -69,13 +69,13 @@ hooks fail if any check fails.
 - severity: critical
 
 ### six-directory-present
-- description: 6a2 directory exists with required files
-- run: test -d .machine_readable/6a2 && test -f .machine_readable/6a2/META.a2ml && test -f .machine_readable/6a2/ECOSYSTEM.a2ml && test -f .machine_readable/6a2/STATE.a2ml && test -f .machine_readable/6a2/PLAYBOOK.a2ml && test -f .machine_readable/6a2/AGENTIC.a2ml && test -f .machine_readable/6a2/NEUROSYM.a2ml
+- description: descriptiles directory exists with required files
+- run: test -d .machine_readable/descriptiles && test -f .machine_readable/descriptiles/META.a2ml && test -f .machine_readable/descriptiles/ECOSYSTEM.a2ml && test -f .machine_readable/descriptiles/STATE.a2ml && test -f .machine_readable/descriptiles/PLAYBOOK.a2ml && test -f .machine_readable/descriptiles/AGENTIC.a2ml && test -f .machine_readable/descriptiles/NEUROSYM.a2ml
 - severity: critical
 
 ### anchor-directory
-- description: anchor directory exists in 6a2 with ANCHOR.a2ml
-- run: test -f .machine_readable/6a2/anchor/ANCHOR.a2ml
+- description: anchor directory exists in descriptiles with ANCHOR.a2ml
+- run: test -f .machine_readable/descriptiles/anchor/ANCHOR.a2ml
 - severity: warning
 
 ### self-validating-structure
@@ -133,7 +133,7 @@ hooks fail if any check fails.
 - description: No believe_me in Idris2 code
 - run: "! grep -r 'believe_me' --include='*.idr' . 2>/dev/null | grep -v node_modules | head -1 | grep -q ."
 - severity: critical
-- notes: 6 believe_me markers currently exist in scaffold proof files; recorded tech debt (docs/tech-debt-2026-05-26.md, PRs #12/#18), pending the OQ-001 identity decision in 6a2/STATE.a2ml. The check stays red until that decision lands — do not weaken it to hide the debt.
+- notes: 6 believe_me markers currently exist in scaffold proof files; recorded tech debt (docs/tech-debt-2026-05-26.md, PRs #12/#18), pending the OQ-001 identity decision in descriptiles/STATE.a2ml. The check stays red until that decision lands — do not weaken it to hide the debt.
 
 ### no-sorry
 - description: No sorry in Lean code

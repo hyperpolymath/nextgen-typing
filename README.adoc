@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-License-Identifier: MPL-2.0
 // Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 = nextgen-typing — Type Theory Pipeline
 image:https://img.shields.io/badge/OpenSSF-Best_Practices-green?logo=openssourcesecurity[OpenSSF Best Practices,link="https://www.bestpractices.dev/en/projects/new?repo_url=https://github.com/hyperpolymath/nextgen-typing"]
@@ -9,7 +9,7 @@ Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 
 [TIP]
 ====
-*AI agents:* read `0-AI-MANIFEST.a2ml` first, then `.machine_readable/6a2/STATE.a2ml`.
+*AI agents:* read `0-AI-MANIFEST.a2ml` first, then `.machine_readable/descriptiles/STATE.a2ml`.
 ====
 
 == What This Is
@@ -20,6 +20,43 @@ or application code; it documents and coordinates the pipeline, and hosts
 the cross-project formal-verification proofs in `verification/proofs/`.
 It documents relationships between type-theoretic repos, tracks
 the pipeline roadmap, and hosts research artefacts that span multiple projects.
+
+== Type Research: Connections and Meanings
+
+image::docs/images/type-connections.svg[Echo, Epistemic and Tropical Types connected conceptually to Residual Evidence and Choreographic Types, width=1100]
+
+*The dashed arrows describe conceptual uses and research obligations.* They
+do not certify package dependencies, integration, equivalence or proved
+transport. Residual Evidence Types is *work in progress*: its minimal Agda core
+now checks presence without value identification, plus narrow Echo and Epistemic
+interface comparisons. The guide links the exact proof receipts; the finite
+explorer and broader composition/revision programme remain separate obligations.
+
+[cols="1,3",options="header"]
+|===
+|Family |The question it asks
+|https://github.com/hyperpolymath/echo-types[Echo Types]
+|Which possible origins remain compatible after information loss?
+|https://github.com/hyperpolymath/epistemic-types[Epistemic Types]
+|Who has access to a claim, with what evidence and soundness conditions?
+|https://github.com/hyperpolymath/tropical-types[Tropical Types]
+|How do declared resource bounds compose?
+|https://github.com/hyperpolymath/residual-evidence-types[Residual Evidence Types]
+|Which explanations satisfy the observation and evidence, and what holds for all of them?
+|https://github.com/hyperpolymath/choreographic-types[Choreographic Types]
+|What is preserved when a global protocol is projected to its participants?
+|===
+
+link:docs/TYPE-CONNECTIONS.adoc[Read the shared glossary, connection obligations,
+ownership guide and first residual milestone]. It distinguishes *residual*
+from *residue*, *evidence* from *sound proof*, and *presence* from *value
+identification* and *causal role*. These families answer complementary
+questions; they are not a ranking of type-system strength.
+
+Naming note (2026-09-09): `tropical-resource-typing` now resolves on GitHub to
+`tropical-types`; the historical `katagoria` name below resolves to
+`ideas-to-alphas`. https://github.com/hyperpolymath/kategoria[`kategoria`] is
+a distinct language-development repository.
 
 == The Main Chain
 

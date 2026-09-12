@@ -34,10 +34,10 @@ dust items accumulate as warnings, they do not gate.
 - severity: info
 
 ### no-root-scm-state
-- description: Root S-expr state files retired — 6a2 A2ML is canonical; root STATE.a2ml is a pointer only (2026-06-12)
+- description: Root S-expr state files retired — descriptiles A2ML is canonical; root STATE.a2ml is a pointer only (2026-06-12)
 - run: "! grep -l '^(state' .machine_readable/*.a2ml 2>/dev/null | head -1 | grep -q ."
 - severity: warning
-- notes: Root META.a2ml / ECOSYSTEM.a2ml still carry S-expr bodies duplicating 6a2/; proposed for the same pointer-ization (see 2026-06-12 checkpoint report)
+- notes: Root META.a2ml / ECOSYSTEM.a2ml still carry S-expr bodies duplicating descriptiles/; proposed for the same pointer-ization (see 2026-06-12 checkpoint report)
 
 ## Build Artifacts
 

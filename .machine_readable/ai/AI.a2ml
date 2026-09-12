@@ -21,9 +21,9 @@ constituent repos) under `verification/proofs/`.
 
 ## Workflow
 
-1. Read `0-AI-MANIFEST.a2ml`, then `.machine_readable/6a2/STATE.a2ml` for
+1. Read `0-AI-MANIFEST.a2ml`, then `.machine_readable/descriptiles/STATE.a2ml` for
    blockers and next actions.
-2. Respect `.machine_readable/6a2/AGENTIC.a2ml` constraints.
+2. Respect `.machine_readable/descriptiles/AGENTIC.a2ml` constraints.
 3. Before creating any file, confirm placement against `placement.a2ml`.
 4. After edits, update STATE with outcomes; commit with a concise message.
 

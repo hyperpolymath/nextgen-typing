@@ -6,7 +6,7 @@
 [metadata]
 project = "nextgen-typing"
 version = "0.1.0"
-last-updated = "2026-06-19"
+last-updated = "2026-09-09"
 status = "active"
 
 [project-context]
@@ -72,7 +72,7 @@ actions = [
   "Track Tropical.thy extensions (linorder instance, tropical matrices, Kleene algebra) in tropical-resource-typing and mirror progress in nextgen-typing docs.",
   "Track and link the arXiv paper draft on speculative tropical session types once published.",
   "Track typed-wasm aggregate ABI convention adoption in AffineScript/Ephapax integration paths as recursive-type support matures.",
-  "Run periodic drift scans so README.adoc, docs/ARCHITECTURE.adoc, docs/PIPELINE.adoc, and .machine_readable/6a2/{STATE,META,ECOSYSTEM}.a2ml stay synchronized.",
+  "Run periodic drift scans so README.adoc, docs/ARCHITECTURE.adoc, docs/PIPELINE.adoc, and .machine_readable/descriptiles/{STATE,META,ECOSYSTEM}.a2ml stay synchronized.",
 ]
 
 [maintenance-status]
@@ -96,3 +96,16 @@ events = [
 part-of = ["hyperpolymath coordination infrastructure"]
 coordinates = ["typell", "typed-wasm", "katagoria", "tropical-resource-typing", "protocol-squisher"]
 downstream-consumers = ["panll", "nextgen-languages/affinescript", "nextgen-languages/ephapax"]
+
+[type-research-map]
+review-date = "2026-09-09"
+guide = "docs/TYPE-CONNECTIONS.adoc"
+graphic = "docs/images/type-connections.svg"
+editable-source = "docs/images/type-connections.dot"
+families = ["echo-types", "epistemic-types", "tropical-types", "residual-evidence-types", "choreographic-types"]
+status = "Documentation map and glossary; arrows are conceptual, not integration or proof claims"
+residual-status = "Work in progress: minimal Agda core and narrow Echo/Epistemic comparisons checked; finite explorer separate"
+next-residual-milestone = "Dependency-preserving composition and evidence revision/retraction in residual-evidence-types"
+proof-validation = "Agda 2.6.4.3 safe/without-K: residual core, three expected rejections and two direct comparisons passed locally and in hosted job 34400282291; whole constituent suites not rerun"
+proof-receipt = "https://github.com/hyperpolymath/residual-evidence-types/blob/4325198c10e2e689f084c2f64a27213685a1ffd2/PROOF-STATUS.adoc"
+metadata-location = ".machine_readable/descriptiles/"
