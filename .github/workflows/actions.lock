@@ -229,7 +229,7 @@ dependencies:
 
     'hyperpolymath/k9-ecosystem@main':
         ref: 'main'
-        commit: 'sha1-2155aa26a21758f2ba119f61bc7e0e1981c106fb'
+        commit: 'sha1-c1a34884054fabf0e9de81dbf68f4ba7874e85f1'
         owner_id: 6759885
         repo_id: 1275650185
 
