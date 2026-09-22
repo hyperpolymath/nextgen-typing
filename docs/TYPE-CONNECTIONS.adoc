@@ -171,10 +171,15 @@ Both actual sibling interfaces are imported by the comparison modules:
 Echo's fibre packaging round-trips, and Epistemic's `SoundWarrant` requires
 explicit actual-world premises.
 
-https://github.com/hyperpolymath/residual-evidence-types/blob/4325198c10e2e689f084c2f64a27213685a1ffd2/PROOF-STATUS.adoc[The proof record at the checked revision]
+https://github.com/hyperpolymath/residual-evidence-types/blob/7ffd4d25a4f3f652f71311609be73e391b25c7cd/PROOF-STATUS.adoc[The proof record]
 lists the theorem names, commands, pinned sibling revisions and standard-library
-warnings. The https://github.com/hyperpolymath/residual-evidence-types/actions/runs/34400282291[hosted Agda proof job]
-passed the core, all three rejection controls and both comparisons on 2026-09-09.
+warnings. The https://github.com/hyperpolymath/residual-evidence-types/actions/runs/35781018563[hosted Agda proof job]
+passed the core, all three rejection controls and both comparisons on 2026-09-22
+for commit `938a7a5764ac18f08b1b7f332378b4d29c32aa37`, with the sibling pins at
+the current `echo-types` (`9c4b72b5`) and `epistemic-types` (`dd948fbd`) heads,
+inside a digest-pinned Debian 13 container with Agda 2.6.4.3 and no third-party
+action. The first receipt, run 34400282291 on 2026-09-09, checked the same core
+at the original pins.
 This is newly written work; the separate starter archive mentioned in the
 imported assessment has not been recovered.
 
