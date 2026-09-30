@@ -6,9 +6,7 @@
 # Then hands off to `just setup` for project-specific configuration.
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/hyperpolymath/rsr-template-repo/main/setup.sh | sh
-#   # or after cloning:
-#   ./setup.sh
+#   ./setup.sh        # after cloning — read it first; never pipe a fetched script into a shell
 #
 # Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath)
 
