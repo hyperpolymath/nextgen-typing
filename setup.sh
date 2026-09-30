@@ -136,6 +136,8 @@ detect_platform() {
 # rather than fetching a plausible-looking binary for the wrong target.
 JUST_VERSION="1.58.0"
 
+# Print the just release target for the current OS and architecture.
+# Takes no arguments; prints an empty line for unsupported platforms.
 just_target() {
     case "$(uname -s 2>/dev/null):$(uname -m 2>/dev/null)" in
         Linux:x86_64|Linux:amd64)    echo "x86_64-unknown-linux-musl" ;;
@@ -146,6 +148,8 @@ just_target() {
     esac
 }
 
+# Print the pinned archive SHA-256 for the release target passed as $1.
+# Prints an empty line if the target has no known digest for JUST_VERSION.
 just_sha256() {
     case "$1" in
         x86_64-unknown-linux-musl)  echo "4a5cc2f53e6f0f8c59092a6cc38291eb729d46a7dd95d3ae582008881b84931d" ;;
@@ -163,6 +167,10 @@ sha256_of() {
     fi
 }
 
+# Download JUST_VERSION for the current platform and verify its pinned digest
+# before installing to /usr/local/bin/just with sudo. Takes no arguments.
+# Returns nonzero for an unsupported platform, download or checksum failure,
+# or failed extraction or installation; removes the temporary download directory.
 install_just_verified() {
     jv_target="$(just_target)"
     [ -z "$jv_target" ] && { fail "just: no verified build for $(uname -s)/$(uname -m); use your package manager"; return 1; }
