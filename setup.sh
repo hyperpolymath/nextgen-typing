@@ -128,6 +128,61 @@ detect_platform() {
     esac
 }
 
+# ── Verified just install ──
+# Replaces `curl https://just.systems/install.sh | bash`: piping a remote script
+# into a shell runs whatever the server returns, with no chance to check it.
+# A pinned RELEASE BINARY is fetched instead and its digest checked before use
+# (ported from hyperpolymath/standards setup.sh, 3079bc12). Digests computed
+# 2026-08-07; casey/just publishes none, so this is trust-on-first-use — any
+# later substitution fails loudly. An unrecognised platform returns failure
+# rather than fetching a plausible-looking binary for the wrong target.
+JUST_VERSION="1.58.0"
+
+just_target() {
+    case "$(uname -s 2>/dev/null):$(uname -m 2>/dev/null)" in
+        Linux:x86_64|Linux:amd64)    echo "x86_64-unknown-linux-musl" ;;
+        Linux:aarch64|Linux:arm64)   echo "aarch64-unknown-linux-musl" ;;
+        Darwin:x86_64)               echo "x86_64-apple-darwin" ;;
+        Darwin:arm64|Darwin:aarch64) echo "aarch64-apple-darwin" ;;
+        *)                           echo "" ;;
+    esac
+}
+
+just_sha256() {
+    case "$1" in
+        x86_64-unknown-linux-musl)  echo "4a5cc2f53e6f0f8c59092a6cc38291eb729d46a7dd95d3ae582008881b84931d" ;;
+        aarch64-unknown-linux-musl) echo "748237128c4c40cbdabc65e841d05ceba13cc23a91eaba395495894c1d9764df" ;;
+        x86_64-apple-darwin)        echo "9a09cfef66aaa79da58203970103a0684307716caaabd3e9844cacc4dc0f4023" ;;
+        aarch64-apple-darwin)       echo "50ae3e996c974a0bf32ea7d10f495070df33f1b43e0616b2769e3d4821ed8f48" ;;
+        *)                          echo "" ;;
+    esac
+}
+
+# sha256sum is GNU; macOS ships shasum instead.
+sha256_of() {
+    if command -v sha256sum >/dev/null 2>&1; then sha256sum "$1" | cut -d" " -f1
+    else shasum -a 256 "$1" | cut -d" " -f1
+    fi
+}
+
+install_just_verified() {
+    jv_target="$(just_target)"
+    [ -z "$jv_target" ] && { fail "just: no verified build for $(uname -s)/$(uname -m); use your package manager"; return 1; }
+    jv_want="$(just_sha256 "$jv_target")"
+    jv_tmp="$(mktemp -d)"
+    jv_url="https://github.com/casey/just/releases/download/${JUST_VERSION}/just-${JUST_VERSION}-${jv_target}.tar.gz"
+    curl -fsSL --proto '=https' --tlsv1.2 -o "$jv_tmp/just.tar.gz" "$jv_url" || { rm -rf "$jv_tmp"; return 1; }
+    jv_got="$(sha256_of "$jv_tmp/just.tar.gz")"
+    if [ "$jv_got" != "$jv_want" ]; then
+        fail "just: CHECKSUM MISMATCH for $jv_url (expected $jv_want, got $jv_got)"
+        rm -rf "$jv_tmp"
+        return 1
+    fi
+    tar -xzf "$jv_tmp/just.tar.gz" -C "$jv_tmp" just
+    sudo install -m 0755 "$jv_tmp/just" /usr/local/bin/just
+    rm -rf "$jv_tmp"
+}
+
 # ── Install just ──
 install_just() {
     if command -v just >/dev/null 2>&1; then
@@ -140,8 +195,8 @@ install_just() {
     case "$PKG_MGR" in
         dnf)        sudo dnf install -y just ;;
         apt)        sudo apt-get install -y just 2>/dev/null || {
-                        # just not in older apt repos — use installer
-                        curl -fsSL https://just.systems/install.sh | bash -s -- --to /usr/local/bin
+                        # just not in older apt repos — use the verified release binary
+                        install_just_verified
                     } ;;
         pacman)     sudo pacman -S --noconfirm just ;;
         apk)        sudo apk add just ;;
@@ -152,8 +207,8 @@ install_just() {
         guix)       guix install just ;;
         nix)        nix-env -iA nixpkgs.just ;;
         *)
-            info "Using just installer script..."
-            curl -fsSL https://just.systems/install.sh | bash -s -- --to /usr/local/bin
+            info "Installing verified just release..."
+            install_just_verified
             ;;
     esac
 
