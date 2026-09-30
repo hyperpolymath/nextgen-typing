@@ -176,9 +176,11 @@ install_just_verified() {
         rm -rf "$jv_tmp"
         return 1
     fi
-    tar -xzf "$jv_tmp/just.tar.gz" -C "$jv_tmp" just
-    sudo install -m 0755 "$jv_tmp/just" /usr/local/bin/just
+    tar -xzf "$jv_tmp/just.tar.gz" -C "$jv_tmp" just \
+        && sudo install -m 0755 "$jv_tmp/just" /usr/local/bin/just
+    jv_rc=$?
     rm -rf "$jv_tmp"
+    return "$jv_rc"
 }
 
 # ── Install just ──
