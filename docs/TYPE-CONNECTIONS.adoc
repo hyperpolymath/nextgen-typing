@@ -13,8 +13,9 @@ image::images/type-connections.svg[Five type research families connected by expl
 *Read every dashed arrow as a conceptual use or a proposed research task.*
 An arrow does not assert a package dependency, a checked bridge, an
 equivalence, or a theorem. Residual Evidence Types now has a checked minimal
-Agda core and two narrow interface comparisons, described below with proof
-receipts. Those results do not discharge every obligation represented by an arrow.
+Agda core, two narrow interface comparisons, and a certified finite checker
+proved to agree with its explorer, described below with proof receipts.
+Those results do not discharge every obligation represented by an arrow.
 
 == What each family means
 
@@ -114,12 +115,15 @@ domain. Equal measured values need not mean equal retained information.
 |Echo → Residual Evidence
 |Refine the observation fibre with the evidence predicate `E`.
 |The first core checks an encoding into `Echo.Echo` and both round trips.
-Coarsening and dependency-preserving composition laws remain open.
+The residual core now also checks dependency-preserving composition and
+coarsening on its own side (`compose-claims`, `coarsen-claim`); whether
+these laws transport to Echo has not been compared.
 |Epistemic → Residual Evidence
 |Make the meaning and evidence obligations of candidate-wide claims explicit.
 |The first core checks a `SoundWarrant` for a candidate-wide claim, with an
-inhabited case and explicit actual-world premises. Evidence revision and
-retraction remain open.
+inhabited case and explicit actual-world premises. The residual core now also
+checks evidence revision and retraction (`survives-retraction`, `revise`);
+their relation to warrant revision in Epistemic has not been compared.
 |Echo → Choreographic
 |Track the distinctions retained by projection to participants.
 |A projection model and correspondence theorem. An informal loss number
@@ -183,11 +187,33 @@ at the original pins.
 This is newly written work; the separate starter archive mentioned in the
 imported assessment has not been recovered.
 
-Next, investigate dependency-preserving composition and evidence revision or
-retraction, then prove correspondence with a finite checker. The JavaScript
-explorer uses bounded signed integers and has no proved correspondence to the
-natural-number core. Causal specialisations and probability adapters require
-their own models and obligations.
+Causal specialisations and probability adapters require their own models and
+obligations.
+
+== Second residual milestone: checked, with limits
+
+The second milestone adds contexts of assumptions with thinnings,
+dependency-preserving composition and coarsening, constructive evidence
+revision and retraction, a certified finite checker over the explorer's signed
+-6..6 model, and a proved correspondence between that checker and the
+JavaScript explorer: `Correspondence.checker-matches-explorer` states
+`Checker.table ≡ ExplorerTable.expected` over all 546 configurations and is
+proved by `refl`. Nine deliberately invalid modules must now be rejected.
+
+https://github.com/hyperpolymath/residual-evidence-types/blob/a9f3a9d2ae1c6e60644d6328df92f1b96e17cf1c/PROOF-STATUS.adoc[The updated proof record]
+lists the theorem names and boundaries. The
+https://github.com/hyperpolymath/residual-evidence-types/actions/runs/36740394802[hosted proof job]
+passed on 2026-09-30 for commit `befdf9641c1bc6ecf58946e5ccbd0c630f4fc4c3`:
+the core, all nine rejections, both comparisons, and the explorer
+correspondence (bun 1.3.14 verified by SHA-256 and SHA-512, 11 harness tests,
+byte-for-byte table drift check, and the `refl` proof), in the same
+digest-pinned Debian 13 container with Agda 2.6.4.3.
+
+The limit matters: the correspondence certifies the finite checker against
+the explorer, not the natural-number core against the explorer. The two
+sibling comparisons still cover the first milestone only; whether composition
+and revision need an interface beyond `Echo.Echo` and `SoundWarrant` is the
+open question for the next milestone.
 
 == Sources and review boundary
 
