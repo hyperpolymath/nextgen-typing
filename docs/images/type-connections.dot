@@ -3,7 +3,7 @@
 digraph TypeConnections {
   graph [rankdir=TB, bgcolor="#f5f7fb", pad="0.35", nodesep="0.45", ranksep="0.8", splines=polyline,
     fontname="DejaVu Sans", fontsize=22, fontcolor="#17243b", labelloc=t,
-    label="Type research: questions and connections\n\nnextgen-typing · coordination map · September 2026",
+    label="Type research: questions and connections\n\nnextgen-typing · coordination map · October 2026",
     comment="SPDX-License-Identifier: MPL-2.0; SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell"];
   node [shape=box, style="rounded,filled", fillcolor="#ffffff", color="#a6b4c9",
     fontname="DejaVu Sans", fontsize=13, fontcolor="#17243b", margin="0.22,0.2", penwidth=1.4];
@@ -27,6 +27,8 @@ digraph TypeConnections {
     choreographic [fillcolor="#ebf3fd", color="#7f9bbb",
       label=<<B>Choreographic Types</B><BR/><BR/>What is preserved when a global protocol<BR/>is projected to its participants?<BR/><BR/><FONT POINT-SIZE="10">choreographic-types · research programme<BR/><B>K-CUT remains open</B></FONT>>,
       URL="https://github.com/hyperpolymath/choreographic-types"];
+    secret [label=<<B>Secret Types</B><BR/><BR/>Which value flows does a<BR/>confidentiality label permit, and what<BR/>may a lower observer learn?<BR/><BR/><FONT POINT-SIZE="10">secret-types · specification only<BR/><B>no calculus or theorem yet · no connections asserted</B></FONT>>,
+      URL="https://github.com/hyperpolymath/secret-types"];
   }
 
   echo -> residual [label="refine the fibre\nwith evidence"];

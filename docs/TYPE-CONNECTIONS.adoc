@@ -4,11 +4,11 @@
 :toc:
 :icons: font
 
-This is the shared reading guide for the five research families in the map.
+This is the shared reading guide for the six research families in the map.
 It coordinates vocabulary and ownership; the owning repositories define
 their formal interfaces and carry their proof evidence.
 
-image::images/type-connections.svg[Five type research families connected by explicitly conceptual arrows, width=1100]
+image::images/type-connections.svg[Six type research families with explicitly conceptual arrows, width=1100]
 
 *Read every dashed arrow as a conceptual use or a proposed research task.*
 An arrow does not assert a package dependency, a checked bridge, an
@@ -58,6 +58,19 @@ a global interaction protocol is projected to local participants?
 |The general K-CUT result is open in the reviewed project description.
 A causal-order frontier called a cut is not Gentzen cut-elimination;
 it is also not a statistical causal-identification result.
+
+|https://github.com/hyperpolymath/secret-types[Secret Types]
+|Which value flows does a confidentiality label permit, and what may a
+lower-cleared observer learn from an output? A `Secret ℓ A` classifies a
+value at a label `ℓ`; the first model is a two-level `Public ⊑ Secret`
+order over a pure, total calculus, targeting termination-insensitive
+noninterference for public observations.
+|A label is not cryptography and not an epistemic standpoint: `Secret ℓ A`
+does not make a value unreadable, authenticate a principal, enforce
+runtime access control, or hide timing, storage or network side channels.
+The baseline declassifies nothing, and no consumer or frontier item is
+selected for it (2026-10-04); the RMO key-provisioning/disclosure fit is
+a name-level inference, not a claim.
 |===
 
 These are complementary research questions, not successive ranks in a
@@ -151,6 +164,12 @@ task, not an equivalence asserted here.
   Agda core, and tests or proofs specific to that model.
 * `echo-types`, `epistemic-types`, `tropical-types`, `choreographic-types`:
   each family's definitions, implementations and own proof evidence.
+* `secret-types`: the confidentiality-label and information-flow
+  specification: its question, boundary, first two-level model and review
+  checklist. It is specification-stage — no `Secret` type, information-flow
+  calculus, declassification rule or noninterference theorem exists there
+  yet — so this guide asserts no connection obligation for it, and a
+  documentation link is not a mechanised dependency.
 * `kategoria`: language-development experiments. It is a separate project
   from the old `katagoria` repository name, which GitHub now resolves to
   `ideas-to-alphas`.
@@ -226,6 +245,16 @@ and in the linked hosted job with Agda 2.6.4.3 under `--safe --without-K`.
 This is a bounded result: the complete constituent proof suites were not
 rerun, and unrelated local Epistemic work is outside the receipt.
 
+The Secret Types row was added on 2026-10-05 from that repository's reviewed
+and merged scope statement (`secret-types` PR #4, merged 2026-10-04, with the
+2026-10-04 owner confirmation and rulings D153 and D154 recorded there). The
+row registers the family on its stated boundary; it is not an implementation
+claim. The scope statement itself records that no `Secret` type,
+information-flow calculus, declassification rule or noninterference theorem
+exists yet, that its review checklist has not been completed item by item, and
+that no consumer or frontier item is selected, so no connection obligation is
+asserted for it in this guide.
+
 Primary project entry points:
 
 * https://github.com/hyperpolymath/echo-types[Echo Types README and foundation contract]
@@ -233,6 +262,7 @@ Primary project entry points:
 * https://github.com/hyperpolymath/tropical-types[Tropical Types README]
 * https://github.com/hyperpolymath/choreographic-types[Choreographic Types README]
 * https://github.com/hyperpolymath/residual-evidence-types/blob/main/residual-evidence-assessment.md[Imported residual assessment]
+* https://github.com/hyperpolymath/secret-types[Secret Types README and scope statement]
 
 GitHub repository API lookups on that date resolved `tropical-resource-typing`
 to `tropical-types` and `katagoria` to `ideas-to-alphas`, while `kategoria`
