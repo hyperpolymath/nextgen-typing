@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: MPL-2.0
-// Place at nextgen-typing/docs/decisions/ and renumber to the local sequence.
 = D-2026-10-12 — Proof kernel for the type family
 :revdate: 2026-10-12
 
@@ -25,14 +24,32 @@ accompanying session. Supersedes per-repo prover choice for the family.
 
 == Evidence weighed
 
-* Investment: ≈47.7k lines of Agda across the family, every file
-  `--safe --without-K`, 3 postulates total; ≈6.4k active Lean; 7.1k Isabelle
-  (tropical only); Idris2 almost entirely RSR ABI scaffolding.
+* Investment: the comparison reported ≈47.7k lines of Agda across the
+  family; ≈6.4k active Lean; 7.1k Isabelle (tropical only); Idris2 almost
+  entirely RSR ABI scaffolding. These estimates are not a safe-check receipt.
+* Postulate inventory: at echo-types commit
+  `e38fd465c4269ab9e9940802525630d7aae1e848`, three `postulate` blocks
+  declare *six* assumptions:
+** https://github.com/hyperpolymath/echo-types/blob/e38fd465c4269ab9e9940802525630d7aae1e848/proofs/agda/EchoImageFactorizationPropPostulated.agda[EchoImageFactorizationPropPostulated.agda]:
+   `Trunc-pos`, `∣_∣-pos`, `is-prop-pos`, and `rec-pos` (one block).
+** https://github.com/hyperpolymath/echo-types/blob/e38fd465c4269ab9e9940802525630d7aae1e848/proofs/agda/Ordinal/Buchholz/Fidelity.agda[Ordinal/Buchholz/Fidelity.agda]:
+   `denotation` and `ordinal-upper-bound` (two blocks).
++
+Both modules use `--without-K` only, are excluded from `All.agda` and
+`Smoke.agda`, and are exempted by Echo's foundation guardrail. They are
+outside the `--safe --without-K` checks; `--safe` rejects these postulates.
+This is not a family-wide total: choreographic-types also contains the
+https://github.com/hyperpolymath/choreographic-types/blob/a0f647531a8cacad10294703ade2b6c8cec3255c/applications/rapidnj-two-thread.agda[standalone RapidNJ interface/conjecture sketch],
+with postulates and no safe-check flags, outside its repository build.
+The earlier “3 postulates total” and “every file” claims are withdrawn.
+The link:../TYPE-CONNECTIONS.adoc[existing proof receipts] cover bounded
+checks; the complete constituent suites were not rerun for this record.
 * K: the equivalence-as-identity programme needs a kernel without UIP. Lean's
   Prop proof-irrelevance gives K by construction; Idris2 has no without-K
   mode; Agda has `--without-K` and `--cubical`.
-* Discipline: `--safe` is the strictest mechanical falsifier in the estate and
-  is already uniform.
+* Discipline: `--safe --without-K` is required for the selected proof kernel.
+  This requirement does not establish uniform compliance across exploratory
+  files or constitute an estate-wide verification result.
 * Cost: consolidating on Idris2 or Lean would mean re-proving the Agda
   corpus; not viable this quarter.
 
