@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: CC-BY-SA-4.0
+// SPDX-License-Identifier: MPL-2.0
 // Place at nextgen-typing/docs/decisions/ and renumber to the local sequence.
 = D-2026-10-12 — Proof kernel for the type family
 :revdate: 2026-10-12
