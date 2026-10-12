@@ -1,0 +1,72 @@
+// SPDX-License-Identifier: MPL-2.0
+= D-2026-10-12 — Proof kernel for the type family
+:revdate: 2026-10-12
+
+== Status
+
+Ruled by the owner, 2026-10-12, after a comparison recorded in the
+accompanying session. Supersedes per-repo prover choice for the family.
+
+== Decision
+
+. *Agda `--safe --without-K` is the proof kernel of the type family*
+  (echo-types, epistemic-types, residual-evidence-types, choreographic-types,
+  secret-types, resource-algebra; absolute-zero's active CNO/OND/EchoBridge
+  stack).
+. *Idris2 is the ABI/runtime layer*, not a kernel candidate (QTT linearity is
+  the right tool there; `believe_me`/`assert_total` make it the wrong one for
+  theorems).
+. *Lean 4 is provenance*: jtv keeps its existing proof layer; tropical-types'
+  Lean and Isabelle developments remain as the Mathlib/AFP-facing record and
+  are *ported*, not imported, into Agda where the family needs them.
+. *Isabelle/HOL only for AFP submissions.* Coq, Mizar: archived (absolute-zero
+  ruling 2026-10-10 stands).
+
+== Evidence weighed
+
+* Investment: the comparison reported ≈47.7k lines of Agda across the
+  family; ≈6.4k active Lean; 7.1k Isabelle (tropical only); Idris2 almost
+  entirely RSR ABI scaffolding. These estimates are not a safe-check receipt.
+* Postulate inventory: at echo-types commit
+  `e38fd465c4269ab9e9940802525630d7aae1e848`, three `postulate` blocks
+  declare *six* assumptions:
+** https://github.com/hyperpolymath/echo-types/blob/e38fd465c4269ab9e9940802525630d7aae1e848/proofs/agda/EchoImageFactorizationPropPostulated.agda[EchoImageFactorizationPropPostulated.agda]:
+   `Trunc-pos`, `∣_∣-pos`, `is-prop-pos`, and `rec-pos` (one block).
+** https://github.com/hyperpolymath/echo-types/blob/e38fd465c4269ab9e9940802525630d7aae1e848/proofs/agda/Ordinal/Buchholz/Fidelity.agda[Ordinal/Buchholz/Fidelity.agda]:
+   `denotation` and `ordinal-upper-bound` (two blocks).
++
+Both modules use `--without-K` only, are excluded from `All.agda` and
+`Smoke.agda`, and are exempted by Echo's foundation guardrail. They are
+outside the `--safe --without-K` checks; `--safe` rejects these postulates.
+This is not a family-wide total: choreographic-types also contains the
+https://github.com/hyperpolymath/choreographic-types/blob/a0f647531a8cacad10294703ade2b6c8cec3255c/applications/rapidnj-two-thread.agda[standalone RapidNJ interface/conjecture sketch],
+with postulates and no safe-check flags, outside its repository build.
+The earlier “3 postulates total” and “every file” claims are withdrawn.
+The link:../TYPE-CONNECTIONS.adoc[existing proof receipts] cover bounded
+checks; the complete constituent suites were not rerun for this record.
+* K: the equivalence-as-identity programme needs a kernel without UIP. Lean's
+  Prop proof-irrelevance gives K by construction; Idris2 has no without-K
+  mode; Agda has `--without-K` and `--cubical`.
+* Discipline: `--safe --without-K` is required for the selected proof kernel.
+  This requirement does not establish uniform compliance across exploratory
+  files or constitute an estate-wide verification result.
+* Cost: consolidating on Idris2 or Lean would mean re-proving the Agda
+  corpus; not viable this quarter.
+
+== Falsifier
+
+resource-algebra (the first repo written under the ruling) had to reach a
+postulate-free `ResourceAlgebra` record with three instances under the flags
+within a week. It did on day one (`just check`, Agda 2.6.3), so the ruling
+stands; it is revisited if a family theorem is later found unstateable under
+`--without-K`.
+
+== Consequences
+
+* absolute-zero `LANGUAGE-POLICY.adoc` v1.6.0 ("Idris2 is the only
+  formal-verification language") needs an exception record (see T1); the
+  constitution's change procedure applies.
+* katagoria's Idris2 research sketches remain the incubator's prototypes;
+  graduation into a family repo means an Agda formalisation.
+* Creusot and SPARK are implementation-verification questions for januskey's
+  and jtv's Rust surfaces, outside this ruling.
