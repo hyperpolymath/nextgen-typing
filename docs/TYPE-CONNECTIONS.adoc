@@ -273,3 +273,30 @@ The graphic is a checked-in SVG so it displays in the AsciiDoc README without
 JavaScript or a diagram service. Its editable source is
 link:images/type-connections.dot[type-connections.dot]. Rebuild it with
 `just type-map` (Graphviz required).
+
+
+== Additions 2026-10-12
+
+Registered this day, pending merge into the tables above.
+
+[cols="1,3",options="header"]
+|===
+| Member | What it establishes
+| https://github.com/hyperpolymath/resource-algebra[Resource Algebra] (kernel module) | The parametric grade algebra: alternatives an idempotent commutative monoid, sequence a monoid; order, dioid and annihilation as layers. Instances: echo Loss (min-plus), tropical MaxPlus, HWM (occupancy). Loss and cost have opposite induced orders (checked).
+| https://github.com/hyperpolymath/occupancy-types[Occupancy Types] | High-water-mark occupancy; reclamation at a cut; occupancy ≤ cost with equality iff nothing is reclaimed; independent threads have order-dependent peaks invisible locally.
+| https://github.com/hyperpolymath/katagoria[Katagoria] (incubator, not a family) | Graduation rule to be written: an idea leaves only when a family repo holds its kernel-checked core theorem.
+|===
+
+[cols="1,2,2",options="header"]
+|===
+| Connection | Status | Established
+| Resource Algebra → Choreographic | PROVEN (fragment) | K-CUT-LOSS parametric; needs only ⊕-idempotence and ⊗-left-unit.
+| Epistemic → Choreographic | PROVEN (fragment) | K-CUT-WARRANT bound and transport; Kripke frame over consistent cuts; SoundWarrant instantiated.
+| Tropical → Choreographic | PROVEN via MaxPlus instance | Lean provenance bridge (M-2) a review obligation.
+| Echo → Choreographic | PROVEN via Loss instance | RoleGraded base case recovered; import direction (L-2) open.
+| Occupancy → Choreographic | PROVEN (A-3) | Two-thread diamond: projections swap, occupancy does not.
+| Residual → Epistemic | DECIDED: family | Dependence is not a function of the candidate set.
+| Secret → (none yet) | OPEN | TINI proved; the Echo reading of noninterference is a conjecture.
+|===
+
+Decision record: link:decisions/D-2026-10-12-proof-kernel-ruling.adoc[] (proof kernel for the family).
