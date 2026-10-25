@@ -29,6 +29,6 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v6.0.2
+      - uses: actions/checkout@v7.0.1
       - name: Enforce coordination boundary
         run: bash scripts/check-coordination-boundary.sh
