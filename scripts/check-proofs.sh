@@ -94,6 +94,38 @@ check_one() {
 
 echo "=== $PROVER proof check ==="
 
+# --- a repo with proofs but no MANIFEST is itself a failure -------------------
+if [ ! -f "$MANIFEST_FILE" ]; then
+  if [ -d "$PROOF_DIR" ] && [ -n "$(find "$PROOF_DIR" -name "*.$EXT" 2>/dev/null)" ]; then
+    echo "FAIL: $PROOF_DIR contains .$EXT proofs but has no MANIFEST." >&2
+    echo "      Create $MANIFEST_FILE listing each as 'gated' or 'quarantine'." >&2
+    exit 1
+  fi
+  echo "no $PROOF_DIR/*.$EXT proofs and no MANIFEST — nothing to check."
+  exit 0
+fi
+
+# --- nothing to check is not the same as a missing toolchain -----------------
+# The probe used to run first, so `just proof-check-idris2` demanded Idris2 even
+# in a repository with no Idris proof and no idris2 MANIFEST. That made the
+# advertised proof-check-all target impossible on a machine that has no reason
+# to carry every prover, and taught people to read a red run as "expected".
+# The order is now: is there any work? then: is the tool here? A toolchain that
+# is missing while work exists is still fatal, never a skip.
+manifest_entries=0
+if [ -f "$MANIFEST_FILE" ]; then
+  while IFS='|' read -r mroot mrel mstatus mnote; do
+    [ -z "${mroot// }" ] && continue
+    case "${mroot#"${mroot%%[![:space:]]*}"}" in \#*) continue ;; esac
+    manifest_entries=$((manifest_entries + 1))
+  done < "$MANIFEST_FILE"
+fi
+disk_proofs="$(find "$PROOF_DIR" -name "*.$EXT" -not -path '*/build/*' 2>/dev/null | head -1)"
+if [ "$manifest_entries" -eq 0 ] && [ -z "$disk_proofs" ]; then
+  echo "no $PROOF_DIR/*.$EXT proofs and no MANIFEST entries — nothing to check."
+  exit 0
+fi
+
 # --- toolchain: absent means FAIL, never skip ---------------------------------
 if ! command -v "$CMD" >/dev/null 2>&1; then
   {
@@ -109,17 +141,6 @@ fi
 "$CMD" --version 2>/dev/null | head -1 || true
 echo
 
-# --- a repo with proofs but no MANIFEST is itself a failure -------------------
-if [ ! -f "$MANIFEST_FILE" ]; then
-  if [ -d "$PROOF_DIR" ] && [ -n "$(find "$PROOF_DIR" -name "*.$EXT" 2>/dev/null)" ]; then
-    echo "FAIL: $PROOF_DIR contains .$EXT proofs but has no MANIFEST." >&2
-    echo "      Create $MANIFEST_FILE listing each as 'gated' or 'quarantine'." >&2
-    exit 1
-  fi
-  echo "no $PROOF_DIR/*.$EXT proofs and no MANIFEST — nothing to check."
-  exit 0
-fi
-
 fails=0
 unexpected_pass=0
 listed_tmp="$(mktemp)"
@@ -131,6 +152,19 @@ while IFS='|' read -r root rel status note; do
   case "${root#"${root%%[![:space:]]*}"}" in \#*) continue ;; esac
   printf '  %-30s %-24s ' "$root" "$rel"
   echo "$root/$rel" >>"$listed_tmp"
+  # Only the two documented tokens are statuses. Everything else used to fall
+  # into the `else` branch and be read as quarantine, so a misspelt 'gatde' made
+  # a broken module an *expected* failure and the run stayed green.
+  case "$status" in
+    gated|quarantine) ;;
+    *)
+      echo "FAIL — unknown MANIFEST status '${status}'"
+      echo "        $MANIFEST_FILE accepts only 'gated' or 'quarantine'; anything else"
+      echo "        would otherwise be read as quarantine and hide a broken module."
+      fails=$((fails + 1))
+      continue
+      ;;
+  esac
   if check_one "$root" "$rel"; then
     if [ "$status" = gated ]; then
       echo "PASS"

@@ -83,6 +83,30 @@ if [ "$SHOW_PATTERNS" -eq 1 ]; then
   exit 0
 fi
 
+# The receipt is part of the evidence, so it cannot be best-effort. `just
+# proof-scan-dangerous` passes target/proof-receipts/dangerous-patterns.txt on a
+# fresh checkout where that directory does not exist yet; the redirect failed, the
+# scan still exited 0, and the receipt a reader would look for was never written.
+if [ -n "$RECEIPT" ]; then
+  if ! mkdir -p "$(dirname "$RECEIPT")" 2>/dev/null; then
+    echo "FAIL: cannot create the receipt directory for $RECEIPT" >&2
+    exit 1
+  fi
+fi
+
+# write_receipt <status> [extra line...] — a receipt write failure is a failure.
+write_receipt() {
+  local status="$1"; shift
+  [ -n "$RECEIPT" ] || return 0
+  {
+    echo "proof-scan receipt"
+    echo "generated: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    echo "commit: ${GITHUB_SHA:-$(git rev-parse HEAD 2>/dev/null || echo unknown)}"
+    echo "status: $status"
+    printf '%s\n' "$@"
+  } >"$RECEIPT" || { echo "FAIL: cannot write receipt $RECEIPT" >&2; exit 1; }
+}
+
 echo "=== Scanning for dangerous patterns in proofs ==="
 echo "patterns: $PATTERNS"
 echo "scope:    $SCAN_DIRS"
@@ -196,23 +220,13 @@ done < <(find $SCAN_DIRS -type f \
 echo ""
 if [ "$FILES_SCANNED" -eq 0 ]; then
   echo "FAIL: no proof sources scanned — refusing to report a clean scan on zero work"
-  [ -n "$RECEIPT" ] && printf 'status: FAIL\nreason: zero files scanned\n' >"$RECEIPT"
+  write_receipt FAIL "reason: zero files scanned"
   exit 1
 fi
 
 if [ "$HITS" -gt 0 ]; then
   echo "FAIL: $HITS file(s) contain banned proof escape hatches"
-  if [ -n "$RECEIPT" ]; then
-    {
-      echo "proof-scan receipt"
-      echo "generated: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-      echo "commit: ${GITHUB_SHA:-$(git rev-parse HEAD 2>/dev/null || echo unknown)}"
-      echo "status: FAIL"
-      echo "files-scanned: $FILES_SCANNED"
-      echo "files-with-hits: $HITS"
-      printf '%s' "$REPORT"
-    } >"$RECEIPT"
-  fi
+  write_receipt FAIL "files-scanned: $FILES_SCANNED" "files-with-hits: $HITS" "$REPORT"
   exit 1
 fi
 
@@ -232,20 +246,11 @@ for c in docs/proof-debt.md docs/proof-debt.adoc; do
 done
 if [ -z "$DEBT_DOC" ]; then
   echo "FAIL: no proof-debt register (docs/proof-debt.md) — TRUSTED-BASE-REDUCTION-POLICY requires one in a proof-bearing repo"
-  [ -n "$RECEIPT" ] && printf 'status: FAIL\nreason: no proof-debt register\n' >"$RECEIPT"
+  write_receipt FAIL "reason: no proof-debt register"
   exit 1
 fi
 
 echo "PASS: $FILES_SCANNED proof source(s) scanned, no banned patterns outside comments"
 echo "      exempted by .trusted-base-ignore: $EXEMPTED;  proof-debt register: $DEBT_DOC"
-if [ -n "$RECEIPT" ]; then
-  {
-    echo "proof-scan receipt"
-    echo "generated: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-    echo "commit: ${GITHUB_SHA:-$(git rev-parse HEAD 2>/dev/null || echo unknown)}"
-    echo "status: PASS"
-    echo "files-scanned: $FILES_SCANNED"
-    echo "files-with-hits: 0"
-  } >"$RECEIPT"
-fi
+write_receipt PASS "files-scanned: $FILES_SCANNED" "files-with-hits: 0"
 exit 0

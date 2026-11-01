@@ -524,13 +524,21 @@ done < <(jq -r '
 # §2.2 (per-theorem assumptions, recorded) all say the same thing: what a proof
 # leans on has to be named, and named accurately. A dependency that is itself a
 # proof-bearing system with open obligations is not a version string.
-while IFS=$'\x1f' read -r tid aname akind arelation aev aaxioms aclaim; do
+while IFS=$'\x1f' read -r tid aname akind arelation aev aaxioms aclaim aversion acommit; do
   [ -z "${aname// }" ] && continue
   [ -n "${akind// }" ] || fail "$tid: assumption '$aname' has no kind — an untagged assumption is an unnamed one"
   case "$akind" in
     dependency-pin|external-development) ;;
     *) fail "$tid: assumption '$aname' has kind '${akind}', which is not one of dependency-pin | external-development" ;;
   esac
+  if [ "$akind" = "dependency-pin" ]; then
+    # A dependency-pin that names no version and no commit pins nothing; it is a
+    # dependency *mention*. Without this, deleting `version` from the Agda row
+    # left a recorded assumption that constrained nothing and the audit passed.
+    if [ -z "${aversion// }" ] && [ -z "${acommit// }" ]; then
+      fail "$tid: dependency-pin '$aname' records neither a version nor a commit — a dependency that pins nothing is not a pin (§2.2)"
+    fi
+  fi
   if [ "$akind" = "external-development" ]; then
     [ -n "${arelation// }" ] || fail "$tid: external development '$aname' records no relation — say what it is to this proof (construction-under-comparison, proof-bearing-consumer, ...)"
     [ -n "${aev// }" ] || fail "$tid: external development '$aname' records no evidence — a claim about another repository needs the file and date it was read from"
@@ -551,7 +559,8 @@ while IFS=$'\x1f' read -r tid aname akind arelation aev aaxioms aclaim; do
 done < <(jq -r '
   .theorems[] | .id as $id | (.source.assumptions // [])[] |
   [ $id, (.name // ""), (.kind // ""), (.relation // ""), (.evidence // ""),
-    ((.undischarged_axioms // "") | tostring), (.identity_claim // "") ] | map(tostring) | join("\u001f")' "$LEDGER")
+    ((.undischarged_axioms // "") | tostring), (.identity_claim // ""),
+    (.version // ""), (.commit // "") ] | map(tostring) | join("\u001f")' "$LEDGER")
 
 # import cone: Agda's --safe refuses an import that is not itself safe, so the
 # cone is the trust base. If the record admits a postulated module inside it,

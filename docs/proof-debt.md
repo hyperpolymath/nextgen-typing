@@ -46,12 +46,17 @@ each imported module's postulate count (0 at the pin).
 
 ## Exemptions, and why they are not debt
 
-`.trusted-base-ignore` exempts `tests/proofs/control/`. Three planted files
-(`PlantedAdmitted.v`, `PlantedSorry.lean`, `PlantedAxiom.v`) contain a real
-`Admitted`, a real `sorry` and a real `Axiom` **so that they are detected**:
-`tests/proofs/run-controls.sh` fails if the
-instrument accepts them. Recording them here as debt would both misreport the
-repository and invite someone to "fix" the fixtures.
+`.trusted-base-ignore` exempts the whole of `tests/proofs/control/`, which holds
+the both-ways controls for the proof gate. Four planted files
+(`PlantedAdmitted.v`, `PlantedSorry.lean`, `PlantedAxiom.v`, `PlantedAdmit.v`)
+contain a real `Admitted`, a real `sorry`, a real `Axiom` and a real Coq
+`admit.` **so that they are detected**: `tests/proofs/run-ledger-controls.sh`
+fails if the instrument accepts any of them, and control 35 exists specifically
+because the `admit.` alternative had become unfirable. The remaining fixtures
+(`Control.v`, `Control.lean`) are closed proofs and contain no escape hatch;
+they are exempted only because the exemption is by directory. Recording any of
+these here as debt would both misreport the repository and invite someone to
+"fix" the fixtures.
 
 ## How this file is kept honest
 

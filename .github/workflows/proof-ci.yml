@@ -88,6 +88,13 @@ on:
       - 'Justfile'
       - 'PROOF-NEEDS.adoc'
       - 'PROOF-STATUS.adoc'
+      # Scanner policy inputs. .trusted-base-ignore decides which files the
+      # escape-hatch scan exempts and docs/proof-debt.md is the register it
+      # requires: changing either changes what the gate means, so either must
+      # run the gate.
+      - '.trusted-base-ignore'
+      - 'docs/proof-debt.md'
+      - 'docs/proof-debt.adoc'
       - '.github/workflows/proof-ci.yml'
   pull_request:
     branches: [main, master, develop]
@@ -103,6 +110,10 @@ on:
       - 'Justfile'
       - 'PROOF-NEEDS.adoc'
       - 'PROOF-STATUS.adoc'
+      # Scanner policy inputs, as in the push filter above.
+      - '.trusted-base-ignore'
+      - 'docs/proof-debt.md'
+      - 'docs/proof-debt.adoc'
       - '.github/workflows/proof-ci.yml'
   workflow_dispatch:
 

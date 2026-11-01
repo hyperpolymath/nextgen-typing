@@ -322,6 +322,15 @@ else
   sed 's/^/      /' "$WORK/admit-scan.log" | tail -5
 fi
 
+# An assumption tagged dependency-pin with no version and no commit pins
+# nothing. It satisfies the "name your trust base" rule while constraining no
+# version at all, which is how the Agda pin could be deleted and the audit stay
+# green.
+jq '(.theorems[0].source.assumptions[0]) |= del(.version)' \
+  "$LEDGER" > "$WORK/unpinned-dep.json"
+expect_refusal "40. a dependency-pin assumption that pins no version and no commit" \
+  "records neither a version nor a commit" "$WORK/unpinned-dep.json"
+
 # --- a page may not outrun the ledger, theorem by theorem -------------------
 # The summary table is where PROOF-STATUS.adoc states a grade. The gate reads the
 # row for each theorem and compares it with that theorem's own ledger grade, so
