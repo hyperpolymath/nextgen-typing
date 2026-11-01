@@ -40,14 +40,17 @@ jobs:
           set -euo pipefail
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends ghc cabal-install
-          ghc --version
+          # Hosted runners also contain newer GHC versions whose 'base'
+          # package is incompatible with Agda 2.7.0.1. Choose the distro
+          # compiler explicitly, not the first ghc found on PATH.
+          /usr/bin/ghc --version
           cabal --version
 
       - name: Install Agda 2.7.0.1 and compatible stdlib 2.1.1
         run: |
           set -euo pipefail
           cabal update
-          cabal install Agda-2.7.0.1 --overwrite-policy=always
+          cabal install Agda-2.7.0.1 --with-compiler=/usr/bin/ghc --overwrite-policy=always
           echo "$HOME/.cabal/bin" >> "$GITHUB_PATH"
           curl -fsSL --retry 3 -o "$RUNNER_TEMP/agda-stdlib.tar.gz" \
             https://github.com/agda/agda-stdlib/archive/refs/tags/v2.1.1.tar.gz
