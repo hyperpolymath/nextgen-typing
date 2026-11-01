@@ -678,6 +678,15 @@ while IFS=$'\x1f' read -r tid prover status artifact route compared axioms repro
     idris2) mdir="$PROOFS_DIR/idris2" ;;
     *) mdir="" ;;
   esac
+  # A prover the lane has no recipe for cannot support a claim. Without this the
+  # default branch left $mdir empty, skipped every manifest check, and a 'proven'
+  # Isabelle/SMT/TLA+ row pointing at any file on disk would count towards a
+  # grade with nothing having run. The wired set is the set check-proofs.sh
+  # implements; write it out here so the two cannot drift silently.
+  if [ -z "$mdir" ]; then
+    fail "$tid/$prover: status '$status' recorded for a prover the lane cannot compile — scripts/check-proofs.sh wires idris2, lean4, agda and coq only, so this leg would contribute to a grade without any proof system running. Record the leg as open, or add a compile recipe for '$prover' first (PROOF-POLICY §2.3)."
+    continue
+  fi
   if [ -n "$mdir" ]; then
     if [ ! -f "$mdir/MANIFEST" ]; then
       fail "$tid/$prover: $mdir/MANIFEST is missing, so $artifact cannot be compiled by the lane"

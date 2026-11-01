@@ -194,6 +194,18 @@ jq '(.theorems[0].legs[0]) |= (.status = "proven" | .route = "unavailable"
 expect_refusal "25. a route that does not exist, carrying a proven status" \
   "cannot support a claim" "$WORK/unavailable-proven.json"
 
+# A proven leg for a prover the lane cannot compile. Grade 2i ledgers may name
+# Isabelle, SMT or TLA+; nothing in scripts/check-proofs.sh runs any of them, so
+# such a leg must be refused rather than counted. The artifact is a real file on
+# disk, which is exactly what made the old default branch look satisfied.
+jq '(.theorems[0].legs[0]) |= (.prover = "isabelle" | .status = "proven"
+      | .route = "transported"
+      | .artifact = "tests/proofs/control/Control.v"
+      | .axioms = [] | .statement_compared = "planted: statement comparison recorded")' \
+  "$LEDGER" > "$WORK/unwired-prover.json"
+expect_refusal "36. a proven leg for a prover the lane has no recipe for" \
+  "for a prover the lane cannot compile" "$WORK/unwired-prover.json"
+
 # A CONFORMING waiver must be accepted, and must be visible in the verdict.
 jq '(.theorems[0].legs[0]) |= (del(.status, .route, .artifact)
      | .waiver = {"obligation":"rocq leg","tool":"rocq",
