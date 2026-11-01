@@ -81,6 +81,12 @@ else
   ok "4. the escape-hatch scan rejects a proof closed with sorry"
 fi
 
+if bash "$GATE" --scan-file "$CONTROLS/PlantedAxiom.v" >/dev/null 2>&1; then
+  viol "29. the escape-hatch scan ACCEPTED a Coq 'Axiom' (estate core tier)"
+else
+  ok "29. the escape-hatch scan rejects a Coq 'Axiom' — the estate core tier, which the scan previously missed"
+fi
+
 # --- grades and evidence ----------------------------------------------------
 jq '(.theorems[0].grade) = "2i"' "$LEDGER" > "$WORK/grade-2i.json"
 expect_refusal "5. a grade 2i claim with no proven leg" \
@@ -217,6 +223,24 @@ elif grep -qF "witness on disk is not claimed in the ledger" "$WORK/unlisted.log
 else
   viol "19. the unclaimed-witness control failed for the wrong reason"
   sed 's/^/      /' "$WORK/unlisted.log" | tail -5
+fi
+
+# --- estate trusted-base compliance ----------------------------------------
+# docs/TRUSTED-BASE-REDUCTION-POLICY.adoc requires a proof-debt register in a
+# proof-bearing repo. An absent register is indistinguishable from an unexamined
+# repository, so the scan must fail on one.
+sandbox2="$WORK/repo-debt"
+mkdir -p "$sandbox2"
+tar --exclude=.git --exclude=target -cf - . 2>/dev/null | ( cd "$sandbox2" && tar -xf - )
+rm -f "$sandbox2/docs/proof-debt.md" "$sandbox2/docs/proof-debt.adoc" \
+      "$sandbox2/PROOF-NEEDS.md" "$sandbox2/PROOF-NEEDS.adoc"
+if ( cd "$sandbox2" && bash scripts/proof-scan-dangerous.sh ) >"$WORK/nodebt.log" 2>&1; then
+  viol "30. the scan passed with no proof-debt register (TRUSTED-BASE-REDUCTION-POLICY)"
+elif grep -qF "no proof-debt register" "$WORK/nodebt.log"; then
+  ok "30. a proof-bearing repo with no proof-debt register is refused, not quietly passed"
+else
+  viol "30. the debt-register control failed for the wrong reason"
+  sed 's/^/      /' "$WORK/nodebt.log" | tail -5
 fi
 
 echo ""

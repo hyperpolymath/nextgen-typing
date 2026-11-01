@@ -13,6 +13,11 @@ stand; "Coq archived" and "Lean is provenance only" are superseded by the estate
 `PROOF-POLICY` (owner ruling 2026-10-26, amended 2026-11-01). See the amendment
 inside the document.
 
+|`D-2026-11-01-policy-reconciliation.adoc` |current
+|Which document binds where: PROOF-POLICY vs mathesis vs the README-EXPLAINME
+ledger vs TRUSTED-BASE-REDUCTION-POLICY. Twelve disagreements with the strict
+reading named for each, and what is left for owner rulings.
+
 |`0001-adopt-rsr-standard.adoc` |current |Repository standard adoption.
 |`0000-template.adoc` |template |Copy for a new decision; delete the guidance.
 |===

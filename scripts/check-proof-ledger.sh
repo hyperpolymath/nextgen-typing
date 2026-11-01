@@ -77,27 +77,16 @@ note() { NOTES+=("$1"); }
 # ---------------------------------------------------------------------------
 scan_escape_hatches() {
   # $1 = file. Prints "line:token:text" for each real hit.
-  local file="$1" stripped
-  stripped="$(awk '
-    BEGIN { block = 0 }
-    {
-      line = $0; out = ""; i = 1; n = length(line)
-      while (i <= n) {
-        two = substr(line, i, 2)
-        if (block == 1) {
-          if (two == "-}" || two == "*)") { block = 0; i += 2 } else { i += 1 }
-          continue
-        }
-        if (two == "--" || two == "//") { break }
-        if (two == "{-" || two == "(*") { block = 1; i += 2; continue }
-        out = out substr(line, i, 1); i += 1
-      }
-      print out
-    }' "$file")"
-  # Hard bans: no status in PROOF-POLICY §5 can be carried by these.
-  printf '%s\n' "$stripped" \
-    | grep -nE '\b(believe_me|assert_total|postulate|sorry|admit|Admitted|unsafeCoerce)\b|\bObj[.]magic\b|\bsorryAx\b' \
-    || true
+  #
+  # ONE pattern list, not two. This function used to carry its own copy, which
+  # drifted: it knew `believe_me|assert_total|postulate|sorry|admit|Admitted|
+  # unsafeCoerce` and missed the rest of the estate policy's CORE tier (Coq
+  # `Axiom`, Lean `axiom`, Idris2 `really_believe_me`/`partial`, F* `assume val`,
+  # `unsafePerformIO`). The scanner owns the list; this delegates so a marker
+  # can never be caught by one gate and missed by the other.
+  local file="$1"
+  bash "$(dirname "$0")/proof-scan-dangerous.sh" --scan-file "$file" 2>/dev/null \
+    | sed -n 's/^\([0-9][0-9]*\):/\1:/p'
 }
 
 # Declared axioms are different from escape hatches: PROOF-POLICY §5 allows

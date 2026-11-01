@@ -1,0 +1,185 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+= Policy reconciliation: where the estate's proof rules disagree, and which reading binds
+:revdate: 2026-11-01
+:status: ADOPTED for this repository; upstream items are proposals pending owner ruling
+:toc:
+
+A consistency audit of this repository's proof lane against the estate policies
+found not one authority but five, and they do not say the same thing. Each
+disagreement below has a weak reading and a strict reading. This record names the
+reading this repository adopts, and what the upstream document would have to say
+for the strict reading to be the only one available.
+
+Nothing here weakens a gate. Where the strict reading is ours to implement it is
+implemented and controlled; where it is not, it is written as an owner-ruling
+proposal rather than paraphrased into compliance.
+
+== The five documents, and what each actually owns
+
+[cols="32%,68%",options="header",]
+|===
+|Document |What it owns
+|`metadatastician/standards` `3-practice/PROOF-POLICY.adoc` (owner ruling
+2026-10-26, amended 2026-11-01, pinned `46ee1832…`)
+|*Where a proof lives*: prover mapping, the Rocq and Lean recheck obligation, the
+canonical Agda invocation, the correspondence record, routes, waivers, the closed
+status vocabulary, toolchains, and how to amend it.
+|`metadatastician/standards` `docs/README-EXPLAINME-STANDARD.adoc` §5
+|A second, older definition of the proof ledger: a markdown table, the same
+closed vocabulary, and a README scorecard row that *requires* a ratio.
+|`metadatastician/standards` `docs/TRUSTED-BASE-REDUCTION-POLICY.adoc` (2026-05-27,
+extended tier 2026-10-30)
+|*Which escape hatches exist and what may be done with them*: the two tiers, the
+four dispositions, `docs/proof-debt.md`, `.trusted-base-ignore`,
+`.trusted-base-budget`, and `check-trusted-base.sh`.
+|`hyperpolymath/mathesis` `estate-mathematical-architecture`
+|*The grade ladder*: §5 Grade 3 / 2i / 2ii / 1 and the prover-family caveat; §6
+record discipline, axiom tracking, `Superseded`/`Regressed`; §11 no inflation.
+|`metadatastician/standards` `3-practice/LANGUAGE-POLICY.adoc`,
+`TOOLING-VERSION-INTEGRITY-POLICY.adoc`
+|*How toolchains are installed and pinned*: Guix manifest or container; declared
+floors, asserted versions, no silent transitive skew.
+|===
+
+PROOF-POLICY itself says which of these it defers to: escape hatches stay with
+TRUSTED-BASE-REDUCTION-POLICY, and the canonical token list is the one in
+README-EXPLAINME-STANDARD. It says nothing about mathesis, and mathesis says
+nothing about the standards repository. That silence is where the weak readings
+live.
+
+== The disagreements, and the strict reading
+
+[cols="4%,40%,28%,28%",options="header",]
+|===
+|# |Disagreement, and the weak reading it licenses |Strict reading (adopted here)
+|Fix belongs
+|A1 |PROOF-POLICY §2.1 (2026-11-01) says first-party Agda entrypoints *shall* use
+`--safe --without-K --cubical-compatible`. TRUSTED-BASE §"Why the prover
+invocation is not standardised" says "How a repository invokes its prover is its
+own business". *Weak:* cite the trusted-base document to keep a `--safe`-only
+lane, which is exactly what §2.1 was amended to stop.
+|§2.1 governs entrypoints; the trusted-base clause governs the *debt tooling*
+(budgets, dispositions, detection) and is not a licence for entrypoint flags.
+|Upstream: one sentence in each, cross-referencing the other's scope.
+|A2 |mathesis §5 offers "Full `--cubical`" as a Grade-3 configuration. §2.1
+requires "an explicit, separately reviewed proof profile" for full Cubical.
+*Weak:* a Full-Cubical development is Grade 3 with nothing recorded.
+|Grade 3 rests on the configured, recorded profile. Full `--cubical` without a
+recorded §2.1 profile is not a grade, it is an unreviewed configuration.
+|Upstream (mathesis) + here (the profile would be recorded in the ledger).
+|A3 |mathesis §5: 2i = translated to **one** alternative system. PROOF-POLICY §2:
+rechecked in Rocq **and** Lean. *Weak:* claim 2i with one leg and let a reader
+infer the policy is satisfied.
+|A rung is not a discharge. 2i is a partial state; §2 still owes the second leg.
+This repository's status text says so explicitly.
+|Upstream (mathesis) + here (already stated)
+|A4 |mathesis §6 requires `Superseded` and `Regressed` states. The closed
+vocabulary of §5/README-EXPLAINME has neither. *Weak:* drop the lineage
+requirement — observed here: a retained receipt carried no state until today.
+|Lineage lives on the *receipt*, not on the status token: `historical_evidence[].
+state` + reason. The closed vocabulary stays closed.
+|Implemented here (gate refuses an unmarked archived receipt). Upstream: both
+documents should say this, or every repo will invent a token.
+|A5 |README-EXPLAINME §5 requires the README scorecard "Proofs" row to show "the
+count of `proven` rows over all rows". mathesis §6 forbids flattening confidence
+into a percentage. *Weak:* quote whichever document flatters the moment.
+|Ratios of *rows* are counts with a stated denominator, not confidence. No
+document may be read as licensing a "percentage proved". This repo prints the
+ladder and the delta to the next rung, and withdrew its "1 of 1 done" figure.
+|Upstream: one sentence in each.
+|A6 |Two ledger shapes: a markdown table (README-EXPLAINME §5) and a machine
+ledger with a per-theorem correspondence record (PROOF-POLICY §2.2). *Weak:* keep
+the easy one; gates then have nothing to read.
+|One canonical machine ledger (this repo: `verification/proofs/LEDGER.json`); the
+README table, where present, is derived from it and cites it. §5 already says the
+machine ledger holds the canonical token — say it in README-EXPLAINME too.
+|Here: the status file points at the ledger and the gate enforces it. Upstream:
+state the precedence.
+|A7 |PROOF-POLICY §1.1 makes reliance on a dependency's *behaviour* an `ASSUMED`
+contract. It has no shape for a dependency whose definitions and theorems are
+*kernel-checked* at import. *Weak:* treat the dependency as invisible
+(over-claim) or as ASSUMED (under-claim).
+|Third case, now recorded here: an import closure compiled under the prover's
+safe mode with zero postulates is *checked, not assumed*, and the cone is
+recorded module by module (`.source.import_cone`).
+|Upstream (§1.1) + here (implemented)
+|A8 |`proven-with-postulates` defers to TRUSTED-BASE(c), which cites MathLib4 as
+an example of a canonical formalisation to point at — while §2 forbids Mathlib.
+*Weak:* import the library, then cite it as justification.
+|The two clauses govern different things: §2 forbids the *dependency*; TRB(c)
+governs the *axiom*. An axiom may cite a canonical formalisation as justification
+and must not enter through the library.
+|Upstream: one sentence in both.
+|A9 |§6 requires proof toolchains "through the repo's Guix manifest or its
+container", with **no deviation mechanism** — unlike §4, which has one. *Weak:*
+silently non-compliant, which is what this repository's recorded `§6` deviation
+is: visible here, invisible to the policy.
+|Either (i) §6 states an equivalence — an asserted version plus a recorded digest
+from the upstream package/release index, recorded in the proof ledger, satisfies
+the clause — or (ii) §6 gains a `deviation` field with §4's discipline. Until
+then this repo either complies or records the gap and says the policy cannot see
+it.
+|Upstream (owner ruling). Here: the deviation is recorded, and the strict route
+(a Guix manifest for the lane) is the default plan.
+|A10 |mathesis defines Grade 1 (AXLE, coq-lsp REST, isabelle-server) but no
+policy requires it. *Weak:* the strictest rung is unowned, so nobody is ever
+obliged to reach it.
+|State it: either Grade 1 is required for an estate-level "verified through a
+checker API" claim, or it is explicitly aspirational and no status may be worded
+to imply it.
+|Upstream (mathesis + an owner ruling in the policy).
+|A11 |§7 requires that "a gate that enforces this policy cites this file" — but
+not that the citation be *pinned*. The policy moved twice in six days.
+*Weak:* cite the path, audit against whatever the path says today.
+|A citation names repository, path and the full 40-character commit it was read
+at, and the gate fails without it. mathesis §11's "no silent index drift" says
+the same from the other side.
+|Implemented here (this repo's gate prints the pin and fails without it).
+Upstream: §7 should require the pin.
+|A12 |§4: "The theorem is complete when the Agda proof is PROVEN or
+PROVEN-WITH-AXIOMS and every leg that is not waived is too." mathesis has no
+notion of a waiver. *Weak:* report "complete", reader hears "Grade 2".
+|A waiver never buys a rung: a theorem with a waived leg has no independent
+witness, so it is at most Grade 3, and the word "complete" is about the policy's
+own ledger, not about a grade.
+|Implemented here (a waived leg carries no status at all, so nothing can count
+it; the verdict lists waivers separately). Upstream: say it in §4.
+|===
+
+== The local document that was doing the same thing
+
+`PROOF-NEEDS.adoc` declared *Tier T5 — Exempt* and stopped. A reader — or an
+agent — could take that as "the proof policy does not apply to this repo", which
+would have excused the open Rocq and Lean legs. It now states the other reading:
+exemption is from the RSR template's *mandated* obligations, and hosting a proof
+makes this repository proof-bearing for the trusted-base policy and for §7. See
+the file.
+
+== What was fixed here rather than argued
+
+* `docs/proof-debt.md` added, and `.trusted-base-ignore` for the instrument's
+  planted fixtures. The estate checker now reports
+  `core_undocumented=0` — before, `governance-reusable.yml`'s `trusted-base` job
+  failed this repository for having an escape hatch and no register.
+* `scripts/proof-scan-dangerous.sh` widened to the estate's **core tier**
+  (Coq `Axiom`, Lean `axiom`, Idris2 `really_believe_me`/`partial`, F* `assume
+  val`/`admit_p`, `unsafePerformIO`), and the ledger gate no longer keeps a
+  second, narrower copy of the pattern list — it delegates. One list, one
+  meaning: a marker cannot be caught by one gate and missed by the other.
+  Controls 29 and 30 plant a Coq `Axiom` and remove the debt register.
+* §2.1's canonical invocation, §5's closed vocabulary, §6's absence of a
+  deviation mechanism, and A11's pin are reflected in the gate and the ledger.
+
+== What is still wrong, and is not this repository's to fix
+
+A1–A3, A5, A6, A8–A11 are owner-ruling items in the standards repository or in
+mathesis. Until they land, either reading can be defended by citation, and the
+strict treatment depends on each repository choosing it. This repository chooses
+it, records the choice, and gates it — which is the most a single repo can do.
+
+The one substantive gap left here is A9: the proof lane installs Rocq and Lean
+from the package index and the release archive with asserted versions and a
+recorded digest, and the policy has no lawful way to acknowledge that. Closing it
+by compliance rather than by exemption means a Guix manifest (or the container)
+carrying both provers, with the lane installing from it.

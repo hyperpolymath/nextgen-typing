@@ -15,8 +15,26 @@ ____
 
 === Proof Tier
 
-*Tier*: T5 — Exempt (coordination layer; no owned code to prove).
-Cross-project proofs are hosted, not mandated.
+*Tier*: T5 — Exempt from the RSR template's *mandated* obligations
+(coordination layer; no owned code to prove). Cross-project proofs are hosted,
+not mandated.
+
+*Exempt is not outside the policy.* Reading T5 as "the proof policy does not
+apply here" would license exactly the weak treatment the estate policies exist
+to prevent, so this repository states the other reading, which is the true one:
+
+. **Hosting a proof makes this repo proof-bearing.** It owns no code to prove,
+  but it owns the proof it hosts. `docs/TRUSTED-BASE-REDUCTION-POLICY.adoc`
+  requires a `docs/proof-debt.md` from a proof-bearing repo, and PROOF-POLICY §7
+  requires any gate enforcing the policy to be verified both ways — both apply
+  here, and both are wired.
+. **"Not mandated" is about starting a proof, not about finishing one.** XP-1 is
+  recorded `proven` at Grade 3 (mathesis §5), which puts it under PROOF-POLICY §2
+  like any other theory proof: a Rocq recheck leg and a Lean recheck leg are
+  owed. They are `open`, reported as policy gaps on every run, and the grade is
+  held at 3 rather than inflated.
+. **A hosted proof is not a lower grade.** The rungs are about the proof, not
+  about which repository stores it.
 
 === Cross-Project Proofs (the only category that applies here)
 
