@@ -328,6 +328,18 @@ closed — compiling is not: Rocq accepts `+Admitted+` and Lean accepts `+sorry+
 with exit status 0. Since no witness exists on either leg there is no axiom
 list for them yet; recording one would be fabrication.
 
+**Stated plainly, because the alternative is a reader assuming more than is
+here:** the lane *compiles* the witnesses a MANIFEST gates and *audits the axiom
+lists the ledger records*; the kernel-level axiom query (`+Print Assumptions+`,
+`+#print axioms+`) is exercised today on the control fixtures in
+`+tests/proofs/`+ and, when a leg is proven, on the declarations the ledger
+names. It is not yet run against every compiled module, so an axiom *imported*
+from another module rather than declared in the artifact would not be caught by
+the compile step. That gap is recorded as issue #131 with the shape of the fix
+(per-module `+coqchk -o+` / a generated `+Print Assumptions+` driver, and a Lean
+probe that runs `+#print axioms+` per recorded declaration), and it is named here
+rather than left to be discovered.
+
 The Agda source leg rests on these pinned, recorded assumptions (all in the
 ledger):
 
