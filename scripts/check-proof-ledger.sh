@@ -245,6 +245,239 @@ while IFS=$'\t' read -r tid kind grade provers claimed proven; do
   fi
 done < /tmp/proof-ledger-rows.$$.tsv
 
+# --- 3b. the SOURCE leg must be substantiated, and its flags must be the ones
+# actually in force -----------------------------------------------------------
+# A Grade 3 claim is "Agda alone, and safe". That is only meaningful if (a) the
+# source leg really is proven, (b) the flags recorded are the flags the lane
+# really passes, and (c) the named declarations the statement rests on exist.
+# None of this is taken on trust: the CLI flags are read out of the instrument
+# (scripts/check-proofs.sh), the {-# OPTIONS #-} out of the proof files, and the
+# identifiers out of the file named as the anchor.
+AGDA_CLI_FLAGS="$(
+  grep -oE 'agda --safe[^"]*' scripts/check-proofs.sh 2>/dev/null | head -1 \
+    | grep -oE -- '--[a-zA-Z][a-zA-Z0-9-]*' | sort -u | tr '\n' ' ' | sed 's/ *$//'
+)"
+if [ -z "$AGDA_CLI_FLAGS" ]; then
+  fail "could not read the Agda CLI flags out of scripts/check-proofs.sh (instrument changed shape) — the recorded flags cannot be cross-checked"
+fi
+
+file_agda_options() {  # $1.. = agda files; prints the sorted union of OPTIONS flags
+  local f
+  for f in "$@"; do
+    [ -f "$f" ] || continue
+    awk '/OPTIONS/ { rest = $0
+                    while (match(rest, /--[a-zA-Z][a-zA-Z0-9-]*/)) {
+                      print substr(rest, RSTART, RLENGTH)
+                      rest = substr(rest, RSTART + RLENGTH)
+                    } }' "$f"
+  done | sort -u | tr '\n' ' ' | sed 's/ *$//'
+}
+
+while IFS=$'\t' read -r tid sprover sstatus rec_file_opts rec_cli rec_effective files_csv anchor_ids escape_evidence; do
+  [ -z "$tid" ] && continue
+  kind_of="$(
+    jq -r --arg id "$tid" '.theorems[] | select(.id == $id) | .kind' "$LEDGER"
+  )"
+
+  # (a) PROOF-POLICY §1: a theory theorem's source of truth is Agda, and it
+  # must actually be proven — a grade resting on an open source leg is a guess.
+  if [ "$kind_of" = "theory" ] && [ "$sprover" != "agda" ]; then
+    fail "$tid: a theory theorem's source leg must be Agda (PROOF-POLICY §1); ledger records '${sprover:-<missing>}'"
+  fi
+  case "$sstatus" in
+    proven|proven-with-postulates) ;;
+    *) fail "$tid: source leg status is '${sstatus:-<missing>}' — a recorded grade rests on the source of truth being proven, not asserted (PROOF-POLICY §5)" ;;
+  esac
+
+  # (b) every source file must exist
+  IFS=',' read -r -a src_files <<< "$files_csv"
+  for f in "${src_files[@]}"; do
+    [ -z "$f" ] && continue
+    [ -f "$f" ] || fail "$tid: source file recorded but missing on disk: $f"
+  done
+
+  # (c) flags: what the instrument passes, what the files declare, and the
+  # union the ledger claims must agree. Drift here silently changes what a
+  # Grade 3 claim means.
+  actual_file_opts="$(file_agda_options "${src_files[@]}")"
+  if [ "$rec_cli" != "$AGDA_CLI_FLAGS" ]; then
+    fail "$tid: flags drift — scripts/check-proofs.sh invokes 'agda ${AGDA_CLI_FLAGS}' but the ledger records CLI '${rec_cli:-<missing>}'"
+  fi
+  if [ "$rec_file_opts" != "$actual_file_opts" ]; then
+    fail "$tid: flags drift — the proof files declare '${actual_file_opts:-<none>}' in {-# OPTIONS #-} but the ledger records '${rec_file_opts:-<missing>}'"
+  fi
+  effective_expected="$(printf '%s %s\n' "$actual_file_opts" "$AGDA_CLI_FLAGS" | tr ' ' '\n' | grep -v '^$' | sort -u | tr '\n' ' ' | sed 's/ *$//')"
+  if [ "$rec_effective" != "$effective_expected" ]; then
+    fail "$tid: effective safety flags recorded as '${rec_effective:-<missing>}' but the files+instrument actually apply '${effective_expected:-<none>}'"
+  fi
+  case " $rec_effective " in
+    *" --safe "*) ;;
+    *) fail "$tid: '--safe' is not in the effective flags — postulates and other escape hatches are not ruled out, so the grade is unsupported (mathesis §5)" ;;
+  esac
+
+  # (d) mathesis §5 names the Grade 3 configurations parenthetically
+  # (--safe --erasure, or Full --cubical). If the flags in force are neither,
+  # the deviation must be recorded rather than glossed over.
+  grade3_named=0
+  case " $rec_effective " in *" --erasure "*) grade3_named=1 ;; esac
+  case " $rec_effective " in
+    *" --cubical "*)
+      case " $rec_effective " in
+        *" --cubical-compatible "*) ;;
+        *) grade3_named=1 ;;
+      esac
+      ;;
+  esac
+  if [ "$grade3_named" -eq 0 ]; then
+    deviation="$(
+      jq -r --arg id "$tid" '.theorems[] | select(.id == $id) | .grade_deviation // ""' "$LEDGER"
+    )"
+    if [ -z "${deviation// }" ]; then
+      fail "$tid: the flags in force ('$rec_effective') are neither of the configurations mathesis §5 names for grade 3 (--safe --erasure, or Full --cubical) — record the deviation in .grade_deviation instead of paraphrasing the policy"
+    fi
+  fi
+
+  # (e) the statement must rest on named declarations that exist. A grade
+  # anchored to a file rather than a theorem is the "proof inflation" mathesis
+  # §11 rejects.
+  if [ -z "${anchor_ids// }" ]; then
+    fail "$tid: no .statement_anchor — a grade must point at the named declarations that carry the statement, not at a file"
+  else
+    IFS=',' read -r -a anchors <<< "$anchor_ids"
+    for a in "${anchors[@]}"; do
+      [ -z "${a// }" ] && continue
+      hit=0
+      for f in "${src_files[@]}"; do
+        [ -f "$f" ] || continue
+        grep -qE "^[[:space:]]*${a//./\\.}[[:space:]]*:" "$f" && hit=1
+      done
+      [ "$hit" -eq 1 ] || fail "$tid: statement anchor '$a' is not declared in any recorded source file (looked in: $files_csv)"
+    done
+  fi
+
+  # (e2) PROOF-POLICY §2 needs a statement comparison between the Agda source
+  # and any recheck leg. That is impossible if the Agda statement is only prose,
+  # so each recorded declaration's TYPE must still be in the file, whitespace-
+  # normalised. When the Agda statement moves, this record has to move with it.
+  while IFS=$'\t' read -r decl_name decl_type; do
+    [ -z "${decl_name// }" ] && continue
+    if [ -z "${decl_type// }" ]; then
+      fail "$tid: statement_formal.$decl_name records no type — a recheck leg cannot be compared against it"
+      continue
+    fi
+    norm_type="$(printf '%s' "$decl_type" | tr -s '[:space:]' ' ' | sed 's/^ *//; s/ *$//')"
+    found=0
+    for f in "${src_files[@]}"; do
+      [ -f "$f" ] || continue
+      norm_file="$(tr -s '[:space:]' ' ' < "$f")"
+      case "$norm_file" in
+        *"$norm_type"*) found=1 ;;
+      esac
+    done
+    if [ "$found" -eq 0 ]; then
+      fail "$tid: statement drifted — statement_formal.$decl_name records the type
+     '$norm_type'
+     which no recorded source file contains any more. If the Agda statement
+     changed, re-record it here (and re-check any leg that was compared against
+     it) — PROOF-POLICY §2's statement comparison is void otherwise."
+    fi
+  done < <(jq -r --arg id "$tid" '
+    .theorems[] | select(.id == $id) | .statement_formal.declarations[]? |
+    [ (.name // ""), (.type // "") ] | @tsv' "$LEDGER")
+
+  # (f) "no escape hatches" has to be evidenced by a mechanism, not a claim.
+  if [ -z "${escape_evidence// }" ]; then
+    fail "$tid: no .escape_hatch_evidence — the absence of postulates has to be evidenced by a mechanism (--safe plus the comment-aware scan), not asserted"
+  fi
+done < <(jq -r '
+  .theorems[] |
+  [ .id,
+    (.source.prover // ""),
+    (.source.status // ""),
+    ((.source.flags_provenance.file_options // []) | sort | join(" ")),
+    ((.source.flags_provenance.cli // []) | sort | join(" ")),
+    ((.source.safety_flags // []) | sort | join(" ")),
+    ((.source.files // []) | join(",")),
+    ((.statement_anchor // []) | join(",")),
+    (.source.escape_hatch_evidence // "")
+  ] | @tsv' "$LEDGER")
+
+# --- 3c. Superseded / Regressed (mathesis §6) --------------------------------
+# §6 requires a proof's history to record when it is superseded or regresses.
+# Two rules make that real rather than decorative:
+#   * every history entry is well formed (date, target, from, to, evidence);
+#   * the LAST entry for a target must equal that target's current value — so a
+#     downgrade cannot be quietly applied, and a record cannot be quietly
+#     dropped. A transition to a weaker state must also carry a reason.
+GRADE_STRENGTH='{"1":4,"2ii":3,"2i":2,"3":1}'
+while IFS=$'\t' read -r tid target from to date evidence reason; do
+  [ -z "$tid" ] && continue
+  if [ -z "${target// }" ]; then
+    fail "$tid: history entry has no target (expected 'grade' or a prover name)"
+    continue
+  fi
+  printf '%s' "$date" | grep -qE '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' \
+    || fail "$tid/$target: history date '${date:-<missing>}' is not YYYY-MM-DD"
+  [ -n "${evidence// }" ] \
+    || fail "$tid/$target: history entry ${from:-?}->${to:-?} has no evidence — a recorded transition needs the receipt that showed it"
+  [ -n "${from// }" ] && [ -n "${to// }" ] \
+    || fail "$tid/$target: history entry has an empty from/to"
+
+  if [ "$target" = "grade" ]; then
+    for g in "$from" "$to"; do
+      case "$g" in 3|2i|2ii|1) ;; *) fail "$tid: history records grade '$g', which is not one of 3, 2i, 2ii, 1 (mathesis §5)" ;; esac
+    done
+  else
+    case ",$target," in
+      *,agda,*|*,rocq,*|*,lean4,*|*,idris2,*|*,isabelle,*|*,"tla+",*|*,smt,*) ;;
+      *) fail "$tid: history target '$target' is not a prover in this estate's vocabulary" ;;
+    esac
+    case "$to" in
+      open|argued|tested-only|proven-with-postulates|proven) ;;
+      *) fail "$tid/$target: history records status '$to', which is outside the PROOF-POLICY §5 vocabulary" ;;
+    esac
+    case "$from" in
+      open|argued|tested-only|proven-with-postulates|proven) ;;
+      *) fail "$tid/$target: history records status '$from', which is outside the PROOF-POLICY §5 vocabulary" ;;
+    esac
+  fi
+
+  # a transition to a weaker state must say why (mathesis §6: Regressed)
+  if [ "$target" = "grade" ]; then
+    old_rank="$(printf '%s' "$GRADE_STRENGTH" | jq -r --arg g "$from" '.[$g] // 0')"
+    new_rank="$(printf '%s' "$GRADE_STRENGTH" | jq -r --arg g "$to" '.[$g] // 0')"
+    if [ "$new_rank" -lt "$old_rank" ] && [ -z "${reason// }" ]; then
+      fail "$tid: grade regressed from '$from' to '$to' with no .reason recorded (mathesis §6 requires Regressed to be explained)"
+    fi
+  else
+    if [ "$to" = "open" ] && [ "$from" != "open" ] && [ -z "${reason// }" ]; then
+      fail "$tid/$target: leg regressed from '$from' to open with no .reason recorded (mathesis §6)"
+    fi
+  fi
+done < <(jq -r '
+  .theorems[] | .id as $id | (.history // [])[] |
+  [ $id, (.target // ""), (.from // ""), (.to // ""), (.date // ""), (.evidence // ""), (.reason // "") ] | @tsv' "$LEDGER")
+
+# the last entry for each target must be the current value
+while IFS=$'\t' read -r tid target last_to; do
+  [ -z "$tid" ] && continue
+  if [ "$target" = "grade" ]; then
+    current="$(jq -r --arg id "$tid" '.theorems[] | select(.id == $id) | .grade | tostring' "$LEDGER")"
+    [ "$last_to" = "$current" ] \
+      || fail "$tid: history's last recorded grade is '$last_to' but the ledger now records '$current' — record the regression (or the promotion) instead of rewriting history (mathesis §6)"
+  else
+    current="$(jq -r --arg id "$tid" --arg p "$target" '.theorems[] | select(.id == $id) | .legs[]? | select(.prover == $p) | .status' "$LEDGER")"
+    if [ -z "$current" ]; then
+      fail "$tid: history records a transition for '$target', but the ledger has no such leg"
+    elif [ "$last_to" != "$current" ]; then
+      fail "$tid/$target: history's last recorded status is '$last_to' but the leg now records '$current' — record the change instead of rewriting history (mathesis §6)"
+    fi
+  fi
+done < <(jq -r '
+  .theorems[] | .id as $id
+  | (.history // []) | group_by(.target)[] | .[-1]
+  | [ $id, (.target // ""), (.to // "") ] | @tsv' "$LEDGER")
+
 # --- 4. every non-open claim must be backed by artifact + MANIFEST + route ---
 while IFS=$'\t' read -r tid prover status artifact route compared axioms reproof; do
   [ -z "$tid" ] && continue

@@ -4,7 +4,8 @@
     "proof_policy": "standards/3-practice/PROOF-POLICY.adoc",
     "grade_model": "mathesis/estate-mathematical-architecture §5 (Verification Pipeline) and §6 (Epistemic Precision)",
     "escape_hatches": "standards/docs/TRUSTED-BASE-REDUCTION-POLICY.adoc",
-    "note": "Theory proofs are Agda (source of truth) rechecked in Rocq and Lean. This ledger records, per theorem, the source leg and each recheck leg, with the route, the axioms and the exact commit of the verification receipt."
+    "note": "Theory proofs are Agda (source of truth) rechecked in Rocq and Lean. This ledger records, per theorem, the source leg and each recheck leg, with the route, the axioms and the exact commit of the verification receipt.",
+    "grade_note": "Grades are recorded, not averaged: no percentages (mathesis §6). A grade must be supported by the legs behind it, and the flags in force must be the flags recorded — see .source.flags_provenance."
   },
   "status_vocabulary": [
     "open",
@@ -34,6 +35,7 @@
           "verification/proofs/agda/Verification.agda"
         ],
         "safety_flags": [
+          "--cubical-compatible",
           "--safe",
           "--without-K"
         ],
@@ -66,7 +68,22 @@
             "name": "absolute-zero",
             "version": "f486c29903434589117fa0662c6f29b0f17d1d5f"
           }
-        ]
+        ],
+        "flags_provenance": {
+          "file_options": [
+            "--safe",
+            "--without-K"
+          ],
+          "file_options_source": "line 1 of each file: {-# OPTIONS --safe --without-K #-}",
+          "cli": [
+            "--cubical-compatible",
+            "--safe",
+            "--without-K"
+          ],
+          "cli_source": "scripts/check-proofs.sh, the agda branch (used by `just proof-check-agda`)",
+          "note": "safety_flags is the union of what the files declare and what the instrument passes. The gate reads both out of the tree and fails if this record drifts."
+        },
+        "escape_hatch_evidence": "--safe (the compiler refuses postulates, --injective-type-constructors and the other unsafe pragmas) plus scripts/proof-scan-dangerous.sh and the ledger gate's comment-aware escape-hatch scan, both of which run over these files in the same CI lane."
       },
       "legs": [
         {
@@ -91,7 +108,35 @@
           "api_receipt": null,
           "blocker": "no Lean 4 witness exists. PROOF-POLICY §2 requires one and forbids Mathlib; until a released Lambdapi Lean exporter exists the lean leg is re-proved by hand in core Lean."
         }
-      ]
+      ],
+      "statement_anchor": [
+        "TP-ECHO-1",
+        "TP-ECHO-2",
+        "TP-ECHO-3"
+      ],
+      "statement_formal": {
+        "source_of_truth": "verification/proofs/agda/EchoTyping.agda",
+        "note": "The Agda declarations a Rocq/Lean recheck leg must match. PROOF-POLICY §2 requires the statement comparison to be recorded, so the text here is checked against the file: if the Agda statement moves, this record must move with it or the gate fails.",
+        "declarations": [
+          {
+            "name": "TP-ECHO-1",
+            "states": "affine subtyping forgets a distinction",
+            "type": "affine-weakening echo-true ≡ affine-weakening echo-false"
+          },
+          {
+            "name": "TP-ECHO-2",
+            "states": "affine subtyping is irreversible: there is no section",
+            "type": "¬ (Σ (LEcho affine → LEcho linear) (λ reify → ∀ e → reify (affine-weakening e) ≡ e))"
+          },
+          {
+            "name": "TP-ECHO-3",
+            "states": "refinement erasure is non-injective",
+            "type": "Σ SurfaceTy (λ s₁ → Σ SurfaceTy (λ s₂ → (erase s₁ ≡ erase s₂) × (s₁ ≢ s₂)))"
+          }
+        ]
+      },
+      "grade_deviation": "mathesis §5 names the Grade 3 configurations parenthetically: '--safe --erasure', or 'Full --cubical'. This proof is checked under '--safe --without-K --cubical-compatible' — --erasure is not enabled and full --cubical is not used, so neither named configuration is exactly what runs. The grade stays 3 because the result is carried by Agda alone, under --safe, with no postulates and no translation to an independent system; the difference in flags is recorded here rather than paraphrased into the policy's wording.",
+      "history": []
     }
   ]
 }

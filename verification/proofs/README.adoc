@@ -79,6 +79,27 @@ are `open` — the estate policy's §2 obligation is *unmet*, and the ledger say
 with the blocker that stops each leg rather than leaving a blank. Both legs are
 reported as `POLICY GAP` on every run; neither is counted as verification.
 
+Grade 3 is the lowest rung, so it is the one that has to name its evidence. The
+ledger records four things for it, and the gate re-reads the tree for each:
+
+* `statement_anchor` / `statement_formal` — the Agda declarations that carry the
+  statement (`TP-ECHO-1..3`) and their types. The gate checks those types are
+  still in the file, so a moved statement cannot leave a stale record behind.
+* `source.safety_flags` plus `flags_provenance` — the `{-# OPTIONS #-}` pragmas
+  in the files and the CLI flags `scripts/check-proofs.sh` passes. The gate reads
+  both and fails on any drift between them and the record.
+* `grade_deviation` — required whenever the flags in force are not one of the
+  configurations mathesis §5 names for grade 3 (`--safe --erasure`, or Full
+  `--cubical`). The difference is stated, not paraphrased.
+* `source.escape_hatch_evidence` — the mechanism (not the assertion) that makes
+  "no postulates" true: `--safe` plus the comment-aware scans.
+
+The next rung is `2i`: *one* independent system carrying the same statement,
+`transported` or `re-proved`, with the statement comparison and the axiom query
+recorded, and no Mathlib. `just proof-grade` prints that delta straight from the
+ledger, and `PROOF-STATUS.adoc` carries the runbook. `2ii` additionally needs a
+leg outside the DTT/CIC family, which Rocq and Lean cannot supply.
+
 == How a proof here is checked
 
 [source,bash]

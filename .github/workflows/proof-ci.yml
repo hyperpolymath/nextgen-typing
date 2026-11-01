@@ -21,11 +21,23 @@
 #     proven-with-postulates | proven); a grade must be supported by the legs
 #     behind it; axioms are tracked (`Print Assumptions`, `#print axioms`), not
 #     assumed; receipts are pinned to a commit.
-#   * §7: a gate must be verified BOTH WAYS. tests/proofs/run-controls.sh feeds
-#     the instrument a closed Rocq proof and a closed Lean proof (must pass), a
-#     proof closed with `Admitted` and one closed with `sorry` (must fail), a
-#     ledger claiming a grade with no leg behind it (must fail), and a witness
-#     planted on disk that no ledger row claims (must fail).
+#   * §7: a gate must be verified BOTH WAYS. tests/proofs/run-controls.sh runs
+#     two halves: run-ledger-controls.sh (15 controls, no prover needed) plants
+#     a grade with no leg behind it, contradictory history, an unjustified
+#     regression, flag drift, statement drift, a missing escape-hatch mechanism,
+#     an unrecorded flag deviation, a non-existent anchor, a ghost source file
+#     and an unclaimed witness on disk — each must be refused for the stated
+#     reason, while an honest evidenced regression must still pass; and the
+#     kernel half requires a closed Rocq/Lean proof to be accepted with
+#     `Print Assumptions` / `#print axioms` reporting it closed, and the
+#     `Admitted` / `sorry` controls NOT to be reported closed.
+#
+# The Grade 3 claim itself is substantiated rather than labelled: the ledger
+# names the Agda declarations that carry the statement (and the gate re-reads
+# their types out of the file), records the flags in force (read out of the
+# proof files and out of the instrument, not copied by hand), records the
+# escape-hatch mechanism, and records the deviation from the configurations
+# mathesis §5 names parenthetically. Any drift in those fails the run.
 #
 # What this lane refuses, and why it exists: before it, `just proof-check-all`
 # was never invoked by CI and each recipe ended in

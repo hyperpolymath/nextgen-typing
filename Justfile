@@ -1431,6 +1431,51 @@ proof-status:
     echo "Policy gaps are printed by: just proof-ledger-check"
 
 
+# Show the grade ladder: what the current grade rests on, and the exact delta
+# up to the next rung (mathesis §5), computed from the ledger
+proof-grade:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    LEDGER="verification/proofs/LEDGER.json"
+    [ -f "$LEDGER" ] || { echo "FAIL: no ledger at $LEDGER" >&2; exit 1; }
+    jq -r '
+      def proven: [ .legs[]? | select(.status == "proven" or .status == "proven-with-postulates") ] | length;
+      def non_dtt: [ .legs[]? | select(.status == "proven" or .status == "proven-with-postulates") | select(.prover == "isabelle" or .prover == "tla+" or .prover == "smt") ] | length;
+      "=== Grade ladder (mathesis §5) — recorded, not estimated ===",
+      "",
+      (.theorems[] |
+        "\(.id)   kind=\(.kind)   recorded grade: \(.grade)",
+        "  source leg: \(.source.prover) \(.source.status)   flags: \(.source.safety_flags | join(" "))",
+        (if (.grade_deviation // "") != "" then
+           "  grade note: deviation from the §5 parenthetical is recorded in the ledger"
+         else empty end),
+        "  recheck legs:",
+        (.legs[] | "    \(.prover) [\(.family)]: \(.status)"
+          + (if .status == "open" then "   blocker: " + (.blocker // "not recorded")
+             else "   route: " + (.route // "not recorded") end)),
+        "",
+        "  next rung:",
+        (if proven == 0 then
+           "    grade 2i needs EXACTLY ONE proven recheck leg (Rocq or Lean), with its route\n" +
+           "    (transported through Dedukti/Lambdapi, or re-proved by hand), the statement\n" +
+           "    comparison against the Agda declarations, and the axiom query recorded.\n" +
+           "    Proven today: 0. That is the whole of the work between here and 2i."
+         elif .grade == "3" then
+           "    INCONSISTENT: a leg is proven while the grade still says 3 — the gate should\n" +
+           "    have refused this ledger. Re-record the grade."
+         elif .grade == "2i" then
+           "    grade 2ii needs TWO proven legs and one of them outside the DTT/CIC family.\n" +
+           "    Agda, Rocq and Lean are all DTT, so a Rocq+Lean pair cannot reach 2ii: it needs\n" +
+           "    a non-DTT leg such as Isabelle/HOL (proven non-DTT legs today: \(non_dtt))."
+         elif .grade == "2ii" then
+           "    grade 1 needs the statement checked through a verified checker API — AXLE for\n" +
+           "    Lean, coq-lsp for Rocq, isabelle-server for Isabelle — with the receipt recorded."
+         else
+           "    grade 1 recorded: nothing higher is defined by the model."
+         end)),
+      "",
+      "Nothing here is a percentage: grades are recorded, never averaged (mathesis §6)."' "$LEDGER"
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # SESSION MANAGEMENT (THIN BINDINGS TO CENTRAL STANDARDS)
 # ═══════════════════════════════════════════════════════════════════════════════
