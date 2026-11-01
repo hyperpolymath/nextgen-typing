@@ -91,4 +91,4 @@ recorded machine-readably in `+verification/proofs/LEDGER.json+`. Today XP-1 is
 `+.github/workflows/coordination-boundary.yml+`
 * CI guard (proofs): `+scripts/check-proof-enrolment.sh+`,
 `+scripts/proof-scan-dangerous.sh+` / `+.github/workflows/proof-ci.yml+`
-* Proof status tracking: `+PROOF-STATUS.md+` (this repo)
+* Proof status tracking: `+PROOF-STATUS.adoc+` (this repo)
