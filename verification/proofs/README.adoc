@@ -48,7 +48,9 @@ so it is coordination material rather than any one project's.
 == Two records, one truth
 
 *`LEDGER.json`* is the record of what has actually been proven and how far it
-has travelled. Under `standards/3-practice/PROOF-POLICY.adoc` §1 a theory proof
+has travelled. Under `metadatastician/standards` `3-practice/PROOF-POLICY.adoc`
+— an owner ruling of 2026-10-26, amended 2026-11-01, which this repository does
+not vendor — §1 a theory proof
 has an Agda source leg, and §2 requires that statement to be *rechecked* in Rocq
 and Lean — `transported` (Dedukti/Lambdapi) or `re-proved` by hand, with the
 statement comparison recorded and no Mathlib. Each theorem in the ledger carries
@@ -71,6 +73,51 @@ which is why `coq/MANIFEST` and `lean4/MANIFEST` can explain their empty state.
 
 A witness on disk that neither the ledger nor a MANIFEST claims is an error, in
 both directions: no ledger row without a file, no file without a ledger row.
+
+== The trust base beyond this repo
+
+A proof is only as strong as what it rests on, so the ledger names it in three
+places rather than one.
+
+*`source.assumptions`* carries one entry per thing the proof leans on, tagged by
+kind:
+
+[cols="22%,78%",options="header"]
+|===
+|kind |what it may claim
+|`dependency-pin` |a tool or library at a version. Nothing about its own proofs.
+|`external-development` |another repository's development, which must record its
+`relation` to this proof (a construction being compared, a proof-bearing
+consumer, …), the `note` saying what it is, and `evidence` — the file and the
+date it was read. A claim about another repository without evidence is refused.
+|===
+
+Two properties of an external development are recorded because they decide how
+much the dependency can bear: `undischarged_axioms` and `identity_claim`. When
+either says something is open, the theorem's `caveats` must contain an entry
+that *names* it. A reader who stops at the grade still meets the obligation.
+
+*`source.import_cone`* is the Agda import closure: every imported module at the
+pin, its `{-# OPTIONS #-}` flags and its postulate count, plus the modules that
+are deliberately *outside* the cone and why. This is not bookkeeping. `--safe`
+refuses an import that is not itself safe, so the cone *is* the trust base for
+the "no escape hatches" claim; recording it means a new import cannot silently
+widen it. A postulated module inside the cone forces the source leg to
+`proven-with-postulates` and a named axiom list.
+
+*`policy.proof_policy`* pins the authority: repository, path, full commit,
+ruling date. The gate prints that pin on every run and **fails when it is
+missing** — a policy cited by a path alone is a citation to a file this
+repository does not contain. Deviations from the policy (for example a toolchain
+that does not come from the §6 manifest) are recorded in `policy.deviations`
+with their state, so they are visible rather than latent.
+
+Waivers and routes follow §2.2 and §4. A leg's `route` is `transported`,
+`re-proved` or `unavailable`; `unavailable` cannot carry a claim and must say
+what is missing. A `waiver` is for a statement the mapped prover cannot express,
+and it is *not* a softer status token: a waived leg carries no status at all, so
+nothing can count it, and it must name the obligation, the tool, the reason and
+the exception record. Waived legs are listed in the verdict, never buried.
 
 == Current state
 

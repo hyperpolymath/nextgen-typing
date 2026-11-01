@@ -7,7 +7,7 @@
 # What this refuses to do, and why:
 #
 #   * It does NOT re-run the Agda theory proof. Under
-#     standards/3-practice/PROOF-POLICY.adoc §1 a theory proof's source of
+#     metadatastician/standards 3-practice/PROOF-POLICY.adoc §1 a theory proof's source of
 #     truth is Agda and its §2 recheck legs are Rocq and Lean. Those legs are
 #     what this repository's proof CI examines (Coq/Rocq and Lean 4 only).
 #     The Agda leg is *recorded* — with the commit and run that checked it —
@@ -64,6 +64,7 @@ done
 FAILS=()
 NOTES=()
 GAPS=()
+WAIVERS=()
 fail() { FAILS+=("$1"); }
 note() { NOTES+=("$1"); }
 
@@ -138,11 +139,50 @@ command -v jq >/dev/null 2>&1 || { echo "BLOCKED: jq is required to audit the le
 [ -f "$LEDGER" ] || { echo "BLOCKED: proof ledger not found: $LEDGER" >&2; exit 2; }
 jq -e . "$LEDGER" >/dev/null 2>&1 || { echo "BLOCKED: proof ledger is not valid JSON: $LEDGER" >&2; exit 2; }
 
+# The authority this audit is against. It is read out of the ledger rather than
+# hard-coded: the policy lives in another repository, so a bare path here would
+# be a citation to a file this tree does not contain.
+POLICY_REPO="$(jq -r '.policy.proof_policy.repo // ""' "$LEDGER")"
+POLICY_PATH="$(jq -r '.policy.proof_policy.path // ""' "$LEDGER")"
+POLICY_COMMIT="$(jq -r '.policy.proof_policy.commit // ""' "$LEDGER")"
+POLICY_RULING="$(jq -r '.policy.proof_policy.ruling // ""' "$LEDGER")"
+POLICY_AMENDED="$(jq -r '.policy.proof_policy.amended // ""' "$LEDGER")"
+POLICY_VENDORED="$(jq -r '.policy.proof_policy.vendored_here // false | tostring' "$LEDGER")"
+
+policy_label() {
+  if [ -n "$POLICY_REPO" ] && [ -n "$POLICY_PATH" ]; then
+    printf '%s %s' "$POLICY_REPO" "$POLICY_PATH"
+  else
+    printf '%s' "${POLICY_PATH:-<unpinned>}"
+  fi
+}
+
 echo "=== Proof ledger gate ==="
 echo "ledger:   $LEDGER"
-echo "policy:   standards/3-practice/PROOF-POLICY.adoc"
+echo "policy:   $(policy_label)${POLICY_COMMIT:+ @ ${POLICY_COMMIT:0:12}}${POLICY_RULING:+ (${POLICY_RULING})}${POLICY_AMENDED:+, amended ${POLICY_AMENDED}}"
+if [ "$POLICY_VENDORED" = "true" ]; then
+  echo "          vendored copy in this tree"
+else
+  echo "          referenced, not vendored: this repository carries no copy of the policy"
+fi
 echo "grades:   mathesis/estate-mathematical-architecture §5-§6"
 echo ""
+
+# --- 1b. the authority must be pinned, not merely named ----------------------
+if [ -z "$POLICY_REPO" ] || [ -z "$POLICY_PATH" ] || [ -z "$POLICY_RULING" ]; then
+  fail "policy: the ledger's .policy.proof_policy must name the repository, the path and the ruling it was decided by (got repo='${POLICY_REPO}', path='${POLICY_PATH}', ruling='${POLICY_RULING}')"
+fi
+if ! printf '%s' "$POLICY_COMMIT" | grep -qE '^[0-9a-f]{40}$'; then
+  fail "policy: .policy.proof_policy.commit must be the full 40-character commit the policy was read at (got '${POLICY_COMMIT}') — an unpinned policy is an unspecified obligation"
+fi
+if [ "$POLICY_VENDORED" = "true" ]; then
+  [ -f "$POLICY_PATH" ] \
+    || fail "policy: vendored_here is true but there is no file at '$POLICY_PATH' in this tree"
+else
+  if [ -f "$POLICY_PATH" ]; then
+    note "policy: '$POLICY_PATH' exists in this tree but is recorded as not vendored — reconcile the two"
+  fi
+fi
 
 # Closed vocabulary, verbatim from PROOF-POLICY §5 (canonical lowercase tokens).
 VOCAB='["argued","open","proven","proven-with-postulates","tested-only"]'
@@ -163,7 +203,8 @@ fi
 while IFS= read -r bad; do
   [ -n "$bad" ] && fail "status token outside PROOF-POLICY §5 vocabulary: '${bad}'"
 done < <(jq -r --argjson vocab "$VOCAB" '
-  [ .theorems[] | (.source.status // "<missing>"), (.legs[]?.status // "<missing>") ][]
+  [ .theorems[] | (.source.status // "<missing>"),
+                  (.legs[]? | select(.waiver == null) | (.status // "<missing>")) ][]
   | select(. as $s | $vocab | index($s) | not)' "$LEDGER" | sort -u)
 
 while IFS= read -r bad; do
@@ -188,11 +229,11 @@ jq -r '
     ([.legs[]?.prover] | join(",")),
     ([.legs[]? | select(.status != "open")] | length),
     ([.legs[]? | select(.status == "proven" or .status == "proven-with-postulates")] | length)
-  ] | @tsv' "$LEDGER" > /tmp/proof-ledger-rows.$$.tsv
+  ] | map(tostring) | join("\u001f")' "$LEDGER" > /tmp/proof-ledger-rows.$$.tsv
 trap 'rm -f /tmp/proof-ledger-rows.$$.tsv' EXIT
 
 declare -A THEOREM_PROVEN=()
-while IFS=$'\t' read -r tid kind grade provers claimed proven; do
+while IFS=$'\x1f' read -r tid kind grade provers claimed proven; do
   [ -z "$tid" ] && continue
   THEOREM_PROVEN["$tid"]="$proven"
 
@@ -273,7 +314,7 @@ file_agda_options() {  # $1.. = agda files; prints the sorted union of OPTIONS f
   done | sort -u | tr '\n' ' ' | sed 's/ *$//'
 }
 
-while IFS=$'\t' read -r tid sprover sstatus rec_file_opts rec_cli rec_effective files_csv anchor_ids escape_evidence; do
+while IFS=$'\x1f' read -r tid sprover sstatus rec_file_opts rec_cli rec_effective files_csv anchor_ids escape_evidence; do
   [ -z "$tid" ] && continue
   kind_of="$(
     jq -r --arg id "$tid" '.theorems[] | select(.id == $id) | .kind' "$LEDGER"
@@ -359,7 +400,7 @@ while IFS=$'\t' read -r tid sprover sstatus rec_file_opts rec_cli rec_effective 
   # and any recheck leg. That is impossible if the Agda statement is only prose,
   # so each recorded declaration's TYPE must still be in the file, whitespace-
   # normalised. When the Agda statement moves, this record has to move with it.
-  while IFS=$'\t' read -r decl_name decl_type; do
+  while IFS=$'\x1f' read -r decl_name decl_type; do
     [ -z "${decl_name// }" ] && continue
     if [ -z "${decl_type// }" ]; then
       fail "$tid: statement_formal.$decl_name records no type — a recheck leg cannot be compared against it"
@@ -383,7 +424,7 @@ while IFS=$'\t' read -r tid sprover sstatus rec_file_opts rec_cli rec_effective 
     fi
   done < <(jq -r --arg id "$tid" '
     .theorems[] | select(.id == $id) | .statement_formal.declarations[]? |
-    [ (.name // ""), (.type // "") ] | @tsv' "$LEDGER")
+    [ (.name // ""), (.type // "") ] | map(tostring) | join("\u001f")' "$LEDGER")
 
   # (f) "no escape hatches" has to be evidenced by a mechanism, not a claim.
   if [ -z "${escape_evidence// }" ]; then
@@ -400,7 +441,7 @@ done < <(jq -r '
     ((.source.files // []) | join(",")),
     ((.statement_anchor // []) | join(",")),
     (.source.escape_hatch_evidence // "")
-  ] | @tsv' "$LEDGER")
+  ] | map(tostring) | join("\u001f")' "$LEDGER")
 
 # --- 3c. Superseded / Regressed (mathesis §6) --------------------------------
 # §6 requires a proof's history to record when it is superseded or regresses.
@@ -410,7 +451,7 @@ done < <(jq -r '
 #     downgrade cannot be quietly applied, and a record cannot be quietly
 #     dropped. A transition to a weaker state must also carry a reason.
 GRADE_STRENGTH='{"1":4,"2ii":3,"2i":2,"3":1}'
-while IFS=$'\t' read -r tid target from to date evidence reason; do
+while IFS=$'\x1f' read -r tid target from to date evidence reason; do
   [ -z "$tid" ] && continue
   if [ -z "${target// }" ]; then
     fail "$tid: history entry has no target (expected 'grade' or a prover name)"
@@ -456,10 +497,10 @@ while IFS=$'\t' read -r tid target from to date evidence reason; do
   fi
 done < <(jq -r '
   .theorems[] | .id as $id | (.history // [])[] |
-  [ $id, (.target // ""), (.from // ""), (.to // ""), (.date // ""), (.evidence // ""), (.reason // "") ] | @tsv' "$LEDGER")
+  [ $id, (.target // ""), (.from // ""), (.to // ""), (.date // ""), (.evidence // ""), (.reason // "") ] | map(tostring) | join("\u001f")' "$LEDGER")
 
 # the last entry for each target must be the current value
-while IFS=$'\t' read -r tid target last_to; do
+while IFS=$'\x1f' read -r tid target last_to; do
   [ -z "$tid" ] && continue
   if [ "$target" = "grade" ]; then
     current="$(jq -r --arg id "$tid" '.theorems[] | select(.id == $id) | .grade | tostring' "$LEDGER")"
@@ -481,11 +522,125 @@ while IFS=$'\t' read -r tid target last_to; do
 done < <(jq -r '
   .theorems[] | .id as $id
   | (.history // []) | group_by(.target)[] | .[-1]
-  | [ $id, (.target // ""), (.to // "") ] | @tsv' "$LEDGER")
+  | [ $id, (.target // ""), (.to // "") ] | map(tostring) | join("\u001f")' "$LEDGER")
+
+# --- 3d. the trust base beyond this repo -------------------------------------
+# PROOF-POLICY §1.1 (a caller is proved only *relative to* an ASSUMED contract),
+# §3 (any axioms the Agda proof rests on belong in that leg's trust boundary) and
+# §2.2 (per-theorem assumptions, recorded) all say the same thing: what a proof
+# leans on has to be named, and named accurately. A dependency that is itself a
+# proof-bearing system with open obligations is not a version string.
+while IFS=$'\x1f' read -r tid aname akind arelation aev aaxioms aclaim; do
+  [ -z "${aname// }" ] && continue
+  [ -n "${akind// }" ] || fail "$tid: assumption '$aname' has no kind — an untagged assumption is an unnamed one"
+  case "$akind" in
+    dependency-pin|external-development) ;;
+    *) fail "$tid: assumption '$aname' has kind '${akind}', which is not one of dependency-pin | external-development" ;;
+  esac
+  if [ "$akind" = "external-development" ]; then
+    [ -n "${arelation// }" ] || fail "$tid: external development '$aname' records no relation — say what it is to this proof (construction-under-comparison, proof-bearing-consumer, ...)"
+    [ -n "${aev// }" ] || fail "$tid: external development '$aname' records no evidence — a claim about another repository needs the file and date it was read from"
+  fi
+  # A known open obligation must be said out loud in the theorem's caveats, by
+  # name. This is the §1.1 rule applied to a whole dependency rather than to one
+  # contract: the caller is never unconditionally proven while the thing it rests
+  # on has open obligations.
+  trigger=""
+  [ -n "${aaxioms// }" ] && [ "$aaxioms" != "0" ] && trigger="undischarged axioms ($aaxioms)"
+  [ "$aclaim" = "open" ] && trigger="${trigger:+$trigger; }open identity claim"
+  if [ -n "$trigger" ]; then
+    if ! jq -r --arg id "$tid" '.theorems[] | select(.id == $id) | (.caveats // [])[]' "$LEDGER" \
+         | grep -Fiq -- "$aname"; then
+      fail "$tid: '$aname' carries $trigger, but no entry in .caveats names it — the theorem would be read as if that obligation did not exist (§1.1, §3)"
+    fi
+  fi
+done < <(jq -r '
+  .theorems[] | .id as $id | (.source.assumptions // [])[] |
+  [ $id, (.name // ""), (.kind // ""), (.relation // ""), (.evidence // ""),
+    ((.undischarged_axioms // "") | tostring), (.identity_claim // "") ] | map(tostring) | join("\u001f")' "$LEDGER")
+
+# import cone: Agda's --safe refuses an import that is not itself safe, so the
+# cone is the trust base. If the record admits a postulated module inside it,
+# the source leg cannot be plain `proven` (§3: list the axioms).
+while IFS=$'\x1f' read -r tid mod count; do
+  [ -z "${mod// }" ] && continue
+  printf '%s' "$count" | grep -qE '^[0-9]+$' \
+    || { fail "$tid: import cone entry '$mod' has a non-numeric postulate count '${count}'"; continue; }
+  if [ "$count" -gt 0 ]; then
+    sstatus="$(jq -r --arg id "$tid" '.theorems[] | select(.id == $id) | .source.status' "$LEDGER")"
+    naxioms="$(jq -r --arg id "$tid" '[.theorems[] | select(.id == $id) | (.source.axioms // [])[]] | length' "$LEDGER")"
+    if [ "$sstatus" != "proven-with-postulates" ]; then
+      fail "$tid: import cone module '$mod' has $count postulate(s), so the source leg cannot be '$sstatus' — record it as 'proven-with-postulates' and list them (§3, §5)"
+    elif [ "$naxioms" -lt 1 ]; then
+      fail "$tid: import cone module '$mod' has $count postulate(s) but .source.axioms lists none (§5: list the axioms)"
+    fi
+  fi
+done < <(jq -r '
+  .theorems[] | .id as $id | (.source.import_cone.modules // [])[] |
+  [ $id, (.module // ""), ((.postulates // "") | tostring) ] | map(tostring) | join("\u001f")' "$LEDGER")
+
+# An open leg with no caveat is a claim by omission: a reader who skims the
+# grade must still meet the fact that the theorem is not fully rechecked.
+while IFS=$'\x1f' read -r tid open_count caveat_count; do
+  [ -z "$tid" ] && continue
+  if [ "${open_count:-0}" -gt 0 ] && [ "${caveat_count:-0}" -lt 1 ]; then
+    fail "$tid: $open_count leg(s) are open and .caveats is empty — say in the record that the theorem is not fully rechecked"
+  fi
+done < <(jq -r '
+  .theorems[] | [ .id,
+    ([.legs[]? | select(.status == "open")] | length),
+    ((.caveats // []) | length) ] | map(tostring) | join("\u001f")' "$LEDGER")
+
+# --- 3e. waivers: PROOF-POLICY §4 -------------------------------------------
+# A waiver is for a statement the mapped prover cannot express. It is not a
+# softer status token: a waived leg carries NO status at all (so nothing can
+# count it), it names the obligation, the tool and the reason, and it points at
+# the exception record. Nothing here lets a waiver create a grade.
+while IFS=$'\x1f' read -r tid prover wstatus wobligation wtool wreason wrecord; do
+  [ -z "$tid" ] && continue
+  if [ -n "${wstatus// }" ] && [ "$wstatus" != "null" ]; then
+    fail "$tid/$prover: a waived leg also carries status '$wstatus' — a waiver is not a status token (§4)"
+  fi
+  for pair in "obligation:${wobligation}" "tool:${wtool}" "reason:${wreason}" "record:${wrecord}"; do
+    if [ -z "${pair#*:}" ] || [ "${pair#*:}" = "null" ]; then
+      fail "$tid/$prover: waiver without '${pair%%:*}' — §4 requires the obligation, the tool, the reason and the exception record"
+    fi
+  done
+  WAIVERS+=("$tid: $prover leg WAIVED — ${wreason} (tool: ${wtool}; record: ${wrecord})")
+done < <(jq -r '
+  .theorems[] as $t | $t.legs[]? | select(.waiver != null) |
+  [ $t.id, .prover, (.status // ""), (.waiver.obligation // ""), (.waiver.tool // ""),
+    (.waiver.reason // ""), (.waiver.record // "") ] | map(tostring) | join("\u001f")' "$LEDGER")
 
 # --- 4. every non-open claim must be backed by artifact + MANIFEST + route ---
-while IFS=$'\t' read -r tid prover status artifact route compared axioms reproof; do
+while IFS=$'\x1f' read -r tid prover status artifact route compared axioms reproof reproof_reason blocker; do
   [ -z "$tid" ] && continue
+  # Waived legs are audited in 3e and carry no claim here.
+  [ -z "${status// }" ] && continue
+
+  # PROOF-POLICY §2.2: a leg declares `transported`, `re-proved` or
+  # `unavailable`. The route is a property of the leg, not of the claim, so it
+  # is checked before the open/claimed split.
+  case "${route:-}" in
+    ""|null)
+      if [ "$status" != "open" ]; then
+        fail "$tid/$prover: status '$status' recorded with no route — say whether it was transported or re-proved (§2.2)"
+      fi
+      ;;
+    transported|re-proved) ;;
+    unavailable)
+      # 'unavailable' is a statement about the route, not a proof: it cannot
+      # carry a claim, and it must say what is missing.
+      if [ "$status" != "open" ]; then
+        fail "$tid/$prover: route 'unavailable' with status '$status' — a route that does not exist cannot support a claim (§2.2)"
+      fi
+      if [ -z "${blocker// }" ] || [ "$blocker" = "null" ]; then
+        fail "$tid/$prover: route 'unavailable' with no blocker recorded — say what the missing route is (§2.2)"
+      fi
+      ;;
+    *) fail "$tid/$prover: route '${route}' is not one of transported, re-proved, unavailable (PROOF-POLICY §2.2)" ;;
+  esac
+
   [ "$status" = "open" ] && continue
 
   if [ -z "$artifact" ] || [ "$artifact" = "null" ]; then
@@ -516,10 +671,6 @@ while IFS=$'\t' read -r tid prover status artifact route compared axioms reproof
 
   # PROOF-POLICY §2.3: record the route; §2.1: without a statement comparison
   # the leg is ASSUMED (argued), not PROVEN.
-  case "$route" in
-    transported|re-proved) ;;
-    *) fail "$tid/$prover: status '$status' requires route 'transported' or 're-proved' (PROOF-POLICY §2.3), got '${route}'" ;;
-  esac
   if [ "$route" = "re-proved" ] && { [ -z "$reproof" ] || [ "$reproof" = "null" ]; }; then
     fail "$tid/$prover: route 're-proved' requires a reproof_reason (PROOF-POLICY §2.2)"
   fi
@@ -548,14 +699,14 @@ while IFS=$'\t' read -r tid prover status artifact route compared axioms reproof
     fail "$tid/$prover: $artifact imports Mathlib, which PROOF-POLICY §2 forbids"
   fi
 done < <(jq -r '
-  .theorems[] as $t | $t.legs[]? |
+  .theorems[] as $t | $t.legs[]? | select(.waiver == null) |
   [ $t.id, .prover, (.status // ""), (.artifact // ""), (.route // ""),
     (if (.statement_compared // null) == null then "" else (.statement_compared | tostring) end),
     (if (.axioms // null) == null then "" else "recorded" end),
-    (.reproof_reason // "") ] | @tsv' "$LEDGER")
+    (.reproof_reason // ""), (.blocker // "") ] | map(tostring) | join("\u001f")' "$LEDGER")
 
 # --- 5. source legs: files, receipts, safety flags ---------------------------
-while IFS=$'\t' read -r tid status files; do
+while IFS=$'\x1f' read -r tid status files; do
   [ -z "$tid" ] && continue
   if [ -z "$files" ] || [ "$files" = "null" ]; then
     fail "$tid: source leg lists no files (zero-work)"
@@ -568,9 +719,9 @@ while IFS=$'\t' read -r tid status files; do
   done
 
   if [ "$status" = "proven" ] || [ "$status" = "proven-with-postulates" ]; then
-    read -r ekind ecommit edate erun < <(jq -r --arg id "$tid" '
+    IFS=$'\x1f' read -r ekind ecommit edate erun < <(jq -r --arg id "$tid" '
       .theorems[] | select(.id == $id) | .source.evidence? |
-      [ (.kind // ""), (.commit // ""), (.date // ""), (.run // "") ] | @tsv' "$LEDGER")
+      [ (.kind // ""), (.commit // ""), (.date // ""), (.run // "") ] | map(tostring) | join("\u001f")' "$LEDGER")
     for pair in "kind:${ekind:-}" "commit:${ecommit:-}" "date:${edate:-}" "run:${erun:-}"; do
       if [ -z "${pair#*:}" ]; then
         fail "$tid: source leg recorded '$status' without evidence '$pair' (mathesis §6: the receipt names the commit)"
@@ -591,7 +742,7 @@ while IFS=$'\t' read -r tid status files; do
       fi
     fi
   fi
-done < <(jq -r '.theorems[] | [ .id, (.source.status // ""), ((.source.files // []) | join(",")) ] | @tsv' "$LEDGER")
+done < <(jq -r '.theorems[] | [ .id, (.source.status // ""), ((.source.files // []) | join(",")) ] | map(tostring) | join("\u001f")' "$LEDGER")
 
 # Agda safety flags stay in force (this repository's PROOF-NEEDS.adoc).
 while IFS= read -r f; do
@@ -604,7 +755,7 @@ done < <(jq -r '.theorems[].source.files[]? | select(endswith(".agda"))' "$LEDGE
 
 # --- 6. escape hatches + declared axioms in every proof/witness source -------
 declare -A DECLARED_AXIOMS=()
-while IFS=$'\t' read -r tid _p axioms; do
+while IFS=$'\x1f' read -r tid _p axioms; do
   [ -z "$tid" ] && continue
   case "$axioms" in
     ""|null) continue ;;
@@ -613,7 +764,7 @@ while IFS=$'\t' read -r tid _p axioms; do
   for a in "${ax_list[@]}"; do
     [ -n "$a" ] && DECLARED_AXIOMS["$a"]=1
   done
-done < <(jq -r '.theorems[] as $t | $t.legs[]? | [ $t.id, .prover, ((.axioms // []) | join(",")) ] | @tsv' "$LEDGER")
+done < <(jq -r '.theorems[] as $t | $t.legs[]? | [ $t.id, .prover, ((.axioms // []) | join(",")) ] | map(tostring) | join("\u001f")' "$LEDGER")
 
 scan_one() {
   local f="$1" hits
@@ -745,11 +896,17 @@ else
 fi
 
 # --- 10. open legs are reported, never hidden and never counted ----------
-while IFS=$'\t' read -r tid prover status blocker; do
+while IFS=$'\x1f' read -r tid prover status blocker; do
   [ -z "$tid" ] && continue
   [ "$status" = "open" ] || continue
   GAPS+=("$tid: $prover leg is OPEN${blocker:+ — $blocker}")
-done < <(jq -r '.theorems[] as $t | $t.legs[]? | select(.status == "open") | [ $t.id, .prover, .status, (.blocker // "") ] | @tsv' "$LEDGER")
+done < <(jq -r '.theorems[] as $t | $t.legs[]? | select(.status == "open") | [ $t.id, .prover, .status, (.blocker // "") ] | map(tostring) | join("\u001f")' "$LEDGER")
+
+if [ "${#WAIVERS[@]}" -gt 0 ]; then
+  echo "--- waived legs (no status token; PROOF-POLICY §4) ---"
+  printf '  - %s\n' "${WAIVERS[@]}"
+  echo ""
+fi
 
 # --- 11. verdict ----------------------------------------------------------
 proven_legs=0
@@ -791,7 +948,8 @@ if [ -n "$RECEIPT" ]; then
     echo "commit: ${GITHUB_SHA:-$(git rev-parse HEAD 2>/dev/null || echo unknown)}"
     echo "runner: ${RUNNER_NAME:-local}/${RUNNER_OS:-$(uname -s)}"
     echo "status: $status"
-    echo "policy: standards/3-practice/PROOF-POLICY.adoc"
+    echo "policy: $(policy_label)${POLICY_COMMIT:+ @ $POLICY_COMMIT}${POLICY_RULING:+ ($POLICY_RULING)}${POLICY_AMENDED:+, amended $POLICY_AMENDED}"
+    echo "policy-vendored-here: $POLICY_VENDORED"
     echo "grade-model: mathesis/estate-mathematical-architecture §5-§6"
     echo "theorems: $theorem_count"
     echo "proof-sources-scanned: $scanned"
@@ -799,6 +957,8 @@ if [ -n "$RECEIPT" ]; then
     echo "ledger-sha256: $(sha256sum "$LEDGER" | cut -d' ' -f1)"
     echo "gaps:"
     if [ "${#GAPS[@]}" -eq 0 ]; then echo "  (none)"; else printf '  - %s\n' "${GAPS[@]}"; fi
+    echo "waivered-legs:"
+    if [ "${#WAIVERS[@]}" -eq 0 ]; then echo "  (none)"; else printf '  - %s\n' "${WAIVERS[@]}"; fi
     if [ "${#FAILS[@]}" -gt 0 ]; then
       echo "failures:"
       printf '  - %s\n' "${FAILS[@]}"

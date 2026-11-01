@@ -1335,7 +1335,10 @@ help-me:
 # FORMAL VERIFICATION (PROOFS)
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# Proof work follows standards/3-practice/PROOF-POLICY.adoc:
+# Proof work follows metadatastician/standards 3-practice/PROOF-POLICY.adoc
+# (owner ruling 2026-10-26, amended 2026-11-01). The commit this repository
+# audits against is pinned in verification/proofs/LEDGER.json .policy.proof_policy,
+# and scripts/check-proof-ledger.sh fails when that pin is missing:
 #   * theory is Agda (source of truth) and is RECHECKED in Rocq and Lean (§1, §2)
 #   * engineering is Idris2 (§1)
 #   * status is the closed vocabulary of §5: open | argued | tested-only |

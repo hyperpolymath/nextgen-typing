@@ -5,7 +5,8 @@
 # Proof CI — audits the proof ledger and compiles the recheck legs it declares,
 # via `just proof-witness-check` (issue #57).
 #
-# Scope, per standards/3-practice/PROOF-POLICY.adoc and mathesis
+# Scope, per metadatastician/standards 3-practice/PROOF-POLICY.adoc (the pin
+# this repository audits against is in LEDGER.json .policy.proof_policy) and mathesis
 # `estate-mathematical-architecture`:
 #
 #   * §1: a theory proof's source of truth is Agda. XP-1's Agda leg is RECORDED

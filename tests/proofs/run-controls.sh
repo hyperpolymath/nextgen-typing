@@ -4,7 +4,7 @@
 #
 # run-controls.sh — prove the proof-witness instrument works BOTH ways.
 #
-# standards/3-practice/PROOF-POLICY.adoc §7 requires a policy gate to be
+# metadatastician/standards 3-practice/PROOF-POLICY.adoc §7 requires a policy gate to be
 # verified "both ways": it passes conforming input AND fails a deliberately
 # planted violation. A gate that has only ever been seen to pass is
 # indistinguishable from one that cannot fail.

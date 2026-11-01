@@ -87,17 +87,26 @@
           {
             "kind": "dependency-pin",
             "name": "agda-stdlib",
-            "version": "v2.3"
+            "version": "v2.3",
+            "commit": "8326c7475af1fa456ca04a0203c168d5d7ff842b"
           },
           {
-            "kind": "dependency-pin",
+            "kind": "external-development",
             "name": "echo-types",
-            "version": "b0982c44f36133acd2d0e1d4e03cf031fff7a470"
+            "version": "b0982c44f36133acd2d0e1d4e03cf031fff7a470",
+            "relation": "construction-under-comparison",
+            "identity_claim": "open",
+            "note": "The library whose fiber construction XP-1 compares the pipeline's loss operations against. Its own identity claim is OPEN by design: the README at this commit says 'Positive identity is open ... Criterion 2 is open'. This ledger records that status and claims nothing about it.",
+            "evidence": "README.adoc at b0982c44 (read 2026-11-01, section 'Identity Claim and Falsifiability')"
           },
           {
-            "kind": "dependency-pin",
+            "kind": "external-development",
             "name": "absolute-zero",
-            "version": "f486c29903434589117fa0662c6f29b0f17d1d5f"
+            "version": "f486c29903434589117fa0662c6f29b0f17d1d5f",
+            "relation": "proof-bearing-consumer",
+            "undischarged_axioms": 61,
+            "note": "A CONSUMER of the estate's proof infrastructure, not a provider of axiom-free ground truth: its README at HEAD reports 115 Qed / 0 Admitted / 61 undischarged axioms, with OND-6 (conditional composition) open by design, and an archive notice (2026-10-10) moving its Coq, Lean 4, Isabelle/HOL and Mizar developments under archive/proofs/. It reaches this proof only through echo-types' Agda library manifest; none of its Coq is in our import cone.",
+            "evidence": "README.adoc at HEAD (read 2026-11-01): '115 Qed, 0 Admitted, 61 Axioms'; 'OND-6 ... remains open by design'; archive notice 2026-10-10"
           }
         ],
         "flags_provenance": {
@@ -115,7 +124,71 @@
           "note": "safety_flags is the union of what the files declare and what the instrument passes. The gate reads both out of the tree and fails if this record drifts."
         },
         "escape_hatch_evidence": "--safe (the compiler refuses postulates, --injective-type-constructors and the other unsafe pragmas) plus scripts/proof-scan-dangerous.sh and the ledger gate's comment-aware escape-hatch scan, both of which run over these files in the same CI lane.",
-        "universe_discipline": "Declarations live in Agda `Set` (the module has no `Setω`/universe-polymorphic machinery of its own); `--without-K` withholds UIP, so no K axiom is assumed; no `--cubical`, so univalence is neither available nor used. This is the §2.2 'type/universe discipline' record."
+        "universe_discipline": "Declarations live in Agda `Set` (the module has no `Setω`/universe-polymorphic machinery of its own); `--without-K` withholds UIP, so no K axiom is assumed; no `--cubical`, so univalence is neither available nor used. This is the §2.2 'type/universe discipline' record.",
+        "import_cone": {
+          "verified": "2026-11-01",
+          "method": "read each imported module's {-# OPTIONS #-} and counted `postulate` at commit b0982c44f36133acd2d0e1d4e03cf031fff7a470 via the GitHub contents API",
+          "library_pins": {
+            "echo-types": "b0982c44f36133acd2d0e1d4e03cf031fff7a470",
+            "agda-stdlib": "v2.3 @8326c7475af1fa456ca04a0203c168d5d7ff842b"
+          },
+          "modules": [
+            {
+              "module": "Echo",
+              "library": "echo-types",
+              "options": [
+                "--cubical-compatible",
+                "--exact-split",
+                "--no-guardedness",
+                "--no-sized-types",
+                "--safe",
+                "--without-K"
+              ],
+              "postulates": 0
+            },
+            {
+              "module": "EchoCharacteristic",
+              "library": "echo-types",
+              "options": [
+                "--cubical-compatible",
+                "--exact-split",
+                "--no-guardedness",
+                "--no-sized-types",
+                "--safe",
+                "--without-K"
+              ],
+              "postulates": 0
+            },
+            {
+              "module": "EchoLinear",
+              "library": "echo-types",
+              "options": [
+                "--cubical-compatible",
+                "--exact-split",
+                "--no-guardedness",
+                "--no-sized-types",
+                "--safe",
+                "--without-K"
+              ],
+              "postulates": 0
+            }
+          ],
+          "outside_cone": [
+            {
+              "module": "EchoImageFactorizationPropPostulated",
+              "postulates": 4,
+              "counted_at": "e38fd465c4269ab9e9940802525630d7aae1e848 (D-2026-10-12 inventory; not re-counted at the pin)",
+              "why": "excluded from echo-types' All.agda / Smoke.agda and outside its --safe set; not imported here"
+            },
+            {
+              "module": "Ordinal/Buchholz/Fidelity",
+              "postulates": 2,
+              "counted_at": "e38fd465c4269ab9e9940802525630d7aae1e848 (D-2026-10-12 inventory; not re-counted at the pin)",
+              "why": "same"
+            }
+          ],
+          "note": "Agda's --safe refuses an import that is not itself safe, so this cone IS the trust base for the 'no escape hatches' claim. The gate cannot fetch the dependencies, so it checks the shape of this record (every module listed, postulates counted, a postulated module forcing a `proven-with-postulates` status); the counts themselves are re-read by hand when the pin moves."
+        }
       },
       "legs": [
         {
@@ -177,6 +250,11 @@
           "evidence": "re-baselined under PROOF-POLICY §2.1: run 41314454646 (3cd1859) invoked the canonical `agda --safe --without-K --cubical-compatible`; created by scripts/check-proof-ledger.sh, which refuses a recorded invocation that is not the canonical one",
           "reason": "the earlier receipt (41299544043) predates §2.1 and is retained as historical evidence only"
         }
+      ],
+      "caveats": [
+        "echo-types: its own identity claim is OPEN by design (README at b0982c4: 'Positive identity is open ... Criterion 2 is open'). XP-1 relates the pipeline's loss operations to that construction; it discharges nothing of echo-types' claim about itself, and must not be cited as if it did.",
+        "absolute-zero: a proof-bearing CONSUMER with 61 undischarged axioms and OND-6 open by design — not axiom-free ground truth. None of those axioms is in this proof's import cone (see source.import_cone), but this record must not be read as saying absolute-zero is axiom-free.",
+        "scope: the Rocq and Lean recheck legs are unbuilt, so the theorem is Grade 3. Nothing here says a second kernel checked the statement, and no waiver is claimed — PROOF-POLICY §4 waives a leg only when the statement cannot be expressed in the mapped prover, not when the estate has archived a tool."
       ]
     }
   ]

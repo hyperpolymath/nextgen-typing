@@ -3,7 +3,8 @@
 # Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
 #
 # run-ledger-controls.sh — the ledger/scan half of the both-ways verification of
-# the proof instrument (standards/3-practice/PROOF-POLICY.adoc §7).
+# the proof instrument (metadatastician/standards 3-practice/PROOF-POLICY.adoc
+# §7).
 #
 # These controls need no prover: they exercise the rules that decide whether a
 # RECORDED claim is honest — the escape-hatch scan, the grade/evidence
@@ -128,6 +129,70 @@ jq '(.theorems[0].source.files) += ["verification/proofs/agda/Ghost.agda"]' "$LE
 expect_refusal "14. a source file that is not on disk" \
   "source file recorded but missing on disk" "$WORK/ghost-source.json"
 
+# --- the trust base beyond this repo ---------------------------------------
+jq '(.theorems[0].source.assumptions[] | select(.name == "absolute-zero") | .undischarged_axioms) = 61
+    | (.theorems[0].caveats) |= map(select(test("absolute-zero") | not))'   "$LEDGER" > "$WORK/no-az-caveat.json"
+expect_refusal "15. an external dependency with 61 undischarged axioms and no caveat naming it" \
+  "but no entry in .caveats names it" "$WORK/no-az-caveat.json"
+
+jq '(.theorems[0].source.import_cone.modules[0].postulates) = 2' \
+  "$LEDGER" > "$WORK/cone.json"
+expect_refusal "16. a postulated module inside the import cone while the leg claims 'proven'" \
+  "cannot be 'proven'" "$WORK/cone.json"
+
+jq '(.theorems[0].source.assumptions[] | select(.name == "echo-types")) |= del(.evidence)' \
+  "$LEDGER" > "$WORK/no-evidence-ext.json"
+expect_refusal "17. a claim about another repository with no evidence of where it was read" \
+  "records no evidence" "$WORK/no-evidence-ext.json"
+
+jq '(.theorems[0].caveats) = []' "$LEDGER" > "$WORK/no-caveats.json"
+expect_refusal "18. open legs with no caveat at all (a claim by omission)" \
+  "say in the record that the theorem is not fully rechecked" "$WORK/no-caveats.json"
+
+# --- the authority the audit is against -------------------------------------
+jq 'del(.policy.proof_policy.commit)' "$LEDGER" > "$WORK/unpinned.json"
+expect_refusal "20. a policy cited by name but not pinned to a commit" \
+  "must be the full 40-character commit" "$WORK/unpinned.json"
+
+jq '(.policy.proof_policy.vendored_here) = true' "$LEDGER" > "$WORK/vendored-lie.json"
+expect_refusal "21. a vendored copy claimed where this tree has no copy" \
+  "there is no file at" "$WORK/vendored-lie.json"
+
+# --- §4 waivers and §2.2 routes --------------------------------------------
+jq '(.theorems[0].legs[0].status) = "proven" | (.theorems[0].legs[0].waiver) = {"obligation":"lean leg","tool":"lean4","reason":"statement uses a universe the lean fragment cannot express","record":"PROOF-STATUS.adoc#waivers"}' \
+  "$LEDGER" > "$WORK/waiver-with-status.json"
+expect_refusal "22. a waiver used as a softer status token" \
+  "a waiver is not a status token" "$WORK/waiver-with-status.json"
+
+jq '(.theorems[0].legs[0]) |= (del(.status, .route, .artifact) | .waiver = {"obligation":"rocq leg","tool":"rocq"})' \
+  "$LEDGER" > "$WORK/waiver-thin.json"
+expect_refusal "23. a waiver that gives no reason and no exception record" \
+  "waiver without 'reason'" "$WORK/waiver-thin.json"
+
+jq '(.theorems[0].legs[0].route) = "unavailable"' "$LEDGER" > "$WORK/unavailable-silent.json"
+expect_refusal "24. a route declared 'unavailable' with nothing said about what is missing" \
+  "with no blocker recorded" "$WORK/unavailable-silent.json"
+
+jq '(.theorems[0].legs[0]) |= (.status = "proven" | .route = "unavailable"
+      | .artifact = "verification/proofs/agda/EchoTyping.agda")' \
+  "$LEDGER" > "$WORK/unavailable-proven.json"
+expect_refusal "25. a route that does not exist, carrying a proven status" \
+  "cannot support a claim" "$WORK/unavailable-proven.json"
+
+# A CONFORMING waiver must be accepted, and must be visible in the verdict.
+jq '(.theorems[0].legs[0]) |= (del(.status, .route, .artifact)
+     | .waiver = {"obligation":"rocq leg","tool":"rocq",
+                   "reason":"statement uses --cubical-compatible universes with no Rocq counterpart",
+                   "record":"PROOF-STATUS.adoc#waivers"})' \
+  "$LEDGER" > "$WORK/waiver-ok.json"
+if bash scripts/check-proof-ledger.sh --ledger "$WORK/waiver-ok.json" >"$WORK/waiver-ok.log" 2>&1 \
+   && grep -qF "waived legs" "$WORK/waiver-ok.log"; then
+  ok "26. a conforming waiver is accepted AND printed in the verdict, not buried"
+else
+  viol "26. a conforming waiver was refused, or was accepted without being reported"
+  sed 's/^/      /' "$WORK/waiver-ok.log" | tail -5
+fi
+
 # --- a witness on disk that nothing claims ----------------------------------
 sandbox="$WORK/repo"
 mkdir -p "$sandbox"
@@ -135,11 +200,11 @@ tar --exclude=.git --exclude=target -cf - . 2>/dev/null | ( cd "$sandbox" && tar
 printf 'Theorem unlisted_witness : True.\nProof. exact I. Qed.\n' \
   > "$sandbox/verification/proofs/coq/UnlistedWitness.v"
 if ( cd "$sandbox" && bash scripts/check-proof-ledger.sh ) >"$WORK/unlisted.log" 2>&1; then
-  viol "15. the gate ACCEPTED a witness that is in neither the ledger nor the MANIFEST"
+  viol "19. the gate ACCEPTED a witness that is in neither the ledger nor the MANIFEST"
 elif grep -qF "witness on disk is not claimed in the ledger" "$WORK/unlisted.log"; then
-  ok "15. a witness on disk that no ledger row claims is refused, and named"
+  ok "19. a witness on disk that no ledger row claims is refused, and named"
 else
-  viol "15. the unclaimed-witness control failed for the wrong reason"
+  viol "19. the unclaimed-witness control failed for the wrong reason"
   sed 's/^/      /' "$WORK/unlisted.log" | tail -5
 fi
 
@@ -150,6 +215,6 @@ if [ "$VIOLATIONS" -gt 0 ]; then
 fi
 echo "PASS: $CHECKS ledger-form expectation(s) held."
 if [ -n "${GITHUB_ACTIONS:-}" ]; then
-  echo "::notice::proof ledger controls: $CHECKS expectation(s), 0 violations (grades, statements, flags, history, unclaimed witnesses)"
+  echo "::notice::proof ledger controls: $CHECKS expectation(s), 0 violations (grades, statements, flags, history, trust base, policy pin, waivers, unclaimed witnesses)"
 fi
 exit 0

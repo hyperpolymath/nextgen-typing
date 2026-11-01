@@ -164,7 +164,8 @@ An honest, evidenced regression passes: the rule cuts both ways, and
 
 === The recheck obligation, stated plainly
 
-`+standards/3-practice/PROOF-POLICY.adoc+` §1 makes Agda the source of truth
+`+metadatastician/standards+` `+3-practice/PROOF-POLICY.adoc+` (pinned at
+`+46ee1832+`) §1 makes Agda the source of truth
 for theory proofs and §2 makes Rocq *and* Lean the recheck legs: each theorem
 must be *transported* (Dedukti/Lambdapi) or *re-proved by hand*, the route and
 the statement comparison recorded, and no Mathlib allowed. **That obligation is
@@ -201,15 +202,44 @@ list for them yet; recording one would be fabrication.
 The Agda source leg rests on these pinned, recorded assumptions (all in the
 ledger):
 
-[cols="30%,70%",options="header",]
+[cols="22%,16%,62%",options="header",]
 |===
-|Component |Pin
-|Agda |2.8.0
-|agda-stdlib |v2.3 (`+8326c7475af1fa456ca04a0203c168d5d7ff842b+`)
-|echo-types |`+b0982c44f36133acd2d0e1d4e03cf031fff7a470+`
-|absolute-zero |`+f486c29903434589117fa0662c6f29b0f17d1d5f+`
-|Receipt commit |`+3cd185939179773f177b59e6fee360719695dfc7+` (run 41314454646, canonical §2.1 invocation)
+|Component |Kind |Pin, and what it is to this proof
+|Agda |dependency-pin |2.8.0
+|agda-stdlib |dependency-pin |v2.3 (`+8326c7475af1fa456ca04a0203c168d5d7ff842b+`)
+|echo-types |external development |`+b0982c44f36133acd2d0e1d4e03cf031fff7a470+` —
+the library whose fiber construction XP-1 compares the pipeline's loss
+operations against. Its own identity claim is **open** (see caveat 1 below).
+|absolute-zero |proof-bearing consumer |`+f486c29903434589117fa0662c6f29b0f17d1d5f+` —
+115 Qed / 0 Admitted / **61 undischarged axioms**, OND-6 open by design. It
+reaches this proof only through echo-types' library manifest; none of its Coq is
+in the import cone.
+|Receipt commit |receipt |`+3cd185939179773f177b59e6fee360719695dfc7+` (run 41314454646, canonical §2.1 invocation)
 |===
+
+These are not the same kind of entry, and the ledger says so: a *dependency-pin*
+is a version, an *external development* is another repository whose own
+obligations have to be recorded alongside it, and a *proof-bearing consumer*
+consumes the estate's proof infrastructure rather than providing ground truth for
+it. Three things follow, all enforced by the ledger gate:
+
+. A dependency that carries open obligations must be named in the theorem's
+  `caveats`. A theorem that lists 61 undischarged axioms against its own name
+  without saying so in prose would be read as axiom-free.
+. The **import cone** is recorded, module by module, with its `{-# OPTIONS #-}`
+  flags and postulate counts (`+source.import_cone+`). `+--safe+` refuses an
+  import that is not itself safe, so that cone *is* the trust base for the "no
+  escape hatches" claim. At the pin it is `Echo`, `EchoCharacteristic` and
+  `EchoLinear`, all `+--safe --without-K --cubical-compatible+`, all with zero
+  postulates. The postulated modules in echo-types (`+EchoImageFactorizationPropPostulated+`,
+  `+Ordinal/Buchholz/Fidelity+`) are outside `+All.agda+` and outside this cone;
+  they are recorded as outside, not omitted.
+. A claim about another repository needs evidence — the file and the date it was
+  read — and the gate refuses one that has none.
+
+The current caveats are listed under "The Grade 3 claim rests on". They are part
+of the record, not decoration: the gate fails if an open obligation loses its
+caveat.
 
 === Enforcement (CI)
 
