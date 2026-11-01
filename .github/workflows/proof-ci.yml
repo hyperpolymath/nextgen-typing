@@ -146,8 +146,12 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/agda" "$HOME/.local/bin"
-          URL="https://github.com/agda/agda/releases/download/v${AGDA_VERSION}/Agda-v${AGDA_VERSION}-linux.tar.xz"
-          curl -fsSL -o "$RUNNER_TEMP/agda.tar.xz" "$URL"
+          # The scheme is written at the call site and pinned with --proto so a
+          # redirect cannot downgrade the transfer to clear text: the archive is
+          # the interpreter for every Agda receipt in the ledger.
+          curl -fsSL --proto '=https' --proto-redir '=https' --tlsv1.2 \
+            -o "$RUNNER_TEMP/agda.tar.xz" \
+            "https://github.com/agda/agda/releases/download/v${AGDA_VERSION}/Agda-v${AGDA_VERSION}-linux.tar.xz"
           echo "${AGDA_LINUX_SHA256}  $RUNNER_TEMP/agda.tar.xz" | sha256sum --check --strict
           tar -xJf "$RUNNER_TEMP/agda.tar.xz" -C "$RUNNER_TEMP/agda"
           install -m 0755 "$RUNNER_TEMP/agda/agda" "$HOME/.local/bin/agda"
@@ -182,9 +186,10 @@ jobs:
           # here fetches a package cache or a library: the leg must stand on the
           # Lean kernel alone.
           NAME="lean-${LEAN_VERSION}-linux.tar.zst"
-          URL="https://github.com/leanprover/lean4/releases/download/v${LEAN_VERSION}/${NAME}"
           mkdir -p "$RUNNER_TEMP/lean-dl" "$RUNNER_TEMP/lean"
-          curl -fsSL -o "$RUNNER_TEMP/lean-dl/$NAME" "$URL"
+          curl -fsSL --proto '=https' --proto-redir '=https' --tlsv1.2 \
+            -o "$RUNNER_TEMP/lean-dl/$NAME" \
+            "https://github.com/leanprover/lean4/releases/download/v${LEAN_VERSION}/${NAME}"
           # The release asset ships no published digest, so the archive identity
           # is recorded rather than asserted against an upstream constant. The
           # version assertion below is what actually pins the toolchain: a
