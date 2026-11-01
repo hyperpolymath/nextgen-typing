@@ -162,14 +162,21 @@ jobs:
 
           # Register the upstream manifests of the two pinned dependencies so
           # their declared dependency graph (echo-types -> standard-library,
-          # absolute-zero) is honoured rather than shadowed.
-          ls "$RUNNER_TEMP/echo-types/echo-types.agda-lib"
-          ls "$RUNNER_TEMP/absolute-zero/absolute-zero.agda-lib"
+          # absolute-zero) is honoured rather than shadowed, plus this repo's
+          # own manifest (the authority for the proof include path and for the
+          # standard-library / echo-types dependency).
+          for lib in "$RUNNER_TEMP/echo-types/echo-types.agda-lib" \
+                     "$RUNNER_TEMP/absolute-zero/absolute-zero.agda-lib" \
+                     "$GITHUB_WORKSPACE/verification/proofs/agda/nextgen-typing.agda-lib"; do
+            [ -f "$lib" ] || { echo "::error::missing Agda library manifest: $lib"; exit 1; }
+            echo "registering $lib"
+          done
 
-          printf '%s\n%s\n%s\n' \
+          printf '%s\n%s\n%s\n%s\n' \
             "$STDLIB_LIB" \
             "$RUNNER_TEMP/echo-types/echo-types.agda-lib" \
             "$RUNNER_TEMP/absolute-zero/absolute-zero.agda-lib" \
+            "$GITHUB_WORKSPACE/verification/proofs/agda/nextgen-typing.agda-lib" \
             > "$AGDA_DIR/libraries"
           printf 'standard-library\n' > "$AGDA_DIR/defaults"
           echo "AGDA_DIR=$AGDA_DIR"

@@ -1451,21 +1451,29 @@ proof-check-agda:
         exit 2
     fi
     echo "  toolchain: $(agda --version | head -n1)"
-    # Activate the repo's own Agda library manifest explicitly. Without it Agda
-    # searches only the CWD, the registered defaults and its primitive library,
-    # and reports [ModuleNameDoesntMatchFileName] for every proof module
-    # (observed on the first hosted run of proof-ci.yml). The manifest is the
-    # authority for include paths and dependencies (standard-library,
-    # echo-types); it is NOT shadowed or replaced here.
+    # Activate the repo's own Agda library manifest explicitly, by the name it
+    # declares. Without it Agda searches only the CWD, the registered defaults
+    # and its primitive library, so the proof directory is not an include root
+    # and every module fails with [ModuleNameDoesntMatchFileName] (observed on
+    # the first hosted run of proof-ci.yml). The manifest stays the authority
+    # for include paths and dependencies (standard-library, echo-types); it is
+    # not shadowed or replaced here. Register it once with:
+    #   agda --print-agda-app-dir  # then add the .agda-lib path to libraries
     AGDA_LIB="verification/proofs/agda/nextgen-typing.agda-lib"
     if [ ! -f "$AGDA_LIB" ]; then
         echo "FAIL: Agda library manifest missing: $AGDA_LIB"
         exit 1
     fi
+    AGDA_LIB_NAME="$(sed -n 's/^name:[[:space:]]*//p' "$AGDA_LIB" | head -n1 | tr -d '[:space:]')"
+    if [ -z "$AGDA_LIB_NAME" ]; then
+        echo "FAIL: $AGDA_LIB declares no library name"
+        exit 1
+    fi
+    echo "  library: $AGDA_LIB_NAME ($AGDA_LIB)"
     ERRORS=0
     for f in "${FILES[@]}"; do
         echo -n "  Checking $f ... "
-        if agda --safe --library="$AGDA_LIB" "$f"; then
+        if agda --safe --library="$AGDA_LIB_NAME" "$f"; then
             echo "OK"
         else
             echo "FAIL"
