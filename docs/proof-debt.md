@@ -47,16 +47,19 @@ each imported module's postulate count (0 at the pin).
 ## Exemptions, and why they are not debt
 
 `.trusted-base-ignore` exempts the whole of `tests/proofs/control/`, which holds
-the both-ways controls for the proof gate. Four planted files
-(`PlantedAdmitted.v`, `PlantedSorry.lean`, `PlantedAxiom.v`, `PlantedAdmit.v`)
-contain a real `Admitted`, a real `sorry`, a real `Axiom` and a real Coq
-`admit.` **so that they are detected**: `tests/proofs/run-ledger-controls.sh`
-fails if the instrument accepts any of them, and control 35 exists specifically
-because the `admit.` alternative had become unfirable. The remaining fixtures
-(`Control.v`, `Control.lean`) are closed proofs and contain no escape hatch;
-they are exempted only because the exemption is by directory. Recording any of
-these here as debt would both misreport the repository and invite someone to
-"fix" the fixtures.
+the both-ways controls for the proof gate. The planted fixtures contain a real
+`Admitted` (`PlantedAdmitted.v`), a real `sorry` (`PlantedSorry.lean`), a real
+`Axiom` (`PlantedAxiom.v`), a real Coq `admit.` (`PlantedAdmit.v`), an `Axiom`
+written inside `(* *)` in a Lean file where those characters are text
+(`PlantedLeanBlockText.lean`) and a `sorry` behind Lean subtype notation
+(`PlantedLeanSubtype.lean`) — **so that they are detected**:
+`tests/proofs/run-ledger-controls.sh` fails if the instrument accepts any of
+them, and controls 35, 41 and 43 exist because those three alternatives had
+become unfirable. The remaining fixtures (`Control.v`, `Control.lean`,
+`ControlCommentAxiom.v`) are closed proofs or comment-only prose with no escape
+hatch; they are exempted only because the exemption is by directory. Recording
+any of these here as debt would both misreport the repository and invite someone
+to "fix" the fixtures.
 
 ## How this file is kept honest
 

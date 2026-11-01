@@ -118,6 +118,9 @@ echo "scope:    $SCAN_DIRS"
 #     `(*` is a comment in Coq and TLA+ but ordinary text in Lean, so a Lean file
 #     containing `(* ... Axiom ... *)` had the Axiom treated as commented-out and
 #     the scan called it clean. The delimiters are now chosen per extension.
+#   * Lean is not one of the languages with `//` comments: `{x // p x}` is
+#     subtype notation, so treating `//` as a comment would cut the line short
+#     and hide whatever followed on it. Lean takes `--` and `/- -/` only.
 #   * A comment marker inside a string is not a comment. Masks keep `"--"` in a
 #     string from opening one, and keep a banned word inside a string from being
 #     counted as code. Only double-quoted strings are masked: a prime is part of
@@ -146,7 +149,7 @@ strip_comments() {
     BEGIN {
       lop1 = ""; lop2 = ""; bop = ""; bcl = ""
       if (mode == "agda" || mode == "idris") { lop1 = "--"; bop = "{-"; bcl = "-}" }
-      else if (mode == "lean")              { lop1 = "--"; lop2 = "//"; bop = "/-"; bcl = "-/" }
+      else if (mode == "lean")              { lop1 = "--"; bop = "/-"; bcl = "-/" }
       else if (mode == "coq")               { bop = "(*"; bcl = "*)" }
       else if (mode == "tla")               { lop1 = "\\*"; bop = "(*"; bcl = "*)" }
       else if (mode == "fstar")             { lop2 = "//"; bop = "(*"; bcl = "*)" }

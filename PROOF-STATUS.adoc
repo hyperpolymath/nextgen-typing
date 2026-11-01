@@ -294,6 +294,7 @@ transport route to use. `+#print axioms+` must then show no axiom, and
 `+sorryAx+` must not appear.
 |===
 
+[[waivers]]
 === Waivers
 
 **No waiver is claimed for XP-1, and none is recorded in the ledger.** §4 of
@@ -510,9 +511,10 @@ ledger is honest — not that XP-1 is verified in an independent kernel.
 source leg: enrolment gate PASS (2 proof sources, registered entries agree),
 Agda 2.8.0 typecheck of `+EchoTyping.agda+` and `+Verification.agda+` under
 `+--safe --library=nextgen-typing+` against the then-current agda-stdlib v2.3, echo-types
-`+b0982c4+` and absolute-zero `+f486c29+`, banned-pattern scan clean. This is
-the receipt pinned in the ledger for the Agda leg — it is *not* a receipt for
-XP-1 as a whole.
+`+b0982c4+` and absolute-zero `+f486c29+`, banned-pattern scan clean. This run is
+*historical evidence only*: the receipt the ledger pins for the Agda leg is run
+41314454646 (cited under "Assumptions and axiom tracking"), which superseded this
+one when the stdlib moved to v2.4. Neither is a receipt for XP-1 as a whole.
 
 |2026-11-01 |proof-ci runs 41298824595, 41299096293 (first attempts) |**FAIL**,
 and correctly so: the proofs had never actually been run, and the old

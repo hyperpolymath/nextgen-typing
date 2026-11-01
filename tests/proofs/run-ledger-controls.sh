@@ -94,10 +94,28 @@ fi
 # --- comment syntax is per language, in the dangerous direction -------------
 # `(* ... *)` is a comment in Coq and ordinary text in Lean. One shared list made
 # the Lean case clean-looking; refusing the Coq case would be a false positive.
-if bash "$GATE" --scan-file "$CONTROLS/PlantedLeanBlockText.lean" >"$WORK/lean-block.log" 2>&1; then
+bash "$GATE" --scan-file "$CONTROLS/PlantedLeanBlockText.lean" >"$WORK/lean-block.log" 2>&1
+lean_block_rc=$?
+if [ "$lean_block_rc" -eq 0 ]; then
   viol "41. the scan ACCEPTED a Lean axiom hidden in Coq's block-comment delimiters"
-else
+elif [ "$lean_block_rc" -eq 1 ] && grep -qF "FAIL" "$WORK/lean-block.log"; then
   ok "41. Coq's (* *) is not a comment in Lean: an axiom written inside it is found"
+else
+  viol "41. the Lean block-comment control failed for the wrong reason (exit $lean_block_rc — a missing fixture or a BLOCKED scanner is not a finding)"
+  sed 's/^/      /' "$WORK/lean-block.log" | tail -5
+fi
+
+# Lean has no `//` comment: `{ n // n = 0 }` is subtype notation, and a stripper
+# that treated `//` as a comment would cut the line before the sorry behind it.
+bash "$GATE" --scan-file "$CONTROLS/PlantedLeanSubtype.lean" >"$WORK/lean-subtype.log" 2>&1
+lean_subtype_rc=$?
+if [ "$lean_subtype_rc" -eq 0 ]; then
+  viol "43. the scan ACCEPTED a sorry placed after Lean subtype notation"
+elif [ "$lean_subtype_rc" -eq 1 ] && grep -qF "FAIL" "$WORK/lean-subtype.log"; then
+  ok "43. Lean's { n // n = 0 } is notation, not a comment: the sorry behind it is found"
+else
+  viol "43. the Lean subtype control failed for the wrong reason (exit $lean_subtype_rc)"
+  sed 's/^/      /' "$WORK/lean-subtype.log" | tail -5
 fi
 if bash "$GATE" --scan-file "$CONTROLS/ControlCommentAxiom.v" >"$WORK/coq-comment.log" 2>&1; then
   ok "42. the same delimiters ARE a comment in Coq: prose there is not a violation"
