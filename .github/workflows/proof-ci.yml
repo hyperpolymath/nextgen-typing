@@ -220,11 +220,12 @@ jobs:
             echo "::error::proof-check-all produced no log (a step before it failed)"
             exit 0
           fi
-          # GitHub caps annotations at 10 per step, so emit the *last* lines:
-          # that is where the failing prover's diagnostic lands.
-          grep -vE '^[[:space:]]*$' "$LOG" | tail -n 10 | while IFS= read -r line; do
-            echo "::error::${line:0:900}"
-          done
+          # GitHub caps annotations at 10 per step and each annotation is
+          # single-line, so emit ONE annotation carrying the last 100 lines
+          # newline-encoded (%0A). That keeps the failing prover's own
+          # diagnostic attached to the check run, not buried in runner logs.
+          PAYLOAD="$(grep -vE '^[[:space:]]*$' "$LOG" | tail -n 100 | head -c 60000 | sed ':a;N;$!ba;s/\n/%0A/g')"
+          echo "::error::proof-check-all failed. Log tail:%0A${PAYLOAD}"
           {
             echo "### proof-check-all log tail (failure diagnostics)"
             echo '```'
