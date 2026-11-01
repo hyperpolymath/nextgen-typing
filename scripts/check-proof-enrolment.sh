@@ -149,9 +149,9 @@ while IFS= read -r entry; do
 done <<<"$boundary_list"
 
 # --- 2. enumerate what is actually on disk ----------------------------------
-disk_files="$(find "$PROOFS_DIR" -type f \
-  ! -name '*.a2ml' ! -name '*.adoc' ! -name '*.md' ! -name '.gitkeep' \
-  | sed 's|^\./||' | sort)"
+disk_files="$(git ls-files -- "$PROOFS_DIR" \
+  | grep -Ev '\.(a2ml|adoc|md)$|(^|/)\.gitkeep$' \
+  | sort)"
 
 disk_proofs="$(while IFS= read -r f; do
     [ -z "$f" ] && continue
