@@ -85,8 +85,13 @@ scan_escape_hatches() {
   # `unsafePerformIO`). The scanner owns the list; this delegates so a marker
   # can never be caught by one gate and missed by the other.
   local file="$1"
-  bash "$(dirname "$0")/proof-scan-dangerous.sh" --scan-file "$file" 2>/dev/null \
-    | sed -n 's/^\([0-9][0-9]*\):/\1:/p'
+  local out rc
+  out="$(bash "$(dirname "$0")/proof-scan-dangerous.sh" --scan-file "$file" 2>&1)"; rc=$?
+  if [ "$rc" -gt 1 ]; then
+    printf '0:scanner-error:proof-scan-dangerous.sh exited %s for %s\n' "$rc" "$file"
+    return 0
+  fi
+  printf '%s\n' "$out" | sed -n 's/^\([0-9][0-9]*\):/\1:/p'
 }
 
 # Declared axioms are different from escape hatches: PROOF-POLICY §5 allows
