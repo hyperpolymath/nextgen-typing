@@ -55,10 +55,10 @@ jobs:
           # Ubuntu's agda-stdlib package supplies sources but may not ship
           # a discoverable .agda-lib descriptor. Use dpkg's file manifest
           # to locate its root, then register a descriptor explicitly.
-          stdlib_root="$(dpkg -L agda-stdlib | sed -n 's#\\(.*\\)/Data/Nat\\.agda$#\\1#p' | head -n 1)"
+          stdlib_root="$(dpkg -L agda-stdlib | sed -n 's@/Data/Nat[.]agda$@@p' | head -n 1)"
           test -n "$stdlib_root" && test -f "$stdlib_root/Data/Nat.agda"
           stdlib="$RUNNER_TEMP/standard-library.agda-lib"
-          printf 'name: standard-library\\ninclude: %s\\n' "$stdlib_root" > "$stdlib"
+          printf 'name: standard-library\ninclude: %s\n' "$stdlib_root" > "$stdlib"
           mkdir -p "$HOME/.agda"
           printf '%s\n' \
             "$stdlib" \
