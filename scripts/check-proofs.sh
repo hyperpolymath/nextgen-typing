@@ -576,8 +576,9 @@ ${probe_out}"
 $probe_out"
           return 1
         fi
-        if grep -qE '^(Section Variables|Type Variables|Relies on):' <<<"$probe_out"; then
-          ASSUMPTION_ERR="$full_rel ($tid): '$qdecl' relies on unclosed section/type variables or unsafe flags:
+        if grep -qE '^(Section Variables|Type Variables|Opaque constants|Transparent constants|Theory):' <<<"$probe_out" \
+           || grep -qE '(is assumed to be (positive|guarded)|relies on (an unsafe hierarchy|definitional UIP))' <<<"$probe_out"; then
+          ASSUMPTION_ERR="$full_rel ($tid): '$qdecl' relies on unclosed variables or unsafe kernel flags:
 $probe_out"
           return 1
         fi
@@ -600,14 +601,32 @@ $probe_out"
 $probe_out"
             return 1
           fi
-          local dax
+          local dax resolved_ax cax_cand
           while IFS= read -r dax; do
             [[ -z "$dax" ]] && continue
-            if ! coq_axiom_allowed "$dax" "$mod_path" "$src_file" ${allowed_axioms[@]+"${allowed_axioms[@]}"}; then
+            resolved_ax=""
+            if coq_axiom_allowed "$dax" "$mod_path" "$src_file" ${allowed_axioms[@]+"${allowed_axioms[@]}"}; then
+              resolved_ax="$dax"
+            else
+              # Coq's Nametab pretty-printer elides `-R` prefixes in scope (for
+              # example printing `Classical_Prop.classic` where `coqchk` printed
+              # the canonical kernel KerName `Coq.Logic.Classical_Prop.classic`).
+              # Because every element of `coqchk_axioms` was already verified
+              # against `allowed_axioms` above, resolve `dax` to a canonical
+              # kernel axiom ending in `.${dax}` when unambiguous.
+              for cax_cand in ${coqchk_axioms[@]+"${coqchk_axioms[@]}"}; do
+                if [[ "$cax_cand" == *".${dax}" ]] \
+                   && coq_axiom_allowed "$cax_cand" "$mod_path" "$src_file" ${allowed_axioms[@]+"${allowed_axioms[@]}"}; then
+                  resolved_ax="$cax_cand"
+                  break
+                fi
+              done
+            fi
+            if [[ -z "$resolved_ax" ]]; then
               ASSUMPTION_ERR="$full_rel ($tid): '$qdecl' depends on undeclared axiom '$dax' (ledger allows: [${allowed_axioms[*]:-none}])"
               return 1
             fi
-            seen_leg_axioms+=("$dax")
+            seen_leg_axioms+=("$resolved_ax")
           done <<<"$decl_ax_raw"
         else
           ASSUMPTION_ERR="$full_rel ($tid): unexpected Print Assumptions output for '$qdecl':
@@ -617,12 +636,12 @@ $probe_out"
       done
 
       # Every axiom listed in .axioms on the primary leg must actually be used
-      # by the witness (either on a recorded declaration or in the module's coqchk
-      # summary), preventing stale or padded axiom lists.
+      # by at least one recorded declaration in Print Assumptions, preventing
+      # stale or padded axiom lists.
       local lax matched_lax obs
       for lax in ${allowed_axioms[@]+"${allowed_axioms[@]}"}; do
         matched_lax=0
-        for obs in ${seen_leg_axioms[@]+"${seen_leg_axioms[@]}"} ${coqchk_axioms[@]+"${coqchk_axioms[@]}"}; do
+        for obs in ${seen_leg_axioms[@]+"${seen_leg_axioms[@]}"}; do
           [[ -z "$obs" ]] && continue
           if [[ "$obs" == "$lax" || "$obs" == "${mod_path}.${lax}" ]]; then
             matched_lax=1
@@ -630,7 +649,7 @@ $probe_out"
           fi
         done
         if [[ "$matched_lax" -eq 0 ]]; then
-          ASSUMPTION_ERR="$full_rel ($tid): ledger .axioms lists '$lax', but neither Print Assumptions nor coqchk reported '$lax' — remove stale axioms (or promote status to 'proven' if axiom-free)"
+          ASSUMPTION_ERR="$full_rel ($tid): ledger .axioms lists '$lax', but Print Assumptions did not report '$lax' on any recorded declaration — remove stale axioms (or promote status to 'proven' if axiom-free)"
           return 1
         fi
       done

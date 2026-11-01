@@ -426,7 +426,7 @@ jobs:
             [ -f "$candidate" ] || continue
             found_log=1
             label="$(basename "$candidate")"
-            PAYLOAD="$(grep -vE '^[[:space:]]*$' "$candidate" | tail -n 80 | head -c 50000 | sed ':a;N;$!ba;s/\n/%0A/g')"
+            PAYLOAD="$(grep -vE '^[[:space:]]*$' "$candidate" | tail -n 40 | tail -c 3500 | sed ':a;N;$!ba;s/\n/%0A/g')"
             echo "::error::${label} tail:%0A${PAYLOAD}"
             {
               echo "### ${label} tail (failure diagnostics)"
