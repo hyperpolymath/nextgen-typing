@@ -81,10 +81,14 @@ else
   ok "4. the escape-hatch scan rejects a proof closed with sorry"
 fi
 
-if bash "$GATE" --scan-file "$CONTROLS/PlantedAxiom.v" >/dev/null 2>&1; then
+bash "$GATE" --scan-file "$CONTROLS/PlantedAxiom.v" >"$WORK/axiom-scan.log" 2>&1
+axiom_rc=$?
+if [ "$axiom_rc" -eq 0 ]; then
   viol "29. the escape-hatch scan ACCEPTED a Coq 'Axiom' (estate core tier)"
-else
+elif [ "$axiom_rc" -eq 1 ] && grep -qF "FAIL" "$WORK/axiom-scan.log"; then
   ok "29. the escape-hatch scan rejects a Coq 'Axiom' — the estate core tier, which the scan previously missed"
+else
+  viol "29. the Axiom control failed for the wrong reason (exit $axiom_rc)"
 fi
 
 # --- grades and evidence ----------------------------------------------------
