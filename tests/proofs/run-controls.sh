@@ -89,9 +89,9 @@ if ( cd "$WORK" && coqc -q PlantedAdmitted.v ) >"$WORK/coqc-planted.log" 2>&1; t
   # Coq accepts Admitted at compile time; that is exactly why an exit code is
   # not evidence. The scan must catch it (control L2), and the kernel must not
   # report it closed (K3).
-  ok "K3. coqc accepts the planted Admitted control — exit code alone is not evidence"
+  echo "  ℹ️  coqc accepts the planted Admitted control — exit code alone is not evidence (informational, not counted)"
 else
-  ok "K3. coqc rejected the planted Admitted control outright"
+  echo "  ℹ️  coqc rejected the planted Admitted control outright (informational, not counted)"
 fi
 planted_assumptions="$( cd "$WORK" && printf 'Require Import PlantedAdmitted.\nPrint Assumptions planted_true.\n' | coqtop -quiet 2>&1 )"
 if printf '%s' "$planted_assumptions" | grep -q "Closed under the global context"; then
