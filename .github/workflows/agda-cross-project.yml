@@ -57,6 +57,11 @@ jobs:
           # to locate its root, then register a descriptor explicitly.
           stdlib_root="$(dpkg -L agda-stdlib | sed -n 's@/Data/Nat[.]agda$@@p' | head -n 1)"
           test -n "$stdlib_root" && test -f "$stdlib_root/Data/Nat.agda"
+          # Agda 2.6.x writes .agdai interfaces beside imported sources.
+          # Distro /usr/share is read-only to CI's runner user; copy the
+          # pinned distro library to a writable temp tree, never sudo agda.
+          cp -a "$stdlib_root" "$RUNNER_TEMP/agda-stdlib-writable"
+          stdlib_root="$RUNNER_TEMP/agda-stdlib-writable"
           stdlib="$RUNNER_TEMP/standard-library.agda-lib"
           printf 'name: standard-library\ninclude: %s\n' "$stdlib_root" > "$stdlib"
           mkdir -p "$HOME/.agda"
