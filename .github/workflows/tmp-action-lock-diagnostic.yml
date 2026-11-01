@@ -1,0 +1,44 @@
+# SPDX-License-Identifier: MPL-2.0
+# TEMPORARY diagnostic — remove before merge. Reproduces the exact
+# `Verify action lockfile coverage` step from workflow-linter.yml and surfaces
+# the tool's output as a check annotation, which is readable through the API
+# (the job log host is unreachable from this sandbox).
+name: TEMP action-lock diagnostic
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
+      - name: Reproduce verify-local
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_CONFIG_DIR: ${{ runner.temp }}/diag-gh
+          XDG_DATA_HOME: ${{ runner.temp }}/diag-data
+        run: |
+          set +e
+          gh release download v0.1.6 --repo github/gh-actions-lock --pattern linux-amd64 --output "$RUNNER_TEMP/gh-actions-lock"
+          echo "download_rc=$?"
+          echo "4181ec1da5408b34b9a542a7ee5c6ce3a4d6ac815c7d0206a00ceca8a817f4e3  $RUNNER_TEMP/gh-actions-lock" | sha256sum --check --strict
+          echo "checksum_rc=$?"
+          chmod +x "$RUNNER_TEMP/gh-actions-lock"
+          out=$("$RUNNER_TEMP/gh-actions-lock" --verify-local 2>&1)
+          rc=$?
+          printf '%s\n' "$out"
+          {
+            echo "verify_local_rc=$rc"
+            printf '%s\n' "$out"
+          } > "$RUNNER_TEMP/out.txt"
+          msg=$(python3 -c "import sys;d=open(sys.argv[1]).read()[:3000];print(d.replace('%','%25').replace('\r','').replace('\n','%0A'))" "$RUNNER_TEMP/out.txt")
+          echo "::error title=verify-local-diagnostic::$msg"
+          exit 1
