@@ -1451,10 +1451,21 @@ proof-check-agda:
         exit 2
     fi
     echo "  toolchain: $(agda --version | head -n1)"
+    # Activate the repo's own Agda library manifest explicitly. Without it Agda
+    # searches only the CWD, the registered defaults and its primitive library,
+    # and reports [ModuleNameDoesntMatchFileName] for every proof module
+    # (observed on the first hosted run of proof-ci.yml). The manifest is the
+    # authority for include paths and dependencies (standard-library,
+    # echo-types); it is NOT shadowed or replaced here.
+    AGDA_LIB="verification/proofs/agda/nextgen-typing.agda-lib"
+    if [ ! -f "$AGDA_LIB" ]; then
+        echo "FAIL: Agda library manifest missing: $AGDA_LIB"
+        exit 1
+    fi
     ERRORS=0
     for f in "${FILES[@]}"; do
         echo -n "  Checking $f ... "
-        if agda --safe "$f"; then
+        if agda --safe --library="$AGDA_LIB" "$f"; then
             echo "OK"
         else
             echo "FAIL"
