@@ -50,7 +50,7 @@ if [ -d verification/proofs ]; then
       # ledger, audited by scripts/check-proof-ledger.sh) are tracked here
       # deliberately, but they are not hosted proofs.
       *.a2ml | *.adoc | *.md | *.gitkeep) continue ;;
-      */MANIFEST | *.json) continue ;;
+      */MANIFEST | */LEDGER.json) continue ;;
     esac
     if ! is_allowed_proof "$f"; then
       err "Proof outside the cross-project allowlist: $f
