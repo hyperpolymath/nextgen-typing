@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MPL-2.0
 # Agda proof manifest — read by scripts/check-proofs.sh agda
 # (estate instrument, copied from hyperpolymath/mathesis@50a012d).
 # Format: <source-root>|<module-relative-to-source-root>|gated|quarantine|<note>
