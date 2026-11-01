@@ -529,6 +529,13 @@ echo "  proof sources:   $scanned scanned"
 echo "  proven legs:     $proven_legs"
 echo ""
 
+# Annotation-visible census: the step summary is not retrievable through the
+# check-run API, so the counts also go out as a notice. A reader can then see
+# "1 theorem, 2 sources, 0 proven legs, 2 gaps" without the runner log.
+if [ -n "${GITHUB_ACTIONS:-}" ]; then
+  echo "::notice::proof ledger: ${theorem_count} theorem(s), ${scanned} proof source(s), ${proven_legs} proven recheck leg(s), ${#GAPS[@]} policy gap(s)"
+fi
+
 if [ "${#GAPS[@]}" -gt 0 ]; then
   echo "--- POLICY GAPS (legal to record; NOT counted as verification) ---"
   printf '  ! %s\n' "${GAPS[@]}"

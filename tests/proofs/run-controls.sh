@@ -40,7 +40,8 @@ WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 
 VIOLATIONS=0
-ok()   { echo "  ✅ $*"; }
+CHECKS=0
+ok()   { CHECKS=$((CHECKS + 1)); echo "  ✅ $*"; }
 viol() { echo "  ❌ $*"; VIOLATIONS=$((VIOLATIONS + 1)); }
 
 echo "=== Proof-witness instrument controls (PROOF-POLICY §7, both ways) ==="
@@ -167,5 +168,11 @@ if [ "$VIOLATIONS" -gt 0 ]; then
   exit 1
 fi
 echo "PASS: every control behaved as required — the instrument passes what should pass"
-echo "      and fails what must fail."
+echo "      and fails what must fail ($CHECKS expectation(s))."
+# Machine-readable evidence: annotations are retrievable through the check-run
+# API, so "how many expectations actually ran?" is answerable without the raw
+# runner log (which GitHub does not serve to every client).
+if [ -n "${GITHUB_ACTIONS:-}" ]; then
+  echo "::notice::proof-witness instrument verified both ways (§7): $CHECKS expectation(s), 0 violations, coqc $(coqc --version | head -1), lean $(lean --version | head -1)"
+fi
 exit 0
