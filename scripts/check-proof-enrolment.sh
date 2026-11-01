@@ -218,6 +218,13 @@ prover_order=()
 while IFS= read -r f; do
   [ -z "$f" ] && continue
   key="$(prover_of_path "$f")"
+  case "$key:$f" in
+    agda:"$PROOFS_DIR"/agda/*.agda|idris2:"$PROOFS_DIR"/idris2/*.idr|\
+    lean4:"$PROOFS_DIR"/lean4/*.lean|coq:"$PROOFS_DIR"/coq/*.v) ;;
+    agda:*|idris2:*|lean4:*|coq:*)
+      fail "proof source not reachable by its prover recipe: $f
+     proof-check-$key only checks $PROOFS_DIR/$key/ with its canonical extension." ;;
+  esac
   if [ -z "${per_prover[$key]:-}" ]; then prover_order+=("$key"); fi
   per_prover["$key"]=$(( ${per_prover["$key"]:-0} + 1 ))
 done <<<"$disk_proofs"
