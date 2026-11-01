@@ -28,26 +28,111 @@ removed (the ABI proof obligations are owned by `+typed-wasm+`).
 |XP-1 |Pipeline information-loss = echo-types fibers |echo-types ↔
 affinescript ↔ typed-wasm |Agda (`+--safe --without-K+`)
 |`+verification/proofs/agda/EchoTyping.agda+`
-|`+agda Verification.agda+`
+|`+just proof-check-all+` in `.github/workflows/proof-ci.yml`
+|===
+
+=== Enforcement (CI)
+
+Until 2026-11-01 these proofs were *asserted*: `+just proof-check-all+`
+existed but no workflow invoked it, and every prover recipe ended in
+`+SKIP: <prover> not installed+` followed by `+exit 0+`. Worse, a prover
+directory with no sources still printed `+PASS+`, and the banned-pattern scan
+matched the prose "zero postulates" in `+EchoTyping.agda+` while ignoring real
+escape hatches inside block comments. The lane below closes all three.
+
+[cols="30%,70%",options="header",]
+|===
+|Guard |Behaviour
+|`+just proof-enrolment+`
+(`+scripts/check-proof-enrolment.sh+`)
+|Parses `+[verification].allowed-proofs+` (placement.a2ml) and
+`+ALLOWED_PROOFS+` (`+scripts/check-coordination-boundary.sh+`) and requires
+them to agree. Fails when a proof source is unlisted, when a registered entry
+has no file behind it, when zero proofs are enrolled, or when an `.agda` proof
+loses `+--safe+`/`+--without-K+`. A required prover missing from `PATH` is
+**BLOCKED** (exit 2) — never a skip, never a pass.
+
+|`+just proof-check-agda+` (and the Idris2/Lean4/Coq equivalents)
+|Exits 2 (BLOCKED) when proofs for that prover are enrolled but the prover is
+absent; exits 1 on any typecheck failure; prints `+NONE+` instead of `+PASS+`
+when that prover has no enrolled sources.
+
+|`+just proof-scan-dangerous+`
+(`+scripts/proof-scan-dangerous.sh+`)
+|Comment-aware keyword scan for `+believe_me+`, `+assert_total+`,
+`+postulate+`, `+sorry+`, `+Admitted+`, `+unsafeCoerce+`, `+Obj.magic+`. Fails
+on any hit outside a comment, and fails when it scans zero files.
+
+|`.github/workflows/proof-ci.yml`
+|Hosted lane running `+just proof-check-all+` on pushes/PRs that touch
+`+verification/proofs/**+`, the two registries, the gate scripts, `+Justfile+`
+or the workflow itself. Pins Agda 2.8.0 (official binary, sha256-verified),
+agda-stdlib v2.3 (tag + commit asserted), `+just+` 1.59.0, and
+echo-types / absolute-zero by commit. No `+continue-on-error+`, no
+skip-on-missing-tool. Receipts are uploaded as the `+proof-receipts+` artifact.
 |===
 
 === Verification
 
 [source,bash]
 ----
-# Typecheck the cross-project Agda set (requires the echo-types library on the
-# Agda include path; see verification/proofs/agda/nextgen-typing.agda-lib)
-agda verification/proofs/agda/Verification.agda
+# Everything, exactly as CI runs it (this is the real all-proofs target):
+just proof-check-all
+
+# Just the registry/manifest gate (no prover needed):
+bash scripts/check-proof-enrolment.sh --static-only
+
+# One prover, directly. The repo's own library manifest must be activated or
+# Agda reports [ModuleNameDoesntMatchFileName] for every module (receipt:
+# proof-ci run 41299261152, 2026-11-01). Register once with
+# `agda --print-agda-app-dir`, then add
+#   verification/proofs/agda/nextgen-typing.agda-lib
+# plus the `standard-library`, `echo-types` and `absolute-zero` manifests
+# (echo-types' own manifest depends on absolute-zero) to
+# <agda-app-dir>/libraries:
+agda --safe --library=nextgen-typing verification/proofs/agda/Verification.agda
 
 # Enforce the coordination boundary (no project code / non-allowlisted proofs)
 bash scripts/check-coordination-boundary.sh
 ----
+
+=== Enforcement receipts
+
+[cols="16%,20%,64%",options="header",]
+|===
+|Date |Receipt |Result
+|2026-11-01 |proof-ci run
+https://github.com/hyperpolymath/nextgen-typing/actions/runs/41299544043
+(sha `+4c6b918+`) |**PASS** — `+just proof-check-all+` green on the hosted
+lane: enrolment gate PASS (2 proof sources, 3 registered entries, registries
+agree), Agda 2.8.0 typecheck of `+EchoTyping.agda+` and `+Verification.agda+`
+under `+--safe --library=nextgen-typing+` against agda-stdlib v2.3,
+echo-types `+b0982c4+` and absolute-zero `+f486c29+`, banned-pattern scan
+clean. This is the first CI receipt that these proofs typecheck.
+
+|2026-11-01 |proof-ci runs 41298824595, 41299096293 (first attempts) |**FAIL**,
+and correctly so: the proofs had never actually been run, and the old
+documented invocation did not activate `+nextgen-typing.agda-lib+`, so every
+module failed with `+[ModuleNameDoesntMatchFileName]+`. Fixed by activating the
+library in the recipe; no proof source or safety flag was changed.
+
+|2026-11-01 |local receipts (this repository, no Agda installed) |Enrolment
+gate `+--static-only+`: **PASS** (2 sources, 3 registered entries).
+Banned-pattern scan: **PASS** (2 files). `+just proof-check-all+`:
+**BLOCKED** (exit 2, Agda absent) — recorded as blocked, not as a pass.
+|===
 
 === Changelog
 
 [width="100%",cols="32%,42%,26%",options="header",]
 |===
 |Date |Change |By
+|2026-11-01 |Proofs are now *enforced*, not asserted: `+just proof-check-all+`
+runs in `.github/workflows/proof-ci.yml`; enrolment gate fails unlisted/stale/
+zero-work runs and blocks on a missing prover. Lane green at `+4c6b918+`
+(run 41299544043); the Agda invocation had to activate
+`+nextgen-typing.agda-lib+` to typecheck at all |Arena agent
+
 |2026-06-19 |Reconciled to coordination reality: removed RSR ABI/TP
 scaffold proofs (owned by typed-wasm/typell); tracking cross-project
 proofs only |maintainer

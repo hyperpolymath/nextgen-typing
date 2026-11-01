@@ -66,11 +66,20 @@ When adding one, register it in `+[verification].allowed-proofs+` of
 |`+Obj.magic+` |OCaml/ReScript |Unsafe type cast
 |===
 
-CI rejects any PR introducing these (`+panic-attack assail+`).
+CI rejects any PR introducing these. The enforcement is
+`+just proof-scan-dangerous+` (`+scripts/proof-scan-dangerous.sh+`, run inside
+`+just proof-check-all+`), plus the enrolment gate
+(`+scripts/check-proof-enrolment.sh+`) which fails any proof that is not
+registered in both `+[verification].allowed-proofs+` of
+`+placement.a2ml+` and `+ALLOWED_PROOFS+` of
+`+scripts/check-coordination-boundary.sh+`. Hosted lane:
+`+.github/workflows/proof-ci.yml+`.
 
 === References
 
 * Routing table: `+.machine_readable/bot_directives/placement.a2ml+`
-* CI guard: `+scripts/check-coordination-boundary.sh+` /
+* CI guard (coordination boundary): `+scripts/check-coordination-boundary.sh+` /
 `+.github/workflows/coordination-boundary.yml+`
+* CI guard (proofs): `+scripts/check-proof-enrolment.sh+`,
+`+scripts/proof-scan-dangerous.sh+` / `+.github/workflows/proof-ci.yml+`
 * Proof status tracking: `+PROOF-STATUS.md+` (this repo)
