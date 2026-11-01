@@ -120,10 +120,12 @@ echo ""
 # if ! curl -sf "$VERISIM_URL/health" >/dev/null 2>&1; then
 #     skip_test "VeriSimDB integration" "gateway not available"
 # else
-#     STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$VERISIM_URL/api/v1/hexads" \
+#     # The endpoint is /api/v1/octads (8 modal witnesses); "HEXAD" is only the
+#     # legacy VCL keyword for the octad source, not a route.
+#     STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$VERISIM_URL/api/v1/octads" \
 #         -H "Content-Type: application/json" \
 #         -d '{"tool":"NEXTGEN_TYPING","modality":"document","content":"e2e test"}')
-#     check_status "hexad POST" "201" "$STATUS"
+#     check_status "octad POST" "201" "$STATUS"
 # fi
 
 # ═══════════════════════════════════════════════════════════════════════

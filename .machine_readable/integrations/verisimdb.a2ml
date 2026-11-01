@@ -2,16 +2,29 @@
 # OPTIONAL: VeriSimDB Feed — Cross-Repo Analytics Data Store
 # Delete this file if your project does not feed data to VeriSimDB.
 # See https://github.com/hyperpolymath/nextgen-databases for details.
+#
+# Local divergence from the fleet template written by gitbot-fleet's
+# scripts/fix-missing-verisim-feed.sh: that template says format = "hexad" and
+# destination = "verisim-data/feeds/", neither of which exists in VeriSimDB.
+# Reported upstream: https://github.com/hyperpolymath/gitbot-fleet/issues/640
 
 [integration]
 name = "verisimdb"
 type = "data-feed"
-repository = "https://github.com/hyperpolymath/nextgen-databases"
+# The engine is verisimdb; nextgen-databases is only the research parent.
+repository = "https://github.com/hyperpolymath/verisimdb"
+parent = "https://github.com/hyperpolymath/nextgen-databases"
 data-store = "verisimdb-data"
 
 [feed-config]
 emit-scan-results = true
 emit-build-metrics = true
 emit-dependency-graph = true
-format = "hexad"
-destination = "verisimdb-data/feeds/"
+# The record schema is the octad (8 modal witnesses). "HEXAD" is a LEGACY VCL
+# keyword for the octad source, kept in verisimdb's surface grammar v3.0 for
+# backward compatibility — it is a query keyword, not a wire format. Records
+# carry "schema": "verisimdb.octad.v1" (see verisimdb-data scans/octads/).
+format = "verisimdb.octad.v1"
+# The store's layout (verisimdb-data README): scans/ holds per-repo results and
+# scans/octads/ holds octad records. There is no feeds/ directory.
+destination = "verisimdb-data/scans/octads/"
