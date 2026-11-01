@@ -174,7 +174,9 @@ the file.
 == What is still wrong, and is not this repository's to fix
 
 A1–A3, A5, A6, A8–A11 are owner-ruling items in the standards repository or in
-mathesis. Until they land, either reading can be defended by citation, and the
+mathesis. They are filed with the proposed strict text rather than described
+here: standards#1389 carries A1, A6, A7, A8, A9, A11, A12; mathesis#11 carries
+A2, A3, A4, A5, A10. Until they land, either reading can be defended by citation, and the
 strict treatment depends on each repository choosing it. This repository chooses
 it, records the choice, and gates it — which is the most a single repo can do.
 
