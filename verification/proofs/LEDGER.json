@@ -69,6 +69,7 @@
           "note": "PROOF-POLICY §2.1 (2026-11-01) makes the canonical invocation `agda --safe --without-K --cubical-compatible` and says a prior `--safe` or `--safe --without-K` success is historical evidence rather than a receipt for that combined profile. This receipt is the first canonical one; the earlier receipt is kept below as historical, not as evidence.",
           "historical_evidence": [
             {
+              "state": "superseded",
               "kind": "ci-receipt (historical under §2.1)",
               "commit": "4c6b918998b9756fdeb1e64c74de27a968677ac1",
               "date": "2026-11-01",
@@ -240,7 +241,7 @@
           }
         ]
       },
-      "grade_deviation": "mathesis §5 names the Grade 3 configurations parenthetically: '--safe --erasure', or 'Full --cubical'. This proof is checked under '--safe --without-K --cubical-compatible' — --erasure is not enabled and full --cubical is not used, so neither named configuration is exactly what runs. The grade stays 3 because the result is carried by Agda alone, under --safe, with no postulates and no translation to an independent system; the difference in flags is recorded here rather than paraphrased into the policy's wording.",
+      "grade_deviation": "mathesis §5 names the Grade 3 configurations parenthetically ('--safe --erasure', or 'Full --cubical'), and neither is exactly what runs here: this proof is checked under '--safe --without-K --cubical-compatible', with --erasure off and full --cubical unused. The later, normative estate policy (metadatastician/standards 3-practice/PROOF-POLICY.adoc §2.1, amended 2026-11-01) fixes that combined invocation as the canonical one, and §5 of mathesis says 'e.g.', so the example flags are illustrative rather than closed. The grade therefore stays 3 on mathesis' own operative clause — it type-checks in Agda and has not been translated to an independent foundational system — and the flag difference is recorded here instead of being paraphrased away.",
       "history": [
         {
           "date": "2026-11-01",

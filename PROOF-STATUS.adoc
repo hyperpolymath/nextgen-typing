@@ -68,6 +68,59 @@ gap is unmistakable: *no leg other than Agda has been proven for XP-1.*
   Lean, coq-lsp's REST surface for Rocq, isabelle-server). No such surface is
   wired up.
 
+=== Where each requirement comes from, and how it is met
+
+Two documents govern this, and they are not the same kind of document. mathesis
+`+estate-mathematical-architecture+` **defines the grades** (§5) and the record
+discipline (§6, §11); `+metadatastician/standards+` `+3-practice/PROOF-POLICY.adoc+`
+(pinned at `+46ee1832+`, owner ruling 2026-10-26, amended 2026-11-01) says **where
+a proof lives and how it is rechecked**. the standards document does not define the rungs
+themselves, and mathesis does not say how a translation leg is rechecked; where
+their examples differ, the standards document governs, because it
+is the later owner ruling and §7 says only an owner ruling amends it.
+
+[cols="14%,34%,36%,16%",options="header",]
+|===
+|Source |Requirement |Where it is met |State
+|mathesis §5 |Grade 3: the proof type-checks in Agda |Agda 2.8.0 + agda-stdlib v2.3,
+`+EchoTyping.agda+` and `+Verification.agda+`, receipt run 41314454646 at
+`+3cd1859+`; re-typechecked on every CI run by `+just proof-check-agda+`, not
+taken from the file's existence |met
+|mathesis §5 |Grade 3: *not translated* to an independent foundational system
+|Both recheck legs are `+open+`. This is what makes the rung 3 rather than 2i —
+and it is simultaneously the gap PROOF-POLICY §2 makes an obligation |met, and
+reported every run
+|mathesis §5 |Grade 3 relies on strict solver flags (parenthetically
+`+--safe --erasure+`, or Full `+--cubical+`) |In force: `+--safe --without-K
+--cubical-compatible+`. Neither named configuration exactly; the difference is
+recorded in `+grade_deviation+`, and PROOF-POLICY §2.1 (later, normative) fixes
+this combined invocation as canonical |deviation, recorded
+|mathesis §5 (family note) |The dual-translation rung (`+2ii+`) needs a *non-DTT*
+second architecture
+|The gate's `+FAMILIES+` map records agda/rocq/lean4 as `+dtt+`, isabelle as
+`+hol+`. Unreachable while both legs are DTT, so it is not claimed |recorded
+|mathesis §6 |Do not flatten confidence into a percentage |Tokens only; nothing
+in this file or the gate averages anything, and `+just proof-grade+` prints
+"recorded, not estimated" |met
+|mathesis §6 |Axiom tracking: postulates, `+#print axioms+`, `+Print Assumptions+`,
+pinned library versions |Source leg: zero postulates under `+--safe+`, with
+pinned Agda, stdlib, echo-types and absolute-zero. Recheck legs: no axiom list,
+because no witness exists — recording one would be fabrication |met, and the gap
+stated
+|mathesis §6 |Track the exact Git commit of the verification receipt |`+3cd1859…+`
+in the ledger; the gate refuses a receipt that is not a full 40-character SHA
+|met
+|mathesis §6 |`+Superseded+` and `+Regressed+` are first-class states |Every
+retained receipt carries `+state+` (`+superseded+` for the pre-§2.1 one) and a
+reason; the gate refuses an unmarked archived receipt or a state outside the pair
+|met
+|mathesis §11 |Reject silent index drift, proof inflation and false verification
+claims; report unavailable evidence plainly |Statement anchors must exist in the
+source files, flags are read out of the files and the instrument rather than
+copied, unclaimed witnesses are refused in both directions, and the policy gaps
+print on every run |met
+|===
+
 === What the Grade 3 claim rests on
 
 Grade 3 is the lowest rung, so it is the one that most needs its evidence named

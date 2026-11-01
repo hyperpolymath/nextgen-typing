@@ -744,6 +744,25 @@ while IFS=$'\x1f' read -r tid status files; do
   fi
 done < <(jq -r '.theorems[] | [ .id, (.source.status // ""), ((.source.files // []) | join(",")) ] | map(tostring) | join("\u001f")' "$LEDGER")
 
+# --- 5b. receipt lineage: an archived receipt says why (mathesis §6) --------
+# mathesis §6 introduces `Superseded` and `Regressed` as first-class states for a
+# receipt. A receipt kept but not marked is indistinguishable from one that is
+# still evidence, which is the drift the clause exists to stop.
+while IFS=$'\x1f' read -r tid idx state why; do
+  [ -z "$tid" ] && continue
+  case "$state" in
+    superseded|regressed) ;;
+    "")
+      fail "$tid: historical evidence entry $idx has no state — mathesis §6 requires 'superseded' or 'regressed', not a silently archived receipt" ;;
+    *)
+      fail "$tid: historical evidence entry $idx has state '${state}', which is not one of superseded | regressed (mathesis §6)" ;;
+  esac
+  [ -n "${why// }" ] || fail "$tid: historical evidence entry $idx does not say why it is no longer the current receipt"
+done < <(jq -r '
+  .theorems[] | .id as $id | (.source.evidence.historical_evidence // []) | to_entries[] |
+  [ $id, (.key | tostring), (.value.state // ""),
+    (.value.why_not_current // .value.reason // "") ] | map(tostring) | join("\u001f")' "$LEDGER")
+
 # Agda safety flags stay in force (this repository's PROOF-NEEDS.adoc).
 while IFS= read -r f; do
   [ -z "$f" ] && continue

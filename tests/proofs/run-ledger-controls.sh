@@ -193,6 +193,17 @@ else
   sed 's/^/      /' "$WORK/waiver-ok.log" | tail -5
 fi
 
+# --- mathesis §6: receipt lineage ------------------------------------------
+jq '(.theorems[0].source.evidence.historical_evidence[0]) |= del(.state)' \
+  "$LEDGER" > "$WORK/unnamed-history.json"
+expect_refusal "27. a superseded receipt kept without saying it is superseded" \
+  "has no state" "$WORK/unnamed-history.json"
+
+jq '(.theorems[0].source.evidence.historical_evidence[0].state) = "archived"' \
+  "$LEDGER" > "$WORK/bogus-history.json"
+expect_refusal "28. a receipt state outside mathesis §6's superseded | regressed" \
+  "which is not one of superseded" "$WORK/bogus-history.json"
+
 # --- a witness on disk that nothing claims ----------------------------------
 sandbox="$WORK/repo"
 mkdir -p "$sandbox"
@@ -215,6 +226,6 @@ if [ "$VIOLATIONS" -gt 0 ]; then
 fi
 echo "PASS: $CHECKS ledger-form expectation(s) held."
 if [ -n "${GITHUB_ACTIONS:-}" ]; then
-  echo "::notice::proof ledger controls: $CHECKS expectation(s), 0 violations (grades, statements, flags, history, trust base, policy pin, waivers, unclaimed witnesses)"
+  echo "::notice::proof ledger controls: $CHECKS expectation(s), 0 violations (grades, statements, flags, history, receipt lineage, trust base, policy pin, waivers, unclaimed witnesses)"
 fi
 exit 0
