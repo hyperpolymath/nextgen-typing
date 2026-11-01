@@ -88,8 +88,16 @@ mechanism is recorded in `+escape_hatch_evidence+`; asserting the absence of
 escape hatches without naming a mechanism is a failure.
 |===
 
-The receipt behind all four is CI run 41299544043 at
-`+4c6b918998b9756fdeb1e64c74de27a968677ac1+`.
+The receipt behind all four is CI run **41314454646** at
+`+3cd185939179773f177b59e6fee360719695dfc7+` — the first run that invoked the
+policy's canonical form, `+agda --safe --without-K --cubical-compatible+`
+(PROOF-POLICY §2.1, amended 2026-11-01), through `+just proof-check-agda+`.
+
+The earlier receipt (run 41299544043 at `+4c6b918+`) invoked `+--safe+` with the
+library manifest only: `+--without-K+` came from the file's `+{-# OPTIONS #-}+`
+and `+--cubical-compatible+` was never passed. §2.1 says such a success is
+*historical evidence, not a receipt* for the combined profile, so the ledger
+keeps it as history and pins the canonical run.
 
 === The ladder, and what each rung costs
 
@@ -200,7 +208,7 @@ ledger):
 |agda-stdlib |v2.3 (`+8326c7475af1fa456ca04a0203c168d5d7ff842b+`)
 |echo-types |`+b0982c44f36133acd2d0e1d4e03cf031fff7a470+`
 |absolute-zero |`+f486c29903434589117fa0662c6f29b0f17d1d5f+`
-|Receipt commit |`+4c6b918998b9756fdeb1e64c74de27a968677ac1+` (run 41299544043)
+|Receipt commit |`+3cd185939179773f177b59e6fee360719695dfc7+` (run 41314454646, canonical §2.1 invocation)
 |===
 
 === Enforcement (CI)

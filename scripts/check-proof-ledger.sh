@@ -466,7 +466,12 @@ while IFS=$'\t' read -r tid target last_to; do
     [ "$last_to" = "$current" ] \
       || fail "$tid: history's last recorded grade is '$last_to' but the ledger now records '$current' — record the regression (or the promotion) instead of rewriting history (mathesis §6)"
   else
-    current="$(jq -r --arg id "$tid" --arg p "$target" '.theorems[] | select(.id == $id) | .legs[]? | select(.prover == $p) | .status' "$LEDGER")"
+    current="$(jq -r --arg id "$tid" --arg p "$target" '.theorems[] | select(.id == $id) | .legs[]? | select(.prover == $p) | .status' "$LEDGER" | head -1)"
+    # A transition may concern the SOURCE leg rather than a recheck leg (e.g. a
+    # re-baselining under a new canonical invocation). Fall back to .source.
+    if [ -z "$current" ]; then
+      current="$(jq -r --arg id "$tid" --arg p "$target" '.theorems[] | select(.id == $id) | select(.source.prover == $p) | .source.status' "$LEDGER" | head -1)"
+    fi
     if [ -z "$current" ]; then
       fail "$tid: history records a transition for '$target', but the ledger has no such leg"
     elif [ "$last_to" != "$current" ]; then

@@ -7,6 +7,62 @@
 Ruled by the owner, 2026-10-12, after a comparison recorded in the
 accompanying session. Supersedes per-repo prover choice for the family.
 
+=== Amendment, 2026-11-01 — partly superseded
+
+The estate proof policy (`metadatastician/standards`, `3-practice/PROOF-POLICY.adoc`)
+is an owner ruling of 2026-10-26, amended 2026-11-01, and states that *every*
+hyperpolymorph repository follows it. It postdates this ruling, so where the two
+disagree the policy governs. Nothing above is deleted: a superseded ruling is
+still the record of what was decided, and of why.
+
+[cols="40%,20%,40%",options="header",]
+|===
+|Clause of this ruling |Disposition, 2026-11-01 |Authority
+|Agda `--safe --without-K` is the proof kernel of the type family |*stands*
+|PROOF-POLICY §1 (theory → Agda, source of truth) and §2.1, which fixes the
+canonical invocation as `agda --safe --without-K --cubical-compatible` — the
+flags the family's files already declare
+
+|Idris2 is the ABI/runtime layer, not a kernel candidate |*stands*
+|PROOF-POLICY §1 (APIs, ABIs, engineering properties → Idris2)
+
+|Isabelle/HOL only for AFP submissions; existing Isabelle is supplementary
+|*stands*
+|PROOF-POLICY §3: an Isabelle proof of a theory statement satisfies neither the
+Rocq leg nor the Lean leg
+
+|"Coq, Mizar: archived" |*superseded*
+|PROOF-POLICY §2 requires a **Rocq** recheck leg for every Agda theory proof.
+Coq/Rocq is therefore a required leg of a theory proof, not an archived tool.
+The archive of absolute-zero's *own* Coq development (their notice of
+2026-10-10) is their internal call, but it cannot discharge this repository's §2
+obligation.
+
+|"Lean 4 is provenance: tropical-types' Lean and Isabelle developments remain as
+the Mathlib/AFP-facing record and are *ported*, not imported" |*partly
+superseded* — the port-not-import distinction stands; "provenance only" does not
+|PROOF-POLICY §2 requires a Lean recheck leg, and §2.2 requires per-theorem
+correspondence evidence for it (exact proposition, assumptions, universe
+discipline, revision, versions, invocation, observed result)
+
+|Effect on this repository's proof lane |`XP-1`'s Rocq and Lean legs are **open
+obligations**, not waivers
+|PROOF-POLICY §4 waives a leg when the statement *cannot be expressed* in the
+mapped prover. A strategic archive decision is not that, so no waiver is
+claimed and the lane must keep printing the gap.
+|===
+
+Two further consequences, both already reflected in the repository:
+
+. §2.1 says a prior `--safe` or `--safe --without-K` success is *historical
+  evidence, not a receipt* for the combined `--cubical-compatible` profile. The
+  Agda receipt pinned in `verification/proofs/LEDGER.json` was re-baselined onto
+  a canonical-invocation run; the earlier one is retained there as history.
+. §6 requires proof toolchains to come from a Guix manifest or the container. The
+  proof lane installs Rocq and Lean 4 from the package index and the official
+  release archive instead. That is recorded as an open **deviation** in the
+  ledger's `policy.deviations`, not as a waiver.
+
 == Decision
 
 . *Agda `--safe --without-K` is the proof kernel of the type family*

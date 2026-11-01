@@ -1,3 +1,22 @@
 // SPDX-License-Identifier: CC-BY-SA-4.0
 // Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 = decisions Unit
+
+== Decisions in this unit
+
+[cols="40%,20%,40%",options="header",]
+|===
+|Decision |Status |Note
+|`D-2026-10-12-proof-kernel-ruling.adoc` |partly superseded
+|Prover mapping: the Agda-kernel, Idris2-ABI and Isabelle-supplementary clauses
+stand; "Coq archived" and "Lean is provenance only" are superseded by the estate
+`PROOF-POLICY` (owner ruling 2026-10-26, amended 2026-11-01). See the amendment
+inside the document.
+
+|`0001-adopt-rsr-standard.adoc` |current |Repository standard adoption.
+|`0000-template.adoc` |template |Copy for a new decision; delete the guidance.
+|===
+
+A decision that has been superseded stays in this unit: it is the record of what
+was decided and why. What changes is its status line, not its existence.
+
