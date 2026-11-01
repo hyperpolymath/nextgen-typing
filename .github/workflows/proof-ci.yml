@@ -376,8 +376,8 @@ jobs:
           set -uo pipefail
           RECEIPT="$PROOF_RECEIPT_DIR/ledger.txt"
           if [ ! -f "$RECEIPT" ]; then
-            echo "::error::no ledger receipt was written — the ledger gate did not run"
-            exit 0
+            echo "::error::no ledger receipt was written after the ledger gate succeeded"
+            exit 1
           fi
           GAPS="$(awk '/^gaps:/{f=1;next} /^[a-z-]+:/{f=0} f' "$RECEIPT" | sed 's/^  - //')"
           if [ -z "${GAPS//[[:space:]]/}" ] || [ "$GAPS" = "(none)" ]; then
