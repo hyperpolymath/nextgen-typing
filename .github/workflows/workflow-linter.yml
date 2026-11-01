@@ -70,9 +70,10 @@ jobs:
           XDG_DATA_HOME: ${{ runner.temp }}/workflow-linter-data
         run: |
           # Binary extensions accept release tags, not source commit pins.
-          # Verify the v0.1.6 linux-amd64 release bytes before executing them.
-          gh release download v0.1.6 --repo github/gh-actions-lock --pattern linux-amd64 --output "$RUNNER_TEMP/gh-actions-lock"
-          echo "4181ec1da5408b34b9a542a7ee5c6ce3a4d6ac815c7d0206a00ceca8a817f4e3  $RUNNER_TEMP/gh-actions-lock" | sha256sum --check --strict
+          # v0.1.6 only parses lockfile v0.0.2, whereas this repo uses
+          # v0.0.3. Pin a compatible release AND the published asset digest.
+          gh release download v0.4.0 --repo github/gh-actions-lock --pattern linux-amd64 --output "$RUNNER_TEMP/gh-actions-lock"
+          echo "f9da98f2a6e9e0ae77deadf9a2319a8a86bb002b541cc3203b247cc59fb04842  $RUNNER_TEMP/gh-actions-lock" | sha256sum --check --strict
           chmod +x "$RUNNER_TEMP/gh-actions-lock"
           "$RUNNER_TEMP/gh-actions-lock" --verify-local
 
