@@ -626,7 +626,7 @@ done < <(jq -r '
     (.waiver.reason // ""), (.waiver.record // "") ] | map(tostring) | join("\u001f")' "$LEDGER")
 
 # --- 4. every non-open claim must be backed by artifact + MANIFEST + route ---
-while IFS=$'\x1f' read -r tid prover status artifact route compared axioms reproof reproof_reason blocker; do
+while IFS=$'\x1f' read -r tid prover status artifact route compared axioms reproof blocker; do
   [ -z "$tid" ] && continue
   # Waived legs are audited in 3e and carry no claim here.
   [ -z "${status// }" ] && continue
