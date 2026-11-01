@@ -152,6 +152,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7.0.1
+        with:
+          # Nothing later in the lane pushes; the one clone it makes is of a
+          # public library. Leaving the job token in .git/config would be a
+          # credential in a runner that only reads.
+          persist-credentials: false
 
       - name: Install pinned Agda (official binary, sha256-verified)
         run: |

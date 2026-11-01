@@ -91,6 +91,21 @@ else
   viol "29. the Axiom control failed for the wrong reason (exit $axiom_rc)"
 fi
 
+# --- comment syntax is per language, in the dangerous direction -------------
+# `(* ... *)` is a comment in Coq and ordinary text in Lean. One shared list made
+# the Lean case clean-looking; refusing the Coq case would be a false positive.
+if bash "$GATE" --scan-file "$CONTROLS/PlantedLeanBlockText.lean" >"$WORK/lean-block.log" 2>&1; then
+  viol "41. the scan ACCEPTED a Lean axiom hidden in Coq's block-comment delimiters"
+else
+  ok "41. Coq's (* *) is not a comment in Lean: an axiom written inside it is found"
+fi
+if bash "$GATE" --scan-file "$CONTROLS/ControlCommentAxiom.v" >"$WORK/coq-comment.log" 2>&1; then
+  ok "42. the same delimiters ARE a comment in Coq: prose there is not a violation"
+else
+  viol "42. the scan rejected a Coq file whose only mention of Axiom is inside a comment"
+  sed 's/^/      /' "$WORK/coq-comment.log" | tail -5
+fi
+
 # --- grades and evidence ----------------------------------------------------
 jq '(.theorems[0].grade) = "2i"' "$LEDGER" > "$WORK/grade-2i.json"
 expect_refusal "5. a grade 2i claim with no proven leg" \

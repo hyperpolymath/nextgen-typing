@@ -111,32 +111,69 @@ echo "=== Scanning for dangerous patterns in proofs ==="
 echo "patterns: $PATTERNS"
 echo "scope:    $SCAN_DIRS"
 
-# Print $1 with line comments (-- and //) and block comments ({- -} and (* *))
-# removed, preserving line numbers. Delimiters in strings are treated as comments
-# and nested blocks are not supported. An awk read error returns non-zero; the
-# scan's calling pipeline suppresses that error.
+# Print $1 with the comment syntax of ITS language removed, and string literals
+# masked, preserving line numbers. Three things matter here:
+#
+#   * One comment syntax for every language is wrong in the dangerous direction.
+#     `(*` is a comment in Coq and TLA+ but ordinary text in Lean, so a Lean file
+#     containing `(* ... Axiom ... *)` had the Axiom treated as commented-out and
+#     the scan called it clean. The delimiters are now chosen per extension.
+#   * A comment marker inside a string is not a comment. Masks keep `"--"` in a
+#     string from opening one, and keep a banned word inside a string from being
+#     counted as code. Only double-quoted strings are masked: a prime is part of
+#     an ordinary identifier in Agda and Idris, and masking from it would hide
+#     the rest of the line.
+#   * An unknown extension is scanned RAW. Stripping nothing can only produce a
+#     false positive, which someone fixes; guessing a syntax can hide an escape
+#     hatch, which nobody sees again.
+#
+# Nested block comments are not supported; an unclosed block comment runs to the
+# end of the file. Delimiters are matched after string masking, so `"(*"` is
+# text. Comment *text* is dropped rather than blanked, which keeps `grep -n`
+# line numbers aligned with the file.
 strip_comments() {
-  awk '
-    BEGIN { block = 0 }
+  local f="$1" mode
+  case "$f" in
+    *.agda|*.lagda|*.lagda.md|*.lagda.rst|*.lagda.tex) mode=agda ;;
+    *.idr) mode=idris ;;
+    *.lean) mode=lean ;;
+    *.v) mode=coq ;;
+    *.tla) mode=tla ;;
+    *.fst|*.fstar) mode=fstar ;;
+    *) mode=raw ;;
+  esac
+  awk -v mode="$mode" '
+    BEGIN {
+      lop1 = ""; lop2 = ""; bop = ""; bcl = ""
+      if (mode == "agda" || mode == "idris") { lop1 = "--"; bop = "{-"; bcl = "-}" }
+      else if (mode == "lean")              { lop1 = "--"; lop2 = "//"; bop = "/-"; bcl = "-/" }
+      else if (mode == "coq")               { bop = "(*"; bcl = "*)" }
+      else if (mode == "tla")               { lop1 = "\\*"; bop = "(*"; bcl = "*)" }
+      else if (mode == "fstar")             { lop2 = "//"; bop = "(*"; bcl = "*)" }
+      block = 0
+    }
     {
-      line = $0
-      out = ""
-      i = 1
-      n = length(line)
+      line = $0; out = ""; i = 1; n = length(line); instr = ""
       while (i <= n) {
-        two = substr(line, i, 2)
+        c = substr(line, i, 1); two = substr(line, i, 2)
+        if (instr != "") {
+          if (c == "\\") { out = out "  "; i += 2; continue }
+          if (c == instr) { instr = ""; out = out c; i += 1; continue }
+          out = out " "; i += 1; continue
+        }
         if (block == 1) {
-          if (two == "-}" || two == "*)") { block = 0; i += 2 } else { i += 1 }
+          if (two == bcl) { block = 0; i += 2 } else { i += 1 }
           continue
         }
-        if (two == "--" || two == "//") { break }
-        if (two == "{-" || two == "(*") { block = 1; i += 2; continue }
-        out = out substr(line, i, 1)
-        i += 1
+        if (c == "\"") { instr = c; out = out c; i += 1; continue }
+        if (lop1 != "" && two == lop1) { break }
+        if (lop2 != "" && two == lop2) { break }
+        if (bop != "" && two == bop) { block = 1; i += 2; continue }
+        out = out c; i += 1
       }
       print out
     }
-  ' "$1"
+  ' "$f"
 }
 
 if [ -n "$SCAN_FILE" ]; then
