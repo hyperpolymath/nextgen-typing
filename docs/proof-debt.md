@@ -46,9 +46,10 @@ each imported module's postulate count (0 at the pin).
 
 ## Exemptions, and why they are not debt
 
-`.trusted-base-ignore` exempts `tests/proofs/control/`. Those two files
-(`PlantedAdmitted.v`, `PlantedSorry.lean`) contain a real `Admitted` and a real
-`sorry` **in order to be detected**: `tests/proofs/run-controls.sh` fails if the
+`.trusted-base-ignore` exempts `tests/proofs/control/`. Three planted files
+(`PlantedAdmitted.v`, `PlantedSorry.lean`, `PlantedAxiom.v`) contain a real
+`Admitted`, a real `sorry` and a real `Axiom` **so that they are detected**:
+`tests/proofs/run-controls.sh` fails if the
 instrument accepts them. Recording them here as debt would both misreport the
 repository and invite someone to "fix" the fixtures.
 
