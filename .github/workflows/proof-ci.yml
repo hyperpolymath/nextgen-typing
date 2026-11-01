@@ -123,7 +123,7 @@ env:
   # No Mathlib (PROOF-POLICY §2): the lean leg must be core Lean. Asserted below.
   LEAN_VERSION: '4.15.0'
   STDLIB_TAG: 'v2.4'
-  STDLIB_COMMIT: 'd6f865f3eb3e77a7c35194cb12ca2fb43a274ec1'
+  STDLIB_COMMIT: '2a5a0dec0a3cb5c87468ce101388a513d39dbf10'
   # echo-types: the library the XP-1 proof is *about* (PROOF-STATUS.adoc).
   # absolute-zero: declared dependency of echo-types' own .agda-lib.
   ECHO_TYPES_COMMIT: 'b0982c44f36133acd2d0e1d4e03cf031fff7a470'

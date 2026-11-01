@@ -65,7 +65,7 @@
           "run": "https://github.com/hyperpolymath/nextgen-typing/actions/runs/41314454646",
           "invocation": "agda --safe --without-K --cubical-compatible verification/proofs/agda/EchoTyping.agda and .../Verification.agda, via `just proof-check-agda` -> scripts/check-proofs.sh agda, with the standard-library, echo-types and absolute-zero library manifests registered",
           "observed_result": "PASS — 2 gated modules typecheck, 0 failures, 0 quarantined; manifest coverage 2/2 files accounted for",
-          "checked_by": "proof-ci.yml, Agda 2.8.0, agda-stdlib v2.4 @d6f865f3eb3e77a7c35194cb12ca2fb43a274ec1, echo-types b0982c44f36133acd2d0e1d4e03cf031fff7a470, absolute-zero f486c29903434589117fa0662c6f29b0f17d1d5f",
+          "checked_by": "proof-ci.yml, Agda 2.8.0, agda-stdlib v2.4 @2a5a0dec0a3cb5c87468ce101388a513d39dbf10, echo-types b0982c44f36133acd2d0e1d4e03cf031fff7a470, absolute-zero f486c29903434589117fa0662c6f29b0f17d1d5f",
           "note": "PROOF-POLICY §2.1 (2026-11-01) makes the canonical invocation `agda --safe --without-K --cubical-compatible` and says a prior `--safe` or `--safe --without-K` success is historical evidence rather than a receipt for that combined profile. This receipt is the first canonical one; the earlier receipt is kept below as historical, not as evidence.",
           "historical_evidence": [
             {
@@ -89,7 +89,7 @@
             "kind": "dependency-pin",
             "name": "agda-stdlib",
             "version": "v2.4",
-            "commit": "d6f865f3eb3e77a7c35194cb12ca2fb43a274ec1"
+            "commit": "2a5a0dec0a3cb5c87468ce101388a513d39dbf10"
           },
           {
             "kind": "external-development",
@@ -131,7 +131,7 @@
           "method": "read each imported module's {-# OPTIONS #-} and counted `postulate` at commit b0982c44f36133acd2d0e1d4e03cf031fff7a470 via the GitHub contents API",
           "library_pins": {
             "echo-types": "b0982c44f36133acd2d0e1d4e03cf031fff7a470",
-            "agda-stdlib": "v2.4 @d6f865f3eb3e77a7c35194cb12ca2fb43a274ec1"
+            "agda-stdlib": "v2.4 @2a5a0dec0a3cb5c87468ce101388a513d39dbf10"
           },
           "modules": [
             {
@@ -273,12 +273,12 @@
         {
           "kind": "local-recheck",
           "date": "2026-11-01",
-          "toolchain": "Agda 2.7.0.1 (PyPI manylinux wheel, GHC 9.6.5) with agda-stdlib v2.4 @d6f865f, echo-types b0982c44, absolute-zero f486c29 — a DIFFERENT Agda version from the pinned 2.8.0 the receipt uses",
+          "toolchain": "Agda 2.7.0.1 (PyPI manylinux wheel, GHC 9.6.5) with agda-stdlib v2.4 @2a5a0de, echo-types b0982c44, absolute-zero f486c29 — a DIFFERENT Agda version from the pinned 2.8.0 the receipt uses",
           "invocation": "agda --safe --without-K --cubical-compatible EchoTyping.agda and Verification.agda, from verification/proofs/agda, with all four library manifests registered",
           "observed_result": "PASS — both modules typecheck; only -WnoUnsupportedIndexedMatch warnings from echo-types' own indexed matches, which the pinned lane sees too",
           "planted_control": "a module asserting `⊥` by self-reference was rejected with Agda exit 42 in the same environment, so the pass is not vacuous",
           "corroboration_only": true,
-          "note": "Not the receipt. PROOF-POLICY §2.1 pins the toolchain with the result, and the recorded receipt is the CI run at Agda 2.8.0; this entry says the same two modules also typecheck under 2.7.0.1. It cannot raise the grade and is not evidence for a §2 recheck leg. The same run was repeated against agda-stdlib v2.4 @d6f865f and also passed, which is the evidence behind the v2.3 -> v2.4 pin bump in this commit."
+          "note": "Not the receipt. PROOF-POLICY §2.1 pins the toolchain with the result, and the recorded receipt is the CI run at Agda 2.8.0; this entry says the same two modules also typecheck under 2.7.0.1. It cannot raise the grade and is not evidence for a §2 recheck leg. The same run was repeated against agda-stdlib v2.4 @2a5a0de and also passed, which is the evidence behind the v2.3 -> v2.4 pin bump in this commit."
         }
       ]
     }

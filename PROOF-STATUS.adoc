@@ -310,7 +310,7 @@ ledger):
 |===
 |Component |Kind |Pin, and what it is to this proof
 |Agda |dependency-pin |2.8.0
-|agda-stdlib |dependency-pin |v2.4 (`+d6f865f3eb3e77a7c35194cb12ca2fb43a274ec1+`)
+|agda-stdlib |dependency-pin |v2.4 (`+2a5a0dec0a3cb5c87468ce101388a513d39dbf10+`)
 |echo-types |external development |`+b0982c44f36133acd2d0e1d4e03cf031fff7a470+` —
 the library whose fiber construction XP-1 compares the pipeline's loss
 operations against. Its own identity claim is **open** (see caveat 1 below).
