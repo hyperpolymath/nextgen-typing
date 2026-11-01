@@ -288,7 +288,7 @@ jobs:
             echo "agda: $(agda --version | head -n1)"
             echo "just: $(just --version)"
             echo "rocq: $(coqc --version | head -n1)"
-            echo "rocq deb: $(dpkg-query -W -f='\${Version}' coq 2>/dev/null || echo unknown)"
+            echo "rocq deb: $(dpkg-query -W -f='${Version}' coq 2>/dev/null || echo unknown)"
             echo "lean: $(lean --version | head -n1)"
             echo "lean archive: $(cat "$RUNNER_TEMP/lean-dl/archive.txt" 2>/dev/null || echo unknown)"
             echo "agda-stdlib: $STDLIB_TAG @ $STDLIB_COMMIT"
