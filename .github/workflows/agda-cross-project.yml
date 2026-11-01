@@ -26,19 +26,29 @@ concurrency:
 jobs:
   typecheck:
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 45
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
-      - name: Install Agda and standard library
+      - name: Setup Haskell for pinned Agda
+        uses: haskell-actions/setup@v2.12.1
+        with:
+          ghc-version: '9.6'
+          cabal-version: '3.10'
+
+      - name: Install Agda 2.7.0.1 and compatible stdlib 2.1.1
         run: |
           set -euo pipefail
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends agda agda-stdlib
-          agda --version
+          cabal update
+          cabal install Agda-2.7.0.1 --overwrite-policy=always
+          echo "$HOME/.cabal/bin" >> "$GITHUB_PATH"
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/agda-stdlib.tar.gz" \
+            https://github.com/agda/agda-stdlib/archive/refs/tags/v2.1.1.tar.gz
+          tar xzf "$RUNNER_TEMP/agda-stdlib.tar.gz" -C "$RUNNER_TEMP"
+          test -f "$RUNNER_TEMP/agda-stdlib-2.1.1/standard-library.agda-lib"
 
       - name: Fetch pinned first-party Agda libraries
         run: |
@@ -52,18 +62,9 @@ jobs:
       - name: Register exact proof library revisions
         run: |
           set -euo pipefail
-          # Ubuntu's agda-stdlib package supplies sources but may not ship
-          # a discoverable .agda-lib descriptor. Use dpkg's file manifest
-          # to locate its root, then register a descriptor explicitly.
-          stdlib_root="$(dpkg -L agda-stdlib | sed -n 's@/Data/Nat[.]agda$@@p' | head -n 1)"
-          test -n "$stdlib_root" && test -f "$stdlib_root/Data/Nat.agda"
-          # Agda 2.6.x writes .agdai interfaces beside imported sources.
-          # Distro /usr/share is read-only to CI's runner user; copy the
-          # pinned distro library to a writable temp tree, never sudo agda.
-          cp -a "$stdlib_root" "$RUNNER_TEMP/agda-stdlib-writable"
-          stdlib_root="$RUNNER_TEMP/agda-stdlib-writable"
-          stdlib="$RUNNER_TEMP/standard-library.agda-lib"
-          printf 'name: standard-library\ninclude: %s\n' "$stdlib_root" > "$stdlib"
+          agda --version
+          stdlib="$RUNNER_TEMP/agda-stdlib-2.1.1/standard-library.agda-lib"
+          test -f "$stdlib"
           mkdir -p "$HOME/.agda"
           printf '%s\n' \
             "$stdlib" \
