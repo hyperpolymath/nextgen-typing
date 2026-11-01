@@ -1,0 +1,66 @@
+# SPDX-License-Identifier: MPL-2.0
+# Cross-project Agda compatibility gate. Pin external source revisions.
+name: Cross-project Agda Verification
+
+on:
+  pull_request:
+    paths:
+      - 'verification/proofs/agda/**'
+      - 'scripts/check-agda-verification.sh'
+      - '.github/workflows/agda-cross-project.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'verification/proofs/agda/**'
+      - 'scripts/check-agda-verification.sh'
+      - '.github/workflows/agda-cross-project.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: agda-cross-project-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  typecheck:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install Agda and standard library
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends agda agda-stdlib
+          agda --version
+
+      - name: Fetch pinned first-party Agda libraries
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/type-libs"
+          git clone --no-checkout https://github.com/hyperpolymath/absolute-zero.git "$RUNNER_TEMP/type-libs/absolute-zero"
+          git -C "$RUNNER_TEMP/type-libs/absolute-zero" checkout bb46232ea4dbc4b6ad2b97d2da6baebb3e026662
+          git clone --no-checkout https://github.com/hyperpolymath/echo-types.git "$RUNNER_TEMP/type-libs/echo-types"
+          git -C "$RUNNER_TEMP/type-libs/echo-types" checkout b0982c44f36133acd2d0e1d4e03cf031fff7a470
+
+      - name: Register exact proof library revisions
+        run: |
+          set -euo pipefail
+          stdlib="$(find /usr/share -name standard-library.agda-lib -print -quit)"
+          test -n "$stdlib"
+          mkdir -p "$HOME/.agda"
+          printf '%s\n' \
+            "$stdlib" \
+            "$RUNNER_TEMP/type-libs/absolute-zero/absolute-zero.agda-lib" \
+            "$RUNNER_TEMP/type-libs/echo-types/echo-types.agda-lib" \
+            > "$HOME/.agda/libraries"
+          printf 'standard-library\n' > "$HOME/.agda/defaults"
+
+      - name: Check full Agda profile
+        run: bash scripts/check-agda-verification.sh
