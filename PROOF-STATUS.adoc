@@ -28,6 +28,24 @@ at.
 (AffineScript affine weakening; refinement erasure into the
 typed-wasm/kernel layer) are instances of echo-types' fiber construction.
 
+Three caveats belong to that sentence, and the ledger carries them in
+`+caveats+` so the gate can refuse a record that drops one:
+
+. **echo-types' identity claim is open.** What is proven here is a statement
+  about *this pipeline's* operations. The claim that `+Echo+` *is* the identity
+  of structured loss is echo-types' own, and at the pinned revision it is open
+  by design: their README says "Positive identity is open ... Criterion 2 is
+  open". Citing XP-1 for that claim would be circular. If echo-types closes
+  criterion 2, XP-1 inherits it; until then XP-1 consumes a construction, it does
+  not witness the thesis.
+. **absolute-zero is a proof-bearing consumer with 61 undischarged axioms** and
+  OND-6 open by design. None of its Coq is in this proof's import cone — it
+  reaches us only through echo-types' library manifest — but the record must not
+  be read as saying that repository is axiom-free.
+. **No second kernel has checked this.** The Rocq and Lean legs are open, so the
+  theorem is Grade 3 and no waiver is claimed: §4 waives a leg when a statement
+  cannot be expressed in the mapped prover, not when the estate has archived one.
+
 === What the grade means
 
 mathesis `+estate-mathematical-architecture+` §5 defines the rungs. *Grade 3*

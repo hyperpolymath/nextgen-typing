@@ -121,7 +121,11 @@ the exception record. Waived legs are listed in the verdict, never buried.
 
 == Current state
 
-`XP-1` is *Grade 3*: Agda only, not translated. The Rocq and Lean 4 recheck legs
+`XP-1` is *Grade 3*: Agda only, not translated. It proves a statement about
+*this pipeline* — that its loss operations are instances of echo-types' `Echo`
+construction. It does not, and cannot, prove echo-types' own identity claim,
+which is open there (criterion 2); see the caveats in the ledger and in the
+module's header. The Rocq and Lean 4 recheck legs
 are `open` — the estate policy's §2 obligation is *unmet*, and the ledger says so
 with the blocker that stops each leg rather than leaving a blank. Both legs are
 reported as `POLICY GAP` on every run; neither is counted as verification.

@@ -21,7 +21,7 @@ still the record of what was decided, and of why.
 |Agda `--safe --without-K` is the proof kernel of the type family |*stands*
 |PROOF-POLICY §1 (theory → Agda, source of truth) and §2.1, which fixes the
 canonical invocation as `agda --safe --without-K --cubical-compatible` — the
-flags the family's files already declare
+profile this repository's instrument (`scripts/check-proofs.sh`) already passes
 
 |Idris2 is the ABI/runtime layer, not a kernel candidate |*stands*
 |PROOF-POLICY §1 (APIs, ABIs, engineering properties → Idris2)
