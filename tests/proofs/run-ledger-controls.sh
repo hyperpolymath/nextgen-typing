@@ -220,6 +220,25 @@ else
   sed 's/^/      /' "$WORK/waiver-ok.log" | tail -5
 fi
 
+# A waiver record that does not resolve removes an obligation without a reason.
+# Both fixtures keep the rest of the conforming waiver, so the only difference is
+# the citation: a missing file, and an anchor the cited file does not contain.
+jq '(.theorems[0].legs[0]) |= (del(.status, .route, .artifact)
+     | .waiver = {"obligation":"rocq leg","tool":"rocq",
+                   "reason":"planted: statement cannot be expressed",
+                   "record":"does-not-exist"})' \
+  "$LEDGER" > "$WORK/waiver-ghost.json"
+expect_refusal "37. a waiver whose record names no file in the repository" \
+  "does not resolve" "$WORK/waiver-ghost.json"
+
+jq '(.theorems[0].legs[0]) |= (del(.status, .route, .artifact)
+     | .waiver = {"obligation":"rocq leg","tool":"rocq",
+                   "reason":"planted: statement cannot be expressed",
+                   "record":"PROOF-STATUS.adoc#no-such-anchor-anywhere"})' \
+  "$LEDGER" > "$WORK/waiver-anchor.json"
+expect_refusal "38. a waiver citing an anchor the record does not contain" \
+  "which does not occur in" "$WORK/waiver-anchor.json"
+
 # --- related developments are neither assumptions nor evidence -------------
 jq '(.theorems[0].source.related_developments[0].consumed_by_this_proof) = true' \
   "$LEDGER" > "$WORK/related-consumed.json"

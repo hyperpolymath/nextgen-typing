@@ -619,6 +619,26 @@ while IFS=$'\x1f' read -r tid prover wstatus wobligation wtool wreason wrecord; 
       fail "$tid/$prover: waiver without '${pair%%:*}' — §4 requires the obligation, the tool, the reason and the exception record"
     fi
   done
+  # The record must RESOLVE, not merely be non-empty. Accepting any string let a
+  # required leg carry `record: does-not-exist` and still pass: the presence
+  # check was satisfied, and the waiver then removed that leg from the status
+  # and artifact rules below. A record is `<path>[#<anchor>]` in this
+  # repository; when an anchor is given it must occur in the file, and the file
+  # must name the tool, so the citation actually binds to this waiver. An
+  # external ruling belongs in a file here that cites it.
+  wrec_path="${wrecord%%#*}"
+  wrec_anchor=""
+  case "$wrecord" in *'#'*) wrec_anchor="${wrecord#*#}" ;; esac
+  if [ ! -f "$wrec_path" ]; then
+    fail "$tid/$prover: waiver record '$wrecord' does not resolve — no file '$wrec_path' in the repository (§4)"
+  else
+    if [ -n "$wrec_anchor" ] && ! grep -qiF -- "$wrec_anchor" "$wrec_path"; then
+      fail "$tid/$prover: waiver record '$wrecord' names anchor '$wrec_anchor', which does not occur in $wrec_path (§4)"
+    fi
+    if ! grep -qiF -- "$wtool" "$wrec_path"; then
+      fail "$tid/$prover: waiver record '$wrecord' never mentions the tool '$wtool' — the record does not bind to this waiver (§4)"
+    fi
+  fi
   WAIVERS+=("$tid: $prover leg WAIVED — ${wreason} (tool: ${wtool}; record: ${wrecord})")
 done < <(jq -r '
   .theorems[] as $t | $t.legs[]? | select(.waiver != null) |

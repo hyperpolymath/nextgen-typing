@@ -294,6 +294,31 @@ transport route to use. `+#print axioms+` must then show no axiom, and
 `+sorryAx+` must not appear.
 |===
 
+=== Waivers
+
+**No waiver is claimed for XP-1, and none is recorded in the ledger.** §4 of
+`+3-practice/PROOF-POLICY.adoc+` waives a leg when the mapped prover cannot
+*express* the statement — not when the estate has simply not built the witness
+yet. The Rocq and Lean legs are absent for the second reason, so they are open
+obligations, not waivers, and a waiver would be the wrong instrument even if it
+were convenient.
+
+The ledger half of the rule is mechanical, and it is deliberately hard to
+satisfy with a citation that does not exist. A waiver must carry an
+`+obligation+`, a `+tool+`, a `+reason+` and a `+record+`; the `+record+` must be
+`+<path>[#<anchor>]+` inside this repository, the path must exist, the anchor
+must occur in the file, and the file must name the `+tool+`. Anything else — a
+bare string, a plausible-looking filename, an anchor this page does not have —
+is refused, because a waiver whose record cannot be read is an obligation
+removed without a reason. Controls 26, 37 and 38 in
+`+tests/proofs/run-ledger-controls.sh+` pin the three cases: a conforming
+waiver is accepted and printed in the verdict, an unresolvable record is
+refused, and an anchor that does not occur in the cited file is refused.
+
+This section is itself the anchor that a waiver record would cite
+(`+PROOF-STATUS.adoc#waivers+`), which is why it exists before the first waiver
+does.
+
 === Assumptions and axiom tracking
 
 mathesis §6 requires the axioms behind a proof to be tracked, not assumed away:
