@@ -119,6 +119,15 @@ and it is *not* a softer status token: a waived leg carries no status at all, so
 nothing can count it, and it must name the obligation, the tool, the reason and
 the exception record. Waived legs are listed in the verdict, never buried.
 
+=== Related work that is not evidence
+
+`sources.related_developments` is for a sibling formalisation of the same object
+— the thing a reader is most likely to mistake for evidence. It is neither an
+assumption (nothing rests on it) nor proof of this theorem (it proves something
+else), so it has its own array and the gate requires it to say how it relates and
+to declare `consumed_by_this_proof: false`. Claiming to consume it there is a
+failure: consumed dependencies belong in `assumptions`.
+
 == Current state
 
 `XP-1` is *Grade 3*: Agda only, not translated. It proves a statement about

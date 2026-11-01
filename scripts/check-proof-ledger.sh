@@ -580,6 +580,25 @@ done < <(jq -r '
     ([.legs[]? | select(.status == "open")] | length),
     ((.caveats // []) | length) ] | map(tostring) | join("\u001f")' "$LEDGER")
 
+# --- 3d2. related but not relied upon ---------------------------------------
+# A sibling formalisation of the same object is the most likely thing a reader
+# will mistake for evidence. It is not an assumption (nothing rests on it) and it
+# is not evidence for this theorem (it proves something else), so it gets its own
+# array and must say so explicitly.
+while IFS=$'\x1f' read -r tid name relation consumed ev; do
+  [ -z "$tid" ] && continue
+  [ -n "${name// }" ] || fail "$tid: related development with no name"
+  [ -n "${relation// }" ] || fail "$tid: related development '$name' records no relation — say how it relates, since it is not being consumed"
+  [ -n "${ev// }" ] || fail "$tid: related development '$name' records no evidence (file and date read)"
+  if [ "$consumed" = "true" ]; then
+    fail "$tid: related development '$name' claims to be consumed — then it belongs in .source.assumptions, and here it would double-count"
+  fi
+done < <(jq -r '
+  .theorems[] | .id as $id | (.source.related_developments // [])[] |
+  [ $id, (.name // ""), (.relation // ""),
+    ((.consumed_by_this_proof // false) | tostring), (.evidence // "") ]
+  | map(tostring) | join("\u001f")' "$LEDGER")
+
 # --- 3e. waivers: PROOF-POLICY §4 -------------------------------------------
 # A waiver is for a statement the mapped prover cannot express. It is not a
 # softer status token: a waived leg carries NO status at all (so nothing can

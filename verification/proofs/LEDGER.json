@@ -189,7 +189,18 @@
             }
           ],
           "note": "Agda's --safe refuses an import that is not itself safe, so this cone IS the trust base for the 'no escape hatches' claim. The gate cannot fetch the dependencies, so it checks the shape of this record (every module listed, postulates counted, a postulated module forcing a `proven-with-postulates` status); the counts themselves are re-read by hand when the pin moves."
-        }
+        },
+        "related_developments": [
+          {
+            "name": "epistemic-types",
+            "version": "5422cd5bf1418c44321bf0f77e894737a451d8f5",
+            "relation": "sibling-formalisation-not-consumed",
+            "consumed_by_this_proof": false,
+            "note": "Formalises the same object differently from a different premise: `EpistemicTypes.EchoBridge.Echo` is a CERTIFIED RESIDUE (fields `residue` and `certified : Cert residue y`) over a `Retention` record with `observe/retain/Cert/sound`, whereas echo-types' `Echo f y` — the one XP-1 uses — is a fibre `Σ A (λ x → f x ≡ y)`. Neither imports the other. XP-1 says nothing about the certified-residue form, about epistemic-types' warrant transport (`checkerSound`, `proofCannotSupportFalse`, `opaqueNotCertifying`, `verifyReceiptIsGap`), or about its rejection fixture `tests/reject/ForgedResidue.agda`.",
+            "evidence": "read at 5422cd5 on 2026-11-01: src/EpistemicTypes/EchoBridge.agda (header flags `--safe --without-K --cubical-compatible --exact-split --no-sized-types --no-guardedness`), src/EpistemicTypes/ProofTransport.agda, PROOF-STATUS.adoc (36 Agda modules, --no-libraries, zero postulates, --double-check -W error)",
+            "why_not_an_assumption": "XP-1 does not import it, so nothing in the proof rests on it. It belongs here rather than in `.source.assumptions` because that array means 'what this proof rests on', and a related formalisation is not that."
+          }
+        ]
       },
       "legs": [
         {
@@ -255,7 +266,8 @@
       "caveats": [
         "echo-types: its own identity claim is OPEN by design (README at b0982c4: 'Positive identity is open ... Criterion 2 is open'). XP-1 relates the pipeline's loss operations to that construction; it discharges nothing of echo-types' claim about itself, and must not be cited as if it did.",
         "absolute-zero: a proof-bearing CONSUMER with 61 undischarged axioms and OND-6 open by design — not axiom-free ground truth. None of those axioms is in this proof's import cone (see source.import_cone), but this record must not be read as saying absolute-zero is axiom-free.",
-        "scope: the Rocq and Lean recheck legs are unbuilt, so the theorem is Grade 3. Nothing here says a second kernel checked the statement, and no waiver is claimed — PROOF-POLICY §4 waives a leg only when the statement cannot be expressed in the mapped prover, not when the estate has archived a tool."
+        "scope: the Rocq and Lean recheck legs are unbuilt, so the theorem is Grade 3. Nothing here says a second kernel checked the statement, and no waiver is claimed — PROOF-POLICY §4 waives a leg only when the statement cannot be expressed in the mapped prover, not when the estate has archived a tool.",
+        "epistemic-types: a SIBLING formalisation, not a consumed one. Its `Echo` is a certified residue over a `Retention` record; the `Echo` XP-1 uses is echo-types' fibre `Σ A (λ x → f x ≡ y)`. Neither imports the other, so nothing here supports its warrant-transport results (`checkerSound`, `proofCannotSupportFalse`, `opaqueNotCertifying`, `verifyReceiptIsGap`) or its `ForgedResidue` rejection — and reading XP-1 as covering them would be a category error, not an overstatement."
       ],
       "local_evidence": [
         {

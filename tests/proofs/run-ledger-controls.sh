@@ -199,6 +199,17 @@ else
   sed 's/^/      /' "$WORK/waiver-ok.log" | tail -5
 fi
 
+# --- related developments are neither assumptions nor evidence -------------
+jq '(.theorems[0].source.related_developments[0].consumed_by_this_proof) = true' \
+  "$LEDGER" > "$WORK/related-consumed.json"
+expect_refusal "33. a sibling formalisation counted as consumed (double-counting)" \
+  "then it belongs in .source.assumptions" "$WORK/related-consumed.json"
+
+jq 'del(.theorems[0].source.related_developments[0].relation)' \
+  "$LEDGER" > "$WORK/related-norelation.json"
+expect_refusal "34. a related development with no stated relation" \
+  "records no relation" "$WORK/related-norelation.json"
+
 # --- corroboration cannot become a receipt ---------------------------------
 jq '(.theorems[0].local_evidence[0].corroboration_only) = false' \
   "$LEDGER" > "$WORK/local-as-receipt.json"

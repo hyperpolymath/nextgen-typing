@@ -42,6 +42,15 @@ Three caveats belong to that sentence, and the ledger carries them in
   OND-6 open by design. None of its Coq is in this proof's import cone — it
   reaches us only through echo-types' library manifest — but the record must not
   be read as saying that repository is axiom-free.
+. **epistemic-types is a sibling, not a dependency.** That repository formalises
+  the same object from a different premise: its `EchoBridge.Echo` is a *certified
+  residue* (`residue`, `certified : Cert residue y`) over a `Retention` record,
+  while the `Echo` used here is echo-types' fibre `Σ A (λ x → f x ≡ y)`. Neither
+  imports the other. XP-1 says nothing about epistemic-types' warrant transport
+  (`checkerSound`, `proofCannotSupportFalse`, `opaqueNotCertifying`,
+  `verifyReceiptIsGap`) or its `ForgedResidue` rejection; the ledger records it
+  under `related_developments` with `consumed_by_this_proof: false`, and the gate
+  refuses a record that claims otherwise.
 . **No second kernel has checked this.** The Rocq and Lean legs are open, so the
   theorem is Grade 3 and no waiver is claimed: §4 waives a leg when a statement
   cannot be expressed in the mapped prover, not when the estate has archived one.
