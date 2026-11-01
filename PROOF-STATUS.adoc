@@ -310,6 +310,15 @@ bash scripts/check-proof-enrolment.sh --static-only
 [cols="16%,20%,64%",options="header",]
 |===
 |Date |Receipt |Result
+|2026-11-01 |proof-ci run 41314202374 (sha `+112a7bf+`) |**PASS** with the
+grade-3 substantiation and the split controls in place. Annotations:
+`+proof ledger controls: 15 expectation(s), 0 violations+` (grades, statements,
+flags, history, unclaimed witnesses) and `+proof-witness kernel controls
+verified both ways (§7): 6 expectation(s), 0 violations+` under coqc 8.18.0 and
+lean 4.15.0, plus the census (1 theorem, 2 sources, 0 proven legs, 2 policy
+gaps) and one `+::warning::+` per open leg. 21 expectations, none of them a
+pass-by-absence.
+
 |2026-11-01 |proof-ci run 41313633579 (sha `+c4baf54+`) |**PASS**, and the
 run's annotations are the receipt: `+proof ledger: 1 theorem(s), 2 proof
 source(s), 0 proven recheck leg(s), 2 policy gap(s)+`;
