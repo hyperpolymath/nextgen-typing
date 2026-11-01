@@ -626,7 +626,11 @@ done < <(jq -r '
     (.waiver.reason // ""), (.waiver.record // "") ] | map(tostring) | join("\u001f")' "$LEDGER")
 
 # --- 4. every non-open claim must be backed by artifact + MANIFEST + route ---
-while IFS=$'\x1f' read -r tid prover status artifact route compared axioms reproof blocker; do
+# Nine emitted fields, nine names — in order: id, prover, status, artifact,
+# route, statement_compared, axioms, reproof_reason, blocker. A dropped name
+# here silently shifts every later field left (blocker would receive the
+# reproof_reason), which is how a rule ends up never firing.
+while IFS=$'\x1f' read -r tid prover status artifact route compared axioms reproof_reason blocker; do
   [ -z "$tid" ] && continue
   # Waived legs are audited in 3e and carry no claim here.
   [ -z "${status// }" ] && continue
@@ -684,7 +688,7 @@ while IFS=$'\x1f' read -r tid prover status artifact route compared axioms repro
 
   # PROOF-POLICY §2.3: record the route; §2.1: without a statement comparison
   # the leg is ASSUMED (argued), not PROVEN.
-  if [ "$route" = "re-proved" ] && { [ -z "$reproof" ] || [ "$reproof" = "null" ]; }; then
+  if [ "$route" = "re-proved" ] && { [ -z "$reproof_reason" ] || [ "$reproof_reason" = "null" ]; }; then
     fail "$tid/$prover: route 're-proved' requires a reproof_reason (PROOF-POLICY §2.2)"
   fi
   if [ "$status" = "proven" ] || [ "$status" = "proven-with-postulates" ]; then

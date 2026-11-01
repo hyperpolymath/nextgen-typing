@@ -179,7 +179,12 @@ jq '(.theorems[0].legs[0]) |= (del(.status, .route, .artifact) | .waiver = {"obl
 expect_refusal "23. a waiver that gives no reason and no exception record" \
   "waiver without 'reason'" "$WORK/waiver-thin.json"
 
-jq '(.theorems[0].legs[0].route) = "unavailable"' "$LEDGER" > "$WORK/unavailable-silent.json"
+# The fixture must actually be silent: the leg carries a blocker in the ledger, so
+# setting the route alone would leave the rule nothing to complain about (and an
+# earlier version of this control passed only because a field-shift bug made the
+# gate read the wrong column).
+jq '(.theorems[0].legs[0]) |= (.route = "unavailable" | del(.blocker))' \
+  "$LEDGER" > "$WORK/unavailable-silent.json"
 expect_refusal "24. a route declared 'unavailable' with nothing said about what is missing" \
   "with no blocker recorded" "$WORK/unavailable-silent.json"
 
