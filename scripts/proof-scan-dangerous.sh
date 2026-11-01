@@ -71,7 +71,12 @@ done
 # Core tier of the estate policy, plus this repo's own extras (Obj.magic).
 # `\b` keeps prose such as "postulates" out; the scan strips comments first, so a
 # documented `AXIOM:` note is a comment and a real declaration is not.
-PATTERNS='\b(believe_me|really_believe_me|assert_total|postulate|sorry|Admitted|Axiom|axiom|admit_p|admit[.]|unsafeCoerce|unsafePerformIO|%default[[:space:]]+partial|assume[[:space:]]+val)\b|\bObj[.]magic\b'
+# `admit` is written bare, not as `admit[.]`: the alternation is closed by a
+# trailing \b, and the full stop in Coq's `admit.` is a non-word character, so
+# `admit[.]\b` could never match — the dot and the boundary exclude each other.
+# Bare `admit` still cannot reach prose such as "admits", because \b holds on
+# both sides of the word.
+PATTERNS='\b(believe_me|really_believe_me|assert_total|postulate|sorry|Admitted|Axiom|axiom|admit_p|admit|unsafeCoerce|unsafePerformIO|%default[[:space:]]+partial|assume[[:space:]]+val)\b|\bObj[.]magic\b'
 
 if [ "$SHOW_PATTERNS" -eq 1 ]; then
   printf '%s\n' "$PATTERNS"
@@ -217,8 +222,12 @@ fi
 # the register is expected to be empty — but it must exist, because "no file"
 # and "not examined" look identical from outside. The estate checker enforces the
 # same rule with the same file, so the two gates agree.
+# Only the register itself counts. PROOF-NEEDS is a statement of what the proofs
+# need, not a table of dispositions, so it is not accepted as a substitute: a
+# fallback that quietly selected it made a deleted register look like a examined
+# one.
 DEBT_DOC=""
-for c in docs/proof-debt.md docs/proof-debt.adoc PROOF-NEEDS.md PROOF-NEEDS.adoc; do
+for c in docs/proof-debt.md docs/proof-debt.adoc; do
   [ -f "$c" ] && { DEBT_DOC="$c"; break; }
 done
 if [ -z "$DEBT_DOC" ]; then

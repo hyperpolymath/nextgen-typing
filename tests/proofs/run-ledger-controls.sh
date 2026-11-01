@@ -263,8 +263,11 @@ fi
 sandbox2="$WORK/repo-debt"
 mkdir -p "$sandbox2"
 tar --exclude=.git --exclude=target -cf - . 2>/dev/null | ( cd "$sandbox2" && tar -xf - )
-rm -f "$sandbox2/docs/proof-debt.md" "$sandbox2/docs/proof-debt.adoc" \
-      "$sandbox2/PROOF-NEEDS.md" "$sandbox2/PROOF-NEEDS.adoc"
+# Delete the register only. PROOF-NEEDS stays: it is a statement of what the
+# proofs need, not a disposition table, so it must not be accepted in the
+# register's place. Leaving it in place is what makes this control test the
+# invariant instead of testing an empty directory.
+rm -f "$sandbox2/docs/proof-debt.md" "$sandbox2/docs/proof-debt.adoc"
 if ( cd "$sandbox2" && bash scripts/proof-scan-dangerous.sh ) >"$WORK/nodebt.log" 2>&1; then
   viol "30. the scan passed with no proof-debt register (TRUSTED-BASE-REDUCTION-POLICY)"
 elif grep -qF "no proof-debt register" "$WORK/nodebt.log"; then
@@ -272,6 +275,20 @@ elif grep -qF "no proof-debt register" "$WORK/nodebt.log"; then
 else
   viol "30. the debt-register control failed for the wrong reason"
   sed 's/^/      /' "$WORK/nodebt.log" | tail -5
+fi
+
+# --- Coq's admit. is a listed marker, so it must be catchable --------------
+# The pattern list names admit. explicitly. A boundary bug made that alternative
+# unfirable (the full stop and the trailing \b exclude each other), so the scan
+# reported a file closed with admit. as clean. The fixture exists to keep that
+# alternative honest.
+if bash "$GATE" --scan-file "$CONTROLS/PlantedAdmit.v" >"$WORK/admit-scan.log" 2>&1; then
+  viol "35. the escape-hatch scan ACCEPTED a Coq proof closed with admit."
+elif grep -qF "FAIL" "$WORK/admit-scan.log"; then
+  ok "35. the escape-hatch scan rejects Coq's admit. — a listed marker that the pattern could not reach"
+else
+  viol "35. the admit. control failed for the wrong reason"
+  sed 's/^/      /' "$WORK/admit-scan.log" | tail -5
 fi
 
 echo ""
