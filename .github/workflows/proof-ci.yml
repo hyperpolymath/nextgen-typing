@@ -65,7 +65,7 @@
 #   * just 1.59.0 — exact version, installed from crates.io with --locked
 #   * Rocq/Coq 8.18 — Ubuntu 24.04's package, version asserted after install
 #   * Lean 4 — official release archive, exact version asserted
-#   * libraries — agda-stdlib v2.3 (tag + commit asserted), echo-types and
+#   * libraries — agda-stdlib v2.4 (tag + commit asserted), echo-types and
 #     absolute-zero pinned by commit, each re-verified after checkout
 #
 # Receipts (versions, pins, ledger hash, census, policy gaps, per-prover
@@ -122,8 +122,8 @@ env:
   ROCQ_VERSION: '8.18'
   # No Mathlib (PROOF-POLICY §2): the lean leg must be core Lean. Asserted below.
   LEAN_VERSION: '4.15.0'
-  STDLIB_TAG: 'v2.3'
-  STDLIB_COMMIT: '8326c7475af1fa456ca04a0203c168d5d7ff842b'
+  STDLIB_TAG: 'v2.4'
+  STDLIB_COMMIT: 'd6f865f3eb3e77a7c35194cb12ca2fb43a274ec1'
   # echo-types: the library the XP-1 proof is *about* (PROOF-STATUS.adoc).
   # absolute-zero: declared dependency of echo-types' own .agda-lib.
   ECHO_TYPES_COMMIT: 'b0982c44f36133acd2d0e1d4e03cf031fff7a470'
@@ -245,7 +245,7 @@ jobs:
           # The upstream stdlib manifest is named `standard-library-2.3`, but
           # nextgen-typing.agda-lib and echo-types.agda-lib both depend on
           # `standard-library`, so register a manifest under that exact name
-          # (same include, same flags as upstream v2.3).
+          # (same include, same flags as upstream v2.4).
           STDLIB_LIB="$RUNNER_TEMP/standard-library.agda-lib"
           {
             echo "name: standard-library"

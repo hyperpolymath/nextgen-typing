@@ -82,8 +82,8 @@ gap is unmistakable: *no leg other than Agda has been proven for XP-1.*
 The receipt is one run of one toolchain. On 2026-11-01 the two modules were also
 type-checked in an agent sandbox with a *different* Agda — 2.7.0.1 (PyPI
 manylinux wheel, GHC 9.6.5) rather than the pinned 2.8.0 — against agda-stdlib
-v2.3, echo-types `+b0982c44+` and absolute-zero `+f486c29+`, under the same
-canonical invocation:
+v2.3 (and again against v2.4), echo-types `+b0982c44+` and absolute-zero
+`+f486c29+`, under the same canonical invocation:
 
 [source,bash]
 ----
@@ -115,7 +115,7 @@ is the later owner ruling and §7 says only an owner ruling amends it.
 [cols="14%,34%,36%,16%",options="header",]
 |===
 |Source |Requirement |Where it is met |State
-|mathesis §5 |Grade 3: the proof type-checks in Agda |Agda 2.8.0 + agda-stdlib v2.3,
+|mathesis §5 |Grade 3: the proof type-checks in Agda |Agda 2.8.0 + agda-stdlib v2.4,
 `+EchoTyping.agda+` and `+Verification.agda+`, receipt run 41314454646 at
 `+3cd1859+`; re-typechecked on every CI run by `+just proof-check-agda+`, not
 taken from the file's existence |met
@@ -310,7 +310,7 @@ ledger):
 |===
 |Component |Kind |Pin, and what it is to this proof
 |Agda |dependency-pin |2.8.0
-|agda-stdlib |dependency-pin |v2.3 (`+8326c7475af1fa456ca04a0203c168d5d7ff842b+`)
+|agda-stdlib |dependency-pin |v2.4 (`+d6f865f3eb3e77a7c35194cb12ca2fb43a274ec1+`)
 |echo-types |external development |`+b0982c44f36133acd2d0e1d4e03cf031fff7a470+` —
 the library whose fiber construction XP-1 compares the pipeline's loss
 operations against. Its own identity claim is **open** (see caveat 1 below).
@@ -415,7 +415,7 @@ on any hit outside a comment, and fails when it scans zero files.
 the both-ways controls) on pushes/PRs that touch `+verification/proofs/**+`,
 `+tests/proofs/**+`, the two registries, the gate scripts, `+Justfile+` or the
 workflow itself. Pins Agda 2.8.0 (official binary, sha256-verified),
-agda-stdlib v2.3 (tag + commit asserted), `+just+` 1.59.0, Rocq, Lean 4, and
+agda-stdlib v2.4 (tag + commit asserted), `+just+` 1.59.0, Rocq, Lean 4, and
 echo-types / absolute-zero by commit. No `+continue-on-error+`, no
 skip-on-missing-tool.
 |===
@@ -472,7 +472,7 @@ ledger is honest — not that XP-1 is verified in an independent kernel.
 |2026-11-01 |proof-ci run 41299544043 (sha `+4c6b918+`) |**PASS** for the Agda
 source leg: enrolment gate PASS (2 proof sources, registered entries agree),
 Agda 2.8.0 typecheck of `+EchoTyping.agda+` and `+Verification.agda+` under
-`+--safe --library=nextgen-typing+` against agda-stdlib v2.3, echo-types
+`+--safe --library=nextgen-typing+` against the then-current agda-stdlib v2.3, echo-types
 `+b0982c4+` and absolute-zero `+f486c29+`, banned-pattern scan clean. This is
 the receipt pinned in the ledger for the Agda leg — it is *not* a receipt for
 XP-1 as a whole.
