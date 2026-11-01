@@ -322,6 +322,23 @@ else
   sed 's/^/      /' "$WORK/admit-scan.log" | tail -5
 fi
 
+# --- a page may not outrun the ledger, theorem by theorem -------------------
+# The summary table is where PROOF-STATUS.adoc states a grade. The gate reads the
+# row for each theorem and compares it with that theorem's own ledger grade, so
+# one proven leg elsewhere cannot switch the comparison off.
+sandbox3="$WORK/repo-docgrade"
+mkdir -p "$sandbox3"
+tar --exclude=.git --exclude=target -cf - . 2>/dev/null | ( cd "$sandbox3" && tar -xf - )
+sed -i 's/^|XP-1 |theory |\*3\*/|XP-1 |theory |*2i*/' "$sandbox3/PROOF-STATUS.adoc"
+if ( cd "$sandbox3" && bash scripts/check-proof-ledger.sh ) >"$WORK/docgrade.log" 2>&1; then
+  viol "39. the gate ACCEPTED a page claiming Grade 2i for a theorem the ledger records at Grade 3"
+elif grep -qF "but the ledger says Grade 3" "$WORK/docgrade.log"; then
+  ok "39. a documented grade above the ledger's own is refused, per theorem"
+else
+  viol "39. the documented-grade control failed for the wrong reason"
+  sed 's/^/      /' "$WORK/docgrade.log" | tail -5
+fi
+
 echo ""
 if [ "$VIOLATIONS" -gt 0 ]; then
   echo "FAIL: $VIOLATIONS ledger-form control expectation(s) violated."

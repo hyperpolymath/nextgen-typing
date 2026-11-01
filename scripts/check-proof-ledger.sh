@@ -965,6 +965,27 @@ if [ -f "$DOCS_STATUS" ]; then
       || fail "$DOCS_STATUS does not mention theorem '$tid' from the ledger"
   done < <(jq -r '.theorems[].id' "$LEDGER" | sort -u)
 
+  # Per theorem, not repository-wide. The old rule only ran when NO theorem had
+  # a proven leg, so one proven recheck leg anywhere switched off the comparison
+  # for every theorem — a `2i` theorem could be described as Grade 1, and in a
+  # multi-theorem ledger a single proof masked every other claim. The summary
+  # table is the machine-readable place the page states a grade, so the gate
+  # reads the row for each theorem id and compares it with that theorem's own
+  # ledger grade, in both directions.
+  while IFS=$'\x1f' read -r tid g; do
+    [ -z "$tid" ] && continue
+    claimed="$(awk -F'|' -v id="$tid" '
+      /^\|/ {
+        cell = $2; gsub(/^[ \t]+|[ \t]+$/, "", cell)
+        if (cell == id) { g = $4; print g; exit }
+      }' "$DOCS_STATUS" | tr -d '*+`' | tr -d ' \t')"
+    if [ -z "$claimed" ]; then
+      fail "$DOCS_STATUS has no grade row for theorem '$tid' — the summary table must carry the ledger's grade where the gate can read it (mathesis §11)"
+    elif [ "$claimed" != "$g" ]; then
+      fail "$DOCS_STATUS records '$tid' at Grade $claimed but the ledger says Grade $g (mathesis §5/§6: the page is a summary of the ledger, and the ledger wins)"
+    fi
+  done < <(jq -r '.theorems[] | [.id, (.grade | tostring)] | join("\u001f")' "$LEDGER")
+
   proven_total=0
   for k in "${!THEOREM_PROVEN[@]}"; do proven_total=$((proven_total + ${THEOREM_PROVEN[$k]})); done
   if [ "$proven_total" -eq 0 ]; then
