@@ -1,0 +1,33 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+= Agda cross-project proof recheck — coordination boundary
+:revdate: 2026-11-01
+
+Status: *RECHECK PENDING*. Do not treat the historical
+`agda Verification.agda` or `--safe --without-K` record as
+evidence of the stricter Cubical-compatible mode.
+
+The cross-project entrypoint is
+`verification/proofs/agda/Verification.agda`, which imports
+`EchoTyping.agda` and the external `echo-types` Agda library.
+Its dependency chain also includes the standard library and
+`absolute-zero`. Do not vendor or rewrite those libraries to force
+compatibility. Record the exact revisions and Agda/stdlib version
+used for any successful recheck.
+
+Use:
+
+[source,shell]
+----
+bash scripts/check-agda-verification.sh
+----
+
+This invokes `agda --safe --without-K --cubical-compatible`
+from the proper proof root. Failure or unavailable dependencies
+remain visible open obligations, not successes. A successful Agda
+check alone would prove the stated Agda fragment, *not* a
+cross-prover correspondence or end-to-end Wasm runtime refinement.
+
+Existing owning-family proof claims and CI remain with those
+families; coordination does not turn them into nextgen-typing code.
+The canonical policy is in `metadatastician/standards` and
+the theorem-level receipt inventory is planned in Mathesis.
