@@ -204,7 +204,32 @@ jobs:
         run: just proof-enrolment
 
       - name: Run the real all-proofs target
-        run: just proof-check-all
+        run: |
+          set -o pipefail
+          just proof-check-all 2>&1 | tee "$RUNNER_TEMP/proof-check-all.log"
+
+      # Diagnostics only: the run is already red by the time this executes.
+      # Proof failures are annotated so the failing module/error is visible in
+      # the PR and via the check-run API without unzipping raw runner logs.
+      - name: Surface prover diagnostics
+        if: failure()
+        run: |
+          set -uo pipefail
+          LOG="$RUNNER_TEMP/proof-check-all.log"
+          if [ ! -f "$LOG" ]; then
+            echo "::error::proof-check-all produced no log (a step before it failed)"
+            exit 0
+          fi
+          tail -n 40 "$LOG" | while IFS= read -r line; do
+            [ -z "${line//[[:space:]]/}" ] && continue
+            echo "::error::${line:0:900}"
+          done
+          {
+            echo "### proof-check-all log tail (failure diagnostics)"
+            echo '```'
+            tail -n 60 "$LOG"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Note receipts
         run: |
