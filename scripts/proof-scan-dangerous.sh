@@ -97,7 +97,7 @@ echo ""
 if [ "$FILES_SCANNED" -eq 0 ]; then
   echo "FAIL: no proof sources scanned — refusing to report a clean scan on zero work"
   [ -n "$RECEIPT" ] && printf 'status: FAIL\nreason: zero files scanned\n' >"$RECEIPT"
-  exit 2
+  exit 1
 fi
 
 if [ "$HITS" -gt 0 ]; then
