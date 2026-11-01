@@ -26,9 +26,9 @@ removed (the ABI proof obligations are owned by `+typed-wasm+`).
 |===
 |ID |Proof |Spans |Prover |File |Verified By
 |XP-1 |Pipeline information-loss = echo-types fibers |echo-types ↔
-affinescript ↔ typed-wasm |Agda (`+--safe --without-K+`)
+affinescript ↔ typed-wasm |Agda (`+--safe --without-K+`; historical; full-mode recheck pending)
 |`+verification/proofs/agda/EchoTyping.agda+`
-|`+agda Verification.agda+`
+|`+agda Verification.agda+` (legacy check; full-mode recheck pending)
 |===
 
 === Verification
@@ -37,7 +37,7 @@ affinescript ↔ typed-wasm |Agda (`+--safe --without-K+`)
 ----
 # Typecheck the cross-project Agda set (requires the echo-types library on the
 # Agda include path; see verification/proofs/agda/nextgen-typing.agda-lib)
-agda verification/proofs/agda/Verification.agda
+bash scripts/check-agda-verification.sh
 
 # Enforce the coordination boundary (no project code / non-allowlisted proofs)
 bash scripts/check-coordination-boundary.sh
@@ -54,3 +54,14 @@ proofs only |maintainer
 
 |2026-04-04 |Initial proof status tracking |Template
 |===
+
+=== 2026-11-01 proof-policy migration
+
+* The earlier XP-1 Agda result is preserved as historical evidence, **not**
+  presented as passing `--cubical-compatible`.
+* The current full-mode check is `bash scripts/check-agda-verification.sh`,
+  which invokes `agda --safe --without-K --cubical-compatible` and fails
+  if dependencies are missing or incompatible.
+* Coq/Rocq and Lean comparisons of XP-1 are **OPEN**. A proof transport,
+  statement comparison and independent kernel receipts have not been verified
+  in this change. See `docs/AGDA-RECONCILIATION.adoc`.
