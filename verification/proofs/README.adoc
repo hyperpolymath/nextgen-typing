@@ -121,7 +121,7 @@ the exception record. Waived legs are listed in the verdict, never buried.
 
 === Related work that is not evidence
 
-`sources.related_developments` is for a sibling formalisation of the same object
+`source.related_developments` is for a sibling formalisation of the same object
 — the thing a reader is most likely to mistake for evidence. It is neither an
 assumption (nothing rests on it) nor proof of this theorem (it proves something
 else), so it has its own array and the gate requires it to say how it relates and
