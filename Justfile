@@ -1376,19 +1376,21 @@ proof-scan-dangerous:
 proof-ledger-check:
     @bash scripts/check-proof-ledger.sh --receipt "${PROOF_RECEIPT_DIR:-target/proof-receipts}/ledger.txt"
 
-# Compile Rocq recheck witnesses per verification/proofs/coq/MANIFEST.
-# Fatal if coqc is absent: a missing prover is never a skip.
+# Compile Rocq recheck witnesses per verification/proofs/coq/MANIFEST and query
+# kernel assumptions (coqchk -silent -o + Print Assumptions) against LEDGER.json.
+# Fatal if coqc/coqchk/coqtop is absent when work exists: never a skip.
 #
-# Compile the declared Rocq recheck witnesses (missing coqc = fatal)
+# Compile and assumption-check the declared Rocq recheck witnesses
 proof-check-coq:
-    @bash scripts/check-proofs.sh coq
+    @bash scripts/check-proofs.sh coq --receipt "${PROOF_RECEIPT_DIR:-target/proof-receipts}/witness-coq.txt"
 
-# Compile Lean 4 recheck witnesses per verification/proofs/lean4/MANIFEST.
-# Fatal if lean is absent: a missing prover is never a skip.
+# Compile Lean 4 recheck witnesses per verification/proofs/lean4/MANIFEST and
+# query kernel assumptions (#print axioms probe) against LEDGER.json.
+# Fatal if lean is absent when work exists: never a skip.
 #
-# Compile the declared Lean 4 recheck witnesses (missing lean = fatal)
+# Compile and assumption-check the declared Lean 4 recheck witnesses
 proof-check-lean4:
-    @bash scripts/check-proofs.sh lean4
+    @bash scripts/check-proofs.sh lean4 --receipt "${PROOF_RECEIPT_DIR:-target/proof-receipts}/witness-lean4.txt"
 
 # Re-typecheck the Agda SOURCE leg locally. Not part of the CI target: under
 # PROOF-POLICY §1 the ledger records this leg, CI audits the record. Needs the
@@ -1397,14 +1399,14 @@ proof-check-lean4:
 #
 # Re-typecheck the Agda source leg locally (needs registered libraries)
 proof-check-agda:
-    @bash scripts/check-proofs.sh agda
+    @bash scripts/check-proofs.sh agda --receipt "${PROOF_RECEIPT_DIR:-target/proof-receipts}/witness-agda.txt"
 
 # Compile Idris2 engineering proofs per verification/proofs/idris2/MANIFEST.
 # This repository hosts none: engineering proofs belong in the owning repo.
 #
 # Compile Idris2 engineering proofs (this repository hosts none)
 proof-check-idris2:
-    @bash scripts/check-proofs.sh idris2
+    @bash scripts/check-proofs.sh idris2 --receipt "${PROOF_RECEIPT_DIR:-target/proof-receipts}/witness-idris2.txt"
 
 # Full local sweep: ledger audit + every leg, including the Agda source leg.
 #
@@ -1459,10 +1461,10 @@ proof-grade:
         "",
         "  next rung:",
         (if proven == 0 then
-           "    grade 2i needs EXACTLY ONE proven recheck leg (Rocq or Lean), with its route\n" +
-           "    (transported through Dedukti/Lambdapi, or re-proved by hand), the statement\n" +
-           "    comparison against the Agda declarations, and the axiom query recorded.\n" +
-           "    Proven today: 0. That is the whole of the work between here and 2i."
+           "    grade 2i needs AT LEAST ONE independent proven recheck leg (Rocq or Lean),\n" +
+           "    with its route (transported through Dedukti/Lambdapi, or re-proved by hand),\n" +
+           "    the statement comparison against the Agda declarations, and the kernel\n" +
+           "    assumption query recorded. Proven today: 0."
          elif .grade == "3" then
            "    INCONSISTENT: a leg is proven while the grade still says 3 — the gate should\n" +
            "    have refused this ledger. Re-record the grade."

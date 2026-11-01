@@ -310,6 +310,7 @@ jobs:
             echo "agda: $(agda --version | head -n1)"
             echo "just: $(just --version)"
             echo "rocq: $(coqc --version | head -n1)"
+            echo "coqchk: $(coqchk --version 2>&1 | head -n1)"
             echo "rocq deb: $(dpkg-query -W -f='${Version}' coq 2>/dev/null || echo unknown)"
             echo "lean: $(lean --version | head -n1)"
             echo "lean archive: $(cat "$RUNNER_TEMP/lean-dl/archive.txt" 2>/dev/null || echo unknown)"
@@ -327,6 +328,8 @@ jobs:
             || { echo "::error::just version is not the pinned ${JUST_VERSION}"; just --version; exit 1; }
           coqc --version | grep -F "${ROCQ_VERSION}" \
             || { echo "::error::Rocq version is not the pinned ${ROCQ_VERSION}"; coqc --version; exit 1; }
+          command -v coqchk >/dev/null 2>&1 \
+            || { echo "::error::coqchk is missing from the Rocq installation"; exit 1; }
           lean --version | grep -F "${LEAN_VERSION}" \
             || { echo "::error::Lean version is not the pinned ${LEAN_VERSION}"; lean --version; exit 1; }
 

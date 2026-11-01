@@ -253,8 +253,9 @@ while IFS= read -r f; do
   if is_ignored "$f"; then EXEMPTED=$((EXEMPTED + 1)); continue; fi
   scan_one "$f"
 done < <(find $SCAN_DIRS -type f \
-           \( -name '*.agda' -o -name '*.lagda' -o -name '*.idr' \
-              -o -name '*.lean' -o -name '*.v' -o -name '*.tla' \) \
+           \( -name '*.agda' -o -name '*.lagda' -o -name '*.lagda.*' -o -name '*.idr' \
+              -o -name '*.lean' -o -name '*.v' -o -name '*.tla' \
+              -o -name '*.fst' -o -name '*.fstar' -o -name '*.hs' -o -name '*.ml' -o -name '*.rs' \) \
            | sed 's|^\./||' | sort)
 
 echo ""

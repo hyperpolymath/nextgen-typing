@@ -33,9 +33,15 @@ extended tier 2026-10-30)
 |*Which escape hatches exist and what may be done with them*: the two tiers, the
 four dispositions, `docs/proof-debt.md`, `.trusted-base-ignore`,
 `.trusted-base-budget`, and `check-trusted-base.sh`.
-|`hyperpolymath/mathesis` `estate-mathematical-architecture`
-|*The grade ladder*: §5 Grade 3 / 2i / 2ii / 1 and the prover-family caveat; §6
-record discipline, axiom tracking, `Superseded`/`Regressed`; §11 no inflation.
+|`hyperpolymath/mathesis` `docs/proposals/estate-mathematical-architecture.adoc`,
+`docs/standards/AUTHORITY.adoc`, and `docs/status/CROSS-PROVER-RECONCILIATION.adoc`
+|*The grade ladder, evidence contract, and non-collapsing reconciliation states*:
+§5 Grade 3 / 2i / 2ii / 1 and the prover-family caveat; §6 record discipline,
+axiom tracking, `Superseded`/`Regressed`; §11 no inflation; `AUTHORITY.adoc`
+routes normative proof policy to `metadatastician/standards` while keeping home
+repositories sovereign over theorem truth and receipts;
+`CROSS-PROVER-RECONCILIATION.adoc` keeps `AGDA-VERIFIED`, `COQ-CHECKED` /
+`LEAN-CHECKED`, and `BRIDGE-PENDING` / `RECONCILED` distinct.
 |`metadatastician/standards` `3-practice/LANGUAGE-POLICY.adoc`,
 `TOOLING-VERSION-INTEGRITY-POLICY.adoc`
 |*How toolchains are installed and pinned*: Guix manifest or container; declared
@@ -170,6 +176,13 @@ the file.
   Controls 29 and 30 plant a Coq `Axiom` and remove the debt register.
 * §2.1's canonical invocation, §5's closed vocabulary, §6's absence of a
   deviation mechanism, and A11's pin are reflected in the gate and the ledger.
+* `scripts/check-proofs.sh` (issue #131) now executes kernel-level assumption
+  queries for every gated Rocq (`coqchk -silent -o` + generated
+  `Print Assumptions` probe) and Lean (`import` + `#print axioms` probe) module,
+  comparing against `LEDGER.json` `legs[].axioms`, unconditionally rejecting
+  `sorryAx`, writing verbatim assumption receipts (`witness-coq.txt`,
+  `witness-lean4.txt`), and exercising both directions across `K6`–`K15` in
+  `tests/proofs/run-controls.sh`.
 
 == What is still wrong, and is not this repository's to fix
 

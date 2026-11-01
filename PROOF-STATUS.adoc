@@ -103,14 +103,20 @@ that sets `+corroboration_only+` to anything but true.
 
 === Where each requirement comes from, and how it is met
 
-Two documents govern this, and they are not the same kind of document. mathesis
-`+estate-mathematical-architecture+` **defines the grades** (§5) and the record
-discipline (§6, §11); `+metadatastician/standards+` `+3-practice/PROOF-POLICY.adoc+`
-(pinned at `+46ee1832+`, owner ruling 2026-10-26, amended 2026-11-01) says **where
-a proof lives and how it is rechecked**. the standards document does not define the rungs
-themselves, and mathesis does not say how a translation leg is rechecked; where
-their examples differ, the standards document governs, because it
-is the later owner ruling and §7 says only an owner ruling amends it.
+Two documents govern this, and they are not the same kind of document
+(`+mathesis+` `+docs/standards/AUTHORITY.adoc+`). `+metadatastician/standards+`
+`+3-practice/PROOF-POLICY.adoc+` (pinned at `+46ee1832+`, owner ruling
+2026-10-26, amended 2026-11-01) is the sole normative estate proof policy: it
+says **where a proof lives, which provers own which obligations, and how a
+theorem is rechecked**. `+mathesis+` `+docs/proposals/estate-mathematical-architecture.adoc+`
+is an unratified architectural framework that **defines the grade ladder** (§5)
+and the **evidence/receipt discipline** (§6, §11), supplemented by `+mathesis+`
+`+docs/status/CROSS-PROVER-RECONCILIATION.adoc+` (`+AGDA-VERIFIED+`,
+`+NOT-INVENTORIED+` / `+COQ-CHECKED+` / `+LEAN-CHECKED+`, `+BRIDGE-PENDING+` /
+`+RECONCILED+`) so source verification, target kernel checking, and
+correspondence justification are never collapsed into one number. Where any
+proposal example differs from `+PROOF-POLICY.adoc+`, the standards ruling
+governs.
 
 [cols="14%,34%,36%,16%",options="header",]
 |===
@@ -212,9 +218,12 @@ keeps it as history and pins the canonical run.
 Agda leg is proven and recorded; the flags, statements and escape-hatch
 mechanism above are gated.
 
-|`+2i+` |Exactly *one* independent system (Rocq or Lean) carrying the same
+|`+2i+` |At least *one* independent system (Rocq or Lean) carrying the same
 statement: `+transported+` through Dedukti/Lambdapi, or `+re-proved+` by hand,
-with the statement comparison and the axiom query recorded; no Mathlib
+with the statement comparison, target declaration mapping, and verbatim kernel
+assumption query recorded; no Mathlib. Completing *both* DTT legs (`+rocq+` +
+`+lean4+`) satisfies `+PROOF-POLICY+` §2 while staying at rung `+2i+` until a
+non-DTT leg is added
 |*0 of 2 legs.* This is the whole of the remaining work, and it is a proving
 job — not a bookkeeping one. `+just proof-grade+` prints the same delta.
 
@@ -329,17 +338,29 @@ closed — compiling is not: Rocq accepts `+Admitted+` and Lean accepts `+sorry+
 with exit status 0. Since no witness exists on either leg there is no axiom
 list for them yet; recording one would be fabrication.
 
-**Stated plainly, because the alternative is a reader assuming more than is
-here:** the lane *compiles* the witnesses a MANIFEST gates and *audits the axiom
-lists the ledger records*; the kernel-level axiom query (`+Print Assumptions+`,
-`+#print axioms+`) is exercised today on the control fixtures in
-`+tests/proofs/`+ and, when a leg is proven, on the declarations the ledger
-names. It is not yet run against every compiled module, so an axiom *imported*
-from another module rather than declared in the artifact would not be caught by
-the compile step. That gap is recorded as issue #131 with the shape of the fix
-(per-module `+coqchk -o+` / a generated `+Print Assumptions+` driver, and a Lean
-probe that runs `+#print axioms+` per recorded declaration), and it is named here
-rather than left to be discovered.
+**Enforced per compiled witness (issue #131 closed):** `+scripts/check-proofs.sh+`
+does not stop at compiler exit status 0. Every `+gated+` Rocq or Lean module in
+`+MANIFEST+` is compiled in an isolated scratch workspace and immediately
+subjected to kernel-level assumption queries compared against the claiming leg's
+`+axioms+` array in `+verification/proofs/LEDGER.json+`:
+
+* **Rocq (`+coq+`):** runs `+coqchk -Q . "" -silent -o <module>+` on the
+  compiled `+.vo+` (requiring predicative `+Set+`, `+<none>+` for
+  `+type-in-type+`, unsafe `+(co)fixpoints+`, and assumed positivity, and
+  matching `+* Axioms:+` against `+legs[].axioms+`) *and* compiles a generated
+  probe that `+Require+`s `+<module>+` and executes `+Print Assumptions
+  <module>.<decl>.+` for every mapped declaration, failing on any undeclared or
+  stale axiom — including standard-library or cross-module imported axioms that
+  carry zero banned lexical tokens.
+* **Lean 4 (`+lean4+`):** compiles `+<module>.olean+` and runs a generated probe
+  that `+import+`s `+<module>+` and executes `+#print axioms <decl>+` for every
+  mapped declaration, unconditionally rejecting `+sorryAx+` (even across module
+  imports or if listed in `+axioms+`) and failing on any undeclared or stale
+  ledger axiom.
+* **Verbatim receipts:** `+just proof-check-coq+` and `+just proof-check-lean4+`
+  write the verbatim `+coqchk+`, `+Print Assumptions+`, and `+#print axioms+`
+  outputs into `+target/proof-receipts/witness-coq.txt+` and
+  `+target/proof-receipts/witness-lean4.txt+` (uploaded by `+proof-ci.yml+`).
 
 The Agda source leg rests on these pinned, recorded assumptions (all in the
 ledger):
@@ -411,19 +432,20 @@ so the manifests compile nothing and the gate says so — the lane is green on
 
 |`+tests/proofs/run-controls.sh+`
 |PROOF-POLICY §7 requires a gate to be verified *both ways*, and this is where
-that is done — in two halves. `+run-ledger-controls.sh+` (15 controls, no prover
-needed) plants a grade with no leg behind it, a history whose last entry
-contradicts the ledger, a regression with no reason, flag drift, statement
-drift, a missing escape-hatch mechanism, an unrecorded deviation, an anchor that
-does not exist, a source file that is not on disk, and a witness on disk that no
-ledger row claims — each must be refused *for the stated reason* — and confirms
-that an honest, evidenced regression is still accepted. The kernel half feeds
-the compilers a closed Rocq proof and a closed Lean proof (must be accepted,
-`+Print Assumptions+` / `+#print axioms+` must report them closed and
-axiom-free), plus `+Admitted+` and `+sorry+` controls the kernels must *not*
-report as closed. A control that stops failing is a broken instrument, and the
-run goes red. Where `+coqc+` or `+lean+` is absent the kernel half reports
-**BLOCKED**, never a pass.
+that is done — in two halves. `+run-ledger-controls.sh+` (51 controls, no prover
+needed) exercises grades, history, flags, formal declaration-to-type binding,
+quarantined MANIFEST bypasses, `+sorryAx+` bans, reconciliation status rules,
+waivers, debt-register presence, and per-language comment-aware lexical scanning.
+The kernel & witness half (`+K1+`–`+K15+`) checks `+coqc+`/`+coqchk+`/`+coqtop+`
+and `+lean+` both directly and end-to-end through `+scripts/check-proofs.sh+`:
+clean witnesses must pass and write verbatim `+CONTEXT SUMMARY+`,
+`+Closed under the global context+`, and `+does not depend on any axioms+`
+receipts; witnesses importing `+Coq.Logic.Classical_Prop.classic+` or
+`+Classical.em+` (clean to lexical scan) must fail under `+axioms: []+` and pass
+under `+proven-with-postulates+` naming the exact axioms; cross-module helper
+axioms, cross-module `+sorryAx+`, missing declarations, and stale `+axioms+`
+entries must all be refused. Where `+coqc+`, `+coqchk+`, `+coqtop+`, or `+lean+`
+is absent the kernel half reports **BLOCKED**, never a pass.
 
 |`+just proof-grade+`
 |Prints, per theorem, what the recorded grade rests on and the exact delta to
@@ -534,6 +556,17 @@ so instead of reporting the leg as passing), not as a pass.
 [width="100%",cols="32%,42%,26%",options="header",]
 |===
 |Date |Change |By
+|2026-11-01 |Closed issue #131 and aligned with `+mathesis+` authority &
+cross-prover reconciliation guidance (`+docs/standards/AUTHORITY.adoc+`,
+`+docs/proposals/estate-mathematical-architecture.adoc+`,
+`+docs/status/CROSS-PROVER-RECONCILIATION.adoc+`). `+scripts/check-proofs.sh+`
+now queries kernel-level assumptions for every gated Rocq (`+coqchk -silent -o+`
++ generated `+Print Assumptions+` probe) and Lean (`+import+` + `+#print axioms+`
+probe) witness against `+LEDGER.json+` `+legs[].axioms+`, writing verbatim
+assumption receipts (`+witness-coq.txt+`, `+witness-lean4.txt+`). Bidirectional
+controls expanded to 51 ledger controls + 15 kernel/witness controls
+(`+K1+`–`+K15+`) |Arena agent
+
 |2026-11-01 |Reconciled with the estate policy, which moved twice: owner ruling
 2026-10-26, amended *today* (pinned `+46ee1832+`, recorded in the ledger, printed
 by the gate, and a missing pin is now a failure). `+D-2026-10-12+` is amended

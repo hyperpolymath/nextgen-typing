@@ -11,7 +11,8 @@
       "vendored_here": false,
       "note": "Referenced, not vendored: this repository carries no copy of the policy, so a bare path would be a dangling citation. The gate names this commit when it reports which policy it audited against, and fails when the pin is missing."
     },
-    "grade_model": "mathesis/estate-mathematical-architecture §5 (Verification Pipeline) and §6 (Epistemic Precision)",
+    "grade_model": "mathesis docs/proposals/estate-mathematical-architecture.adoc §5 (Verification Pipeline) and §6 (Epistemic Precision) — unratified grade/evidence framework; subordinate to metadatastician/standards 3-practice/PROOF-POLICY.adoc per mathesis docs/standards/AUTHORITY.adoc",
+    "reconciliation_model": "mathesis docs/status/CROSS-PROVER-RECONCILIATION.adoc (non-collapsing per-prover + bridge status vocabulary)",
     "escape_hatches": "standards/docs/TRUSTED-BASE-REDUCTION-POLICY.adoc",
     "deviations": [
       {
@@ -45,6 +46,14 @@
       "statement": "The pipeline's information-losing typing operations are instances of the echo-types fiber Echo f y := Sigma A (lambda x -> f x === y): affine weakening (AffineScript linear is below affine) collapses a distinction, has no section, and refinement erasure is non-injective.",
       "grade": "3",
       "grade_basis": "mathesis §5 Grade 3: type-checks in Agda, has not been translated to an independent foundational system. The Rocq and Lean recheck legs required by PROOF-POLICY §2 are recorded here as open.",
+      "reconciliation": {
+        "vocabulary": "mathesis docs/status/CROSS-PROVER-RECONCILIATION.adoc",
+        "agda": "AGDA-VERIFIED",
+        "rocq": "NOT-INVENTORIED",
+        "lean4": "NOT-INVENTORIED",
+        "bridge": "BRIDGE-PENDING",
+        "note": "Never collapse source verification, target kernel checking, and bridge correspondence: XP-1 is AGDA-VERIFIED under canonical `--safe --without-K --cubical-compatible`, while neither Rocq nor Lean has an independent target witness yet and the cross-prover bridge remains BRIDGE-PENDING."
+      },
       "source": {
         "prover": "agda",
         "family": "dtt",
@@ -209,10 +218,13 @@
           "status": "open",
           "route": null,
           "artifact": null,
+          "support_files": null,
+          "declarations": null,
           "axioms": null,
           "statement_compared": null,
+          "evidence": null,
           "api_receipt": null,
-          "blocker": "no Rocq witness exists. PROOF-POLICY §2 requires one: transport the Agda term through Dedukti/Lambdapi (record the statement comparison) or re-prove the statement in Rocq by hand."
+          "blocker": "no Rocq witness exists. PROOF-POLICY §2 requires one: transport the Agda term through Dedukti/Lambdapi (record the statement comparison) or re-prove the statement in Rocq by hand, map TP-ECHO-1..3 in .declarations, and record the verbatim coqchk + Print Assumptions output in .evidence.assumptions_output."
         },
         {
           "prover": "lean4",
@@ -220,10 +232,13 @@
           "status": "open",
           "route": null,
           "artifact": null,
+          "support_files": null,
+          "declarations": null,
           "axioms": null,
           "statement_compared": null,
+          "evidence": null,
           "api_receipt": null,
-          "blocker": "no Lean 4 witness exists. PROOF-POLICY §2 requires one and forbids Mathlib; until a released Lambdapi Lean exporter exists the lean leg is re-proved by hand in core Lean."
+          "blocker": "no Lean 4 witness exists. PROOF-POLICY §2 requires one and forbids Mathlib; until a released Lambdapi Lean exporter exists the lean leg is re-proved by hand in core Lean, with TP-ECHO-1..3 mapped in .declarations and verbatim #print axioms output recorded in .evidence.assumptions_output."
         }
       ],
       "statement_anchor": [

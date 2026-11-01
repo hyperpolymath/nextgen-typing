@@ -192,9 +192,15 @@ lane never skips it and never turns that into a pass.
 . Register it in that prover's `MANIFEST` as `gated` (or `quarantine` if it is
   known broken and tracked).
 . Add it to `LEDGER.json`: the leg's status, the route (`transported` /
-  `re-proved`), how the statement was compared with the Agda one, the axioms
-  from `Print Assumptions` (Rocq) or `#print axioms` (Lean), and the receipt
-  commit. A grade above 3 is refused unless the legs behind it are `proven`.
+  `re-proved`), target `declarations` mapping `TP-ECHO-1..3` to valid Rocq/Lean
+  identifiers, how the statement was compared with the Agda one, the axioms
+  from `coqchk -silent -o` + `Print Assumptions` (Rocq) or `#print axioms`
+  (Lean), and `.evidence` carrying the 40-character receipt commit, CI run URL,
+  and verbatim `assumptions_output`. `scripts/check-proofs.sh` automatically
+  runs those kernel assumption queries on every gated module and writes verbatim
+  receipts (`witness-coq.txt`, `witness-lean4.txt`), failing on any unrecorded
+  or imported axiom or `sorryAx`. A grade above 3 is refused unless the legs
+  behind it are `proven`.
 . Register the proof in **both** registries:
   `[verification].allowed-proofs` in `.machine_readable/bot_directives/placement.a2ml`
    and `ALLOWED_PROOFS` in `scripts/check-coordination-boundary.sh`.

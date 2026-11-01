@@ -183,6 +183,27 @@ VOCAB='["argued","open","proven","proven-with-postulates","tested-only"]'
 # Prover families, from mathesis §5 (the Grade 2ii diversity rule).
 FAMILIES='{"agda":"dtt","rocq":"dtt","lean4":"dtt","idris2":"dtt","isabelle":"hol","tla+":"state-machine","smt":"smt"}'
 
+manifest_is_gated() {
+  local mfile="$1" target="$2"
+  [[ -f "$mfile" ]] || return 1
+  awk -F'|' -v want="$target" '
+    /^[[:space:]]*(#|$)/ { next }
+    NF >= 3 {
+      r = $1; sub(/^[[:space:]]+/, "", r); sub(/[[:space:]]+$/, "", r); sub(/\/+$/, "", r); sub(/^\.\//, "", r)
+      m = $2; sub(/^[[:space:]]+/, "", m); sub(/[[:space:]]+$/, "", m); sub(/^\.\//, "", m)
+      s = $3; sub(/^[[:space:]]+/, "", s); sub(/[[:space:]]+$/, "", s)
+      full = (r == "" || r == ".") ? m : (r "/" m)
+      if (full == want && s == "gated") { found = 1; exit }
+    }
+    END { exit (found ? 0 : 1) }
+  ' "$mfile"
+}
+
+is_valid_target_ident() {
+  local ident="$1"
+  [[ "$ident" =~ ^[A-Za-z_][A-Za-z0-9_\']*(\.[A-Za-z_][A-Za-z0-9_\']*)*$ ]]
+}
+
 # --- 1. schema + non-empty ---------------------------------------------------
 schema="$(jq -r '.schema // ""' "$LEDGER")"
 [ "$schema" = "hyperpolymath/proof-ledger/1" ] \
@@ -214,25 +235,30 @@ while IFS= read -r bad; do
 done < <(jq -r '[.theorems[].grade // "<missing>" | tostring][] | select(. != "3" and . != "2i" and . != "2ii" and . != "1")' "$LEDGER" | sort -u)
 
 # --- 3. per-theorem: legs, grades, claims ------------------------------------
-# Emitted as TSV so bash can drive the filesystem checks.
+# Emitted as TSV so bash can drive the filesystem checks. Independent recheck
+# counts exclude `.source.prover`, so duplicating the source prover as a leg
+# cannot inflate Grade 3 to Grade 2i.
 jq -r '
-  .theorems[] |
-  [ .id,
-    .kind,
-    (.grade | tostring),
-    ([.legs[]?.prover] | join(",")),
-    ([.legs[]? | select(.status != "open")] | length),
-    ([.legs[]? | select(.status == "proven" or .status == "proven-with-postulates")] | length)
+  .theorems[] as $t |
+  ($t.source.prover // "") as $src |
+  [ $t.id,
+    $t.kind,
+    ($t.grade | tostring),
+    ([$t.legs[]?.prover] | join(",")),
+    ([$t.legs[]? | select(.waiver == null) | select(.status != "open")] | length),
+    ([$t.legs[]? | select(.waiver == null)
+       | select((.prover // "") != $src)
+       | select(.status == "proven" or .status == "proven-with-postulates")] | length)
   ] | map(tostring) | join("\u001f")' "$LEDGER" > /tmp/proof-ledger-rows.$$.tsv
 trap 'rm -f /tmp/proof-ledger-rows.$$.tsv' EXIT
 
 declare -A THEOREM_PROVEN=()
 while IFS=$'\x1f' read -r tid kind grade provers claimed proven; do
-  [ -z "$tid" ] && continue
+  [[ -z "$tid" ]] && continue
   THEOREM_PROVEN["$tid"]="$proven"
 
   # PROOF-POLICY §1/§2: theory is Agda, rechecked in Rocq AND Lean.
-  if [ "$kind" = "theory" ]; then
+  if [[ "$kind" == "theory" ]]; then
     for required in rocq lean4; do
       case ",$provers," in
         *",$required,"*) ;;
@@ -243,42 +269,108 @@ while IFS=$'\x1f' read -r tid kind grade provers claimed proven; do
 
   case "$grade" in
     3)
-      if [ "$proven" -gt 0 ]; then
+      if [[ "$proven" -gt 0 ]]; then
         fail "$tid: grade 3 claims no translated leg, but $proven leg(s) are recorded proven (mathesis §5)"
       fi
       ;;
     2i)
-      if [ "$proven" -ne 1 ]; then
-        fail "$tid: grade 2i requires exactly one proven recheck leg, ledger records $proven (mathesis §5)"
+      # mathesis §5: Grade 2i applies when >=1 independent recheck leg is proven
+      # within the DTT family (including when both PROOF-POLICY §2 DTT legs —
+      # rocq + lean4 — are proven, before a non-DTT leg promotes the theorem to 2ii).
+      if [[ "$proven" -lt 1 ]]; then
+        fail "$tid: grade 2i requires at least one independent proven recheck leg, ledger records $proven (mathesis §5)"
       fi
       ;;
     2ii)
-      if [ "$proven" -lt 2 ]; then
+      if [[ "$proven" -lt 2 ]]; then
         fail "$tid: grade 2ii requires two proven legs, ledger records $proven (mathesis §5)"
       fi
       non_dtt="$(jq -r --argjson fam "$FAMILIES" --arg id "$tid" '
-        [ .theorems[] | select(.id == $id) | .legs[]?
-          | select(.status == "proven" or .status == "proven-with-postulates")
-          | select($fam[.prover // ""] != null and $fam[.prover] != "dtt") ] | length' "$LEDGER")"
-      if [ "${non_dtt:-0}" -lt 1 ]; then
+        .theorems[] | select(.id == $id) as $t
+        | [ $t.legs[]?
+            | select(.waiver == null)
+            | select((.prover // "") != ($t.source.prover // ""))
+            | select(.status == "proven" or .status == "proven-with-postulates")
+            | select($fam[.prover // ""] != null and $fam[.prover] != "dtt") ] | length' "$LEDGER")"
+      if [[ "${non_dtt:-0}" -lt 1 ]]; then
         fail "$tid: grade 2ii needs one proven leg outside the DTT/CIC family (mathesis §5 — Agda, Rocq and Lean are the same family); none recorded"
       fi
       ;;
     1)
-      api="$(jq -r --arg id "$tid" '
+      valid_api="$(jq -r --arg id "$tid" '
         [ .theorems[] | select(.id == $id) | .legs[]?
+          | select(.waiver == null)
           | select(.status == "proven" or .status == "proven-with-postulates")
-          | .api_receipt.api // empty ] | length' "$LEDGER")"
-      if [ "${api:-0}" -lt 1 ]; then
-        fail "$tid: grade 1 requires a verified-checker API receipt (AXLE, coq-lsp, isabelle-server — mathesis §5); none recorded"
+          | .api_receipt? | select(type == "object")
+          | select((.api // "") == "axle" or (.api // "") == "coq-lsp" or (.api // "") == "isabelle-server")
+          | select((.commit // "") | test("^[0-9a-f]{40}$"))
+          | select(((.run // "") | gsub("\\s+"; "")) != "")
+        ] | length' "$LEDGER")"
+      if [[ "${valid_api:-0}" -lt 1 ]]; then
+        fail "$tid: grade 1 requires a verified-checker API receipt (axle, coq-lsp, or isabelle-server with 40-char commit and run — mathesis §5); none recorded"
       fi
       ;;
   esac
 
-  if [ "$claimed" -gt 0 ]; then
+  if [[ "$claimed" -gt 0 ]]; then
     GAPS+=("$tid: $claimed leg(s) carry a non-open status and MUST compile in this lane")
   fi
 done < /tmp/proof-ledger-rows.$$.tsv
+
+# --- 3a. cross-prover reconciliation status (mathesis CROSS-PROVER-RECONCILIATION)
+# Never collapse distinct dimensions of verification: source Agda status, target
+# Rocq/Lean kernel status, and bridge correspondence justification remain distinct.
+while IFS=$'\x1f' read -r tid ragda rrocq rlean rbridge sstatus rocq_st lean_st uncomp_cnt; do
+  [[ -z "$tid" ]] && continue
+  case "$ragda" in
+    ""|NOT-INVENTORIED|INVENTORIED|AGDA-PENDING|AGDA-VERIFIED|COUNTEREXAMPLE|QUARANTINED) ;;
+    *) fail "$tid: reconciliation.agda '${ragda}' is outside mathesis CROSS-PROVER-RECONCILIATION vocabulary" ;;
+  esac
+  case "$rrocq" in
+    ""|NOT-INVENTORIED|INVENTORIED|COQ-CHECKED|COUNTEREXAMPLE|QUARANTINED) ;;
+    *) fail "$tid: reconciliation.rocq '${rrocq}' is outside mathesis CROSS-PROVER-RECONCILIATION vocabulary" ;;
+  esac
+  case "$rlean" in
+    ""|NOT-INVENTORIED|INVENTORIED|LEAN-CHECKED|COUNTEREXAMPLE|QUARANTINED) ;;
+    *) fail "$tid: reconciliation.lean4 '${rlean}' is outside mathesis CROSS-PROVER-RECONCILIATION vocabulary" ;;
+  esac
+  case "$rbridge" in
+    ""|BRIDGE-PENDING|RECONCILED|COUNTEREXAMPLE|QUARANTINED) ;;
+    *) fail "$tid: reconciliation.bridge '${rbridge}' is outside mathesis CROSS-PROVER-RECONCILIATION vocabulary" ;;
+  esac
+  if [[ "$ragda" == "AGDA-VERIFIED" && "$sstatus" != "proven" && "$sstatus" != "proven-with-postulates" ]]; then
+    fail "$tid: reconciliation.agda claims 'AGDA-VERIFIED' while source.status is '$sstatus'"
+  fi
+  if [[ "$rrocq" == "COQ-CHECKED" && "$rocq_st" != "proven" && "$rocq_st" != "proven-with-postulates" ]]; then
+    fail "$tid: reconciliation.rocq claims 'COQ-CHECKED' while the rocq leg is '${rocq_st:-missing}'"
+  fi
+  if [[ "$rlean" == "LEAN-CHECKED" && "$lean_st" != "proven" && "$lean_st" != "proven-with-postulates" ]]; then
+    fail "$tid: reconciliation.lean4 claims 'LEAN-CHECKED' while the lean4 leg is '${lean_st:-missing}'"
+  fi
+  if [[ "$rbridge" == "RECONCILED" ]]; then
+    if [[ "$rocq_st" != "proven" && "$rocq_st" != "proven-with-postulates" ]] \
+       || [[ "$lean_st" != "proven" && "$lean_st" != "proven-with-postulates" ]] \
+       || [[ "${uncomp_cnt:-0}" -gt 0 ]]; then
+      fail "$tid: reconciliation.bridge claims 'RECONCILED', which requires independently verified Rocq and Lean targets plus justified statement comparisons (mathesis CROSS-PROVER-RECONCILIATION)"
+    fi
+  fi
+done < <(jq -r '
+  .theorems[] | select(.reconciliation != null) |
+  . as $t |
+  ([ $t.legs[]? | select(.prover == "rocq") | .status // "open" ][0] // "missing") as $rocq_st |
+  ([ $t.legs[]? | select(.prover == "lean4") | .status // "open" ][0] // "missing") as $lean_st |
+  ([ $t.legs[]? | select(.prover == "rocq" or .prover == "lean4")
+     | select((.statement_compared // "") == "" or (.statement_compared | tostring) == "false") ] | length) as $uncomp |
+  [ $t.id,
+    ($t.reconciliation.agda // ""),
+    ($t.reconciliation.rocq // ""),
+    ($t.reconciliation.lean4 // ""),
+    ($t.reconciliation.bridge // ""),
+    ($t.source.status // ""),
+    $rocq_st,
+    $lean_st,
+    ($uncomp | tostring)
+  ] | join("\u001f")' "$LEDGER")
 
 # --- 3b. the SOURCE leg must be substantiated, and its flags must be the ones
 # actually in force -----------------------------------------------------------
@@ -324,11 +416,32 @@ while IFS=$'\x1f' read -r tid sprover sstatus rec_file_opts rec_cli rec_effectiv
     *) fail "$tid: source leg status is '${sstatus:-<missing>}' — a recorded grade rests on the source of truth being proven, not asserted (PROOF-POLICY §5)" ;;
   esac
 
-  # (b) every source file must exist
+  # (b) .source.files must be a non-empty array of strings, every file must exist,
+  # and for a proven source leg its files must be gated in the prover's MANIFEST.
+  src_files_valid="$(jq -r --arg id "$tid" '
+    .theorems[] | select(.id == $id) | .source.files
+    | (type == "array" and length > 0 and all(.[]; type == "string" and length > 0)) | tostring' "$LEDGER")"
+  if [[ "$src_files_valid" != "true" ]]; then
+    fail "$tid: .source.files must be a non-empty JSON array of file paths"
+    continue
+  fi
+  src_mdir=""
+  case "$sprover" in
+    agda) src_mdir="$PROOFS_DIR/agda" ;;
+    rocq|coq) src_mdir="$PROOFS_DIR/coq" ;;
+    lean4|lean) src_mdir="$PROOFS_DIR/lean4" ;;
+    idris2) src_mdir="$PROOFS_DIR/idris2" ;;
+  esac
   IFS=',' read -r -a src_files <<< "$files_csv"
   for f in "${src_files[@]}"; do
-    [ -z "$f" ] && continue
-    [ -f "$f" ] || fail "$tid: source file recorded but missing on disk: $f"
+    [[ -z "$f" ]] && continue
+    if [[ ! -f "$f" ]]; then
+      fail "$tid: source file recorded but missing on disk: $f"
+    elif [[ ( "$sstatus" == "proven" || "$sstatus" == "proven-with-postulates" ) && -n "$src_mdir" ]]; then
+      if ! manifest_is_gated "$src_mdir/MANIFEST" "$f"; then
+        fail "$tid: proven source file '$f' is not listed as 'gated' in $src_mdir/MANIFEST"
+      fi
+    fi
   done
 
   # (c) flags: what the instrument passes, what the files declare, and the
@@ -403,18 +516,18 @@ while IFS=$'\x1f' read -r tid sprover sstatus rec_file_opts rec_cli rec_effectiv
     norm_type="$(printf '%s' "$decl_type" | tr -s '[:space:]' ' ' | sed 's/^ *//; s/ *$//')"
     found=0
     for f in "${src_files[@]}"; do
-      [ -f "$f" ] || continue
-      norm_file="$(tr -s '[:space:]' ' ' < "$f")"
+      [[ -f "$f" ]] || continue
+      norm_file=" $(tr -s '[:space:]' ' ' < "$f") "
       case "$norm_file" in
-        *"$norm_type"*) found=1 ;;
+        *" ${decl_name} : ${norm_type} "*) found=1 ;;
       esac
     done
-    if [ "$found" -eq 0 ]; then
+    if [[ "$found" -eq 0 ]]; then
       fail "$tid: statement drifted — statement_formal.$decl_name records the type
      '$norm_type'
-     which no recorded source file contains any more. If the Agda statement
-     changed, re-record it here (and re-check any leg that was compared against
-     it) — PROOF-POLICY §2's statement comparison is void otherwise."
+     which no recorded source file declares under '$decl_name : ...' any more.
+     If the Agda statement changed, re-record it here (and re-check any leg that
+     was compared against it) — PROOF-POLICY §2's statement comparison is void otherwise."
     fi
   done < <(jq -r --arg id "$tid" '
     .theorems[] | select(.id == $id) | .statement_formal.declarations[]? |
@@ -716,41 +829,118 @@ while IFS=$'\x1f' read -r tid prover status artifact route compared axioms repro
     fail "$tid/$prover: status '$status' recorded for a prover the lane cannot compile — scripts/check-proofs.sh wires idris2, lean4, agda and coq only, so this leg would contribute to a grade without any proof system running. Record the leg as open, or add a compile recipe for '$prover' first (PROOF-POLICY §2.3)."
     continue
   fi
-  if [ -n "$mdir" ]; then
-    if [ ! -f "$mdir/MANIFEST" ]; then
+  if [[ -n "$mdir" ]]; then
+    if [[ ! -f "$mdir/MANIFEST" ]]; then
       fail "$tid/$prover: $mdir/MANIFEST is missing, so $artifact cannot be compiled by the lane"
-    elif ! grep -vE '^[[:space:]]*(#|$)' "$mdir/MANIFEST" | grep -qF "|$(basename "$artifact")|"; then
-      fail "$tid/$prover: $artifact is not listed in $mdir/MANIFEST (unlisted witness)"
+    elif ! manifest_is_gated "$mdir/MANIFEST" "$artifact"; then
+      fail "$tid/$prover: $artifact is not listed as 'gated' in $mdir/MANIFEST (unlisted or quarantined witness)"
     fi
   fi
 
-  # PROOF-POLICY §2.3: record the route; §2.1: without a statement comparison
-  # the leg is ASSUMED (argued), not PROVEN.
-  if [ "$route" = "re-proved" ] && { [ -z "$reproof_reason" ] || [ "$reproof_reason" = "null" ]; }; then
+  # Optional support_files (helper modules imported by .artifact): every entry
+  # must exist on disk, be gated in the same MANIFEST, and obey the Mathlib ban.
+  sup_type="$(jq -r --arg id "$tid" --arg p "$prover" '
+    [ .theorems[] | select(.id == $id) | .legs[]? | select(.prover == $p)
+      | if (.support_files // null) == null then "none"
+        elif (.support_files | type) == "array" and all(.support_files[]; type == "string" and length > 0) then "ok"
+        else "bad" end ][0] // "none"' "$LEDGER")"
+  if [[ "$sup_type" == "bad" ]]; then
+    fail "$tid/$prover: .support_files must be an array of non-empty file path strings"
+  elif [[ "$sup_type" == "ok" ]]; then
+    while IFS= read -r sf; do
+      [[ -z "$sf" ]] && continue
+      if [[ ! -f "$sf" ]]; then
+        fail "$tid/$prover: support file listed but missing on disk: $sf"
+      elif ! manifest_is_gated "$mdir/MANIFEST" "$sf"; then
+        fail "$tid/$prover: support file '$sf' is not listed as 'gated' in $mdir/MANIFEST"
+      elif [[ "$prover" == "lean4" ]] && grep -qE '^[[:space:]]*import[[:space:]]+Mathlib' "$sf"; then
+        fail "$tid/$prover: support file '$sf' imports Mathlib, which PROOF-POLICY §2 forbids"
+      fi
+    done < <(jq -r --arg id "$tid" --arg p "$prover" '
+      .theorems[] | select(.id == $id) | .legs[]? | select(.prover == $p) | (.support_files // [])[]' "$LEDGER")
+  fi
+
+  # PROOF-POLICY §2.3: record the route; §2.1/§2.2: without an affirmative
+  # statement comparison the leg is ASSUMED (argued), not PROVEN.
+  if [[ "$route" == "re-proved" ]] && { [[ -z "$reproof_reason" ]] || [[ "$reproof_reason" == "null" ]]; }; then
     fail "$tid/$prover: route 're-proved' requires a reproof_reason (PROOF-POLICY §2.2)"
   fi
-  if [ "$status" = "proven" ] || [ "$status" = "proven-with-postulates" ]; then
-    case "$compared" in
-      ""|null|none)
-        fail "$tid/$prover: '$status' requires a statement comparison (PROOF-POLICY §2.1); without it the leg is 'argued'" ;;
+  if [[ "$status" == "proven" || "$status" == "proven-with-postulates" ]]; then
+    case "${compared,,}" in
+      ""|null|none|false|no)
+        fail "$tid/$prover: '$status' requires an affirmative statement comparison (PROOF-POLICY §2.1/§2.2); without it the leg is 'argued'" ;;
     esac
   fi
 
-  # §5: axioms are named, and only proven-with-postulates may have any.
-  axiom_count="$(jq -r --arg id "$tid" --arg p "$prover" '
+  # §5: axioms must be a JSON array of strings, never contain sorryAx, and only
+  # proven-with-postulates may carry a non-empty axiom list.
+  axiom_check="$(jq -r --arg id "$tid" --arg p "$prover" '
     [ .theorems[] | select(.id == $id) | .legs[]? | select(.prover == $p)
-      | (.axioms // []) | length ] | .[0] // -1' "$LEDGER")"
-  if [ "${axiom_count:--1}" -lt 0 ]; then
-    fail "$tid/$prover: 'axioms' must be recorded as a list (empty when none) — mathesis §6 axiom tracking"
-  elif [ "$status" = "proven" ] && [ "$axiom_count" -ne 0 ]; then
-    fail "$tid/$prover: status 'proven' but $axiom_count axiom(s) recorded; that is 'proven-with-postulates' (§5)"
-  elif [ "$status" = "proven-with-postulates" ] && [ "$axiom_count" -eq 0 ]; then
+      | if (.axioms | type) != "array" or (all(.axioms[]; type == "string" and length > 0) | not) then "not-string-array"
+        elif (.axioms | index("sorryAx")) != null then "has-sorryAx"
+        else (.axioms | length | tostring) end ][0] // "not-string-array"' "$LEDGER")"
+  if [[ "$axiom_check" == "not-string-array" ]]; then
+    fail "$tid/$prover: 'axioms' must be recorded as a JSON array of strings (empty [] when none) — mathesis §6 axiom tracking"
+  elif [[ "$axiom_check" == "has-sorryAx" ]]; then
+    fail "$tid/$prover: 'sorryAx' is an incomplete-proof marker, never a permissible axiom in .axioms"
+  elif [[ "$status" == "proven" && "$axiom_check" -ne 0 ]]; then
+    fail "$tid/$prover: status 'proven' but $axiom_check axiom(s) recorded; that is 'proven-with-postulates' (§5)"
+  elif [[ "$status" == "proven-with-postulates" && "$axiom_check" -eq 0 ]]; then
     fail "$tid/$prover: status 'proven-with-postulates' with an empty axiom list (§5: list the axioms)"
+  fi
+
+  # Target declarations + kernel-assumption receipt check for Rocq/Lean witnesses
+  # (nextgen-typing#131): check-proofs.sh queries Print Assumptions / #print axioms
+  # on every target declaration, so each formal anchor must resolve to a distinct,
+  # valid target-prover identifier, and promoted legs must record evidence.
+  if [[ ( "$status" == "proven" || "$status" == "proven-with-postulates" ) && ( "$prover" == "rocq" || "$prover" == "lean4" ) ]]; then
+    decl_audit="$(jq -r --arg id "$tid" --arg p "$prover" '
+      .theorems[] | select(.id == $id) as $t
+      | ([ $t.statement_formal.declarations[]?.name // empty ]) as $anchors
+      | ($t.legs[] | select(.prover == $p)) as $leg
+      | if ($leg.declarations // null) != null then
+          if ($leg.declarations | type) != "array" or ($leg.declarations | length) == 0 then
+            "ERR:legs[].declarations must be a non-empty array"
+          else
+            ([ $leg.declarations[] | if type == "object" then (.name // "") else tostring end ]) as $names
+            | ([ $leg.declarations[] | select(type == "object") | (.anchor // "") ]) as $mapped_anchors
+            | if ($names | unique | length) != ($names | length) then
+                "ERR:legs[].declarations maps multiple anchors to the same target declaration"
+              elif ($anchors | length) > 0 and (($mapped_anchors | length) > 0) and (($anchors - $mapped_anchors) | length) > 0 then
+                "ERR:legs[].declarations is missing anchor mapping(s): " + (($anchors - $mapped_anchors) | join(", "))
+              elif ($anchors | length) > 0 and ($names | length) < ($anchors | length) then
+                "ERR:legs[].declarations lists fewer declarations than statement_formal.declarations"
+              else
+                "OK:" + ($names | join(","))
+              end
+          end
+        elif ($anchors | length) > 0 then
+          "OK:" + ($anchors | join(","))
+        else
+          "ERR:no declarations recorded in statement_formal.declarations or legs[].declarations"
+        end' "$LEDGER")"
+    if [[ "$decl_audit" == ERR:* ]]; then
+      fail "$tid/$prover: ${decl_audit#ERR:}"
+    else
+      IFS=',' read -r -a leg_decls <<<"${decl_audit#OK:}"
+      for dname in "${leg_decls[@]}"; do
+        if ! is_valid_target_ident "$dname"; then
+          fail "$tid/$prover: declaration '$dname' is not a valid $prover identifier — map hyphenated Agda anchors to $prover identifiers in legs[].declarations"
+        fi
+      done
+    fi
+
+    IFS=$'\x1f' read -r le_commit le_run le_assumptions < <(jq -r --arg id "$tid" --arg p "$prover" '
+      .theorems[] | select(.id == $id) | .legs[] | select(.prover == $p) | (.evidence // {}) |
+      [ (.commit // ""), (.run // ""), (.assumptions_output // "") ] | map(tostring) | join("\u001f")' "$LEDGER")
+    if ! [[ "${le_commit:-}" =~ ^[0-9a-f]{40}$ ]] || [[ -z "${le_run//[[:space:]]/}" ]] || [[ -z "${le_assumptions//[[:space:]]/}" ]]; then
+      fail "$tid/$prover: '$status' recheck leg must record .evidence with a 40-character .commit, .run, and verbatim .assumptions_output from Print Assumptions / #print axioms (mathesis §6, issue #131)"
+    fi
   fi
 
   # §2: no Mathlib. A proof that needs a large external library is a
   # dependency, not a proof the estate owns.
-  if [ "$prover" = "lean4" ] && grep -qE '^[[:space:]]*import[[:space:]]+Mathlib' "$artifact"; then
+  if [[ "$prover" == "lean4" ]] && grep -qE '^[[:space:]]*import[[:space:]]+Mathlib' "$artifact"; then
     fail "$tid/$prover: $artifact imports Mathlib, which PROOF-POLICY §2 forbids"
   fi
 done < <(jq -r '
@@ -844,33 +1034,36 @@ while IFS= read -r f; do
 done < <(jq -r '.theorems[].source.files[]? | select(endswith(".agda"))' "$LEDGER" | sort -u)
 
 # --- 6. escape hatches + declared axioms in every proof/witness source -------
-declare -A DECLARED_AXIOMS=()
-while IFS=$'\x1f' read -r tid _p axioms; do
-  [ -z "$tid" ] && continue
-  case "$axioms" in
-    ""|null) continue ;;
-  esac
-  IFS=',' read -r -a ax_list <<<"$axioms"
-  for a in "${ax_list[@]}"; do
-    [ -n "$a" ] && DECLARED_AXIOMS["$a"]=1
-  done
-done < <(jq -r '.theorems[] as $t | $t.legs[]? | [ $t.id, .prover, ((.axioms // []) | join(",")) ] | map(tostring) | join("\u001f")' "$LEDGER")
+# Axioms are scoped to the specific leg(s) claiming each file (never pooled
+# globally across unrelated legs), so an axiom permitted on one leg cannot
+# license an undeclared axiom in another witness.
+file_allows_axiom() {
+  local file="$1" ax_name="$2"
+  jq -e --arg f "$file" --arg ax "$ax_name" '
+    [ .theorems[].legs[]?
+      | select(.waiver == null and (.status // "open") == "proven-with-postulates")
+      | select((.artifact // "") == $f or (((.support_files // []) | type) == "array" and ((.support_files // []) | index($f)) != null))
+      | (.axioms // [])[]
+      | select(. == $ax or endswith("." + $ax))
+    ] | length > 0
+  ' "$LEDGER" >/dev/null 2>&1
+}
 
 scan_one() {
   local f="$1" hits
   hits="$(scan_escape_hatches "$f")"
-  if [ -n "$hits" ]; then
+  if [[ -n "$hits" ]]; then
     fail "escape hatch in $f:
 $(printf '%s\n' "$hits" | sed 's/^/     line /')"
   fi
   local ax
   ax="$(scan_declared_axioms "$f")"
-  if [ -n "$ax" ]; then
+  if [[ -n "$ax" ]]; then
     while IFS= read -r line; do
-      [ -z "$line" ] && continue
-      name="$(printf '%s\n' "$line" | sed -E 's/^[0-9]+:[[:space:]]*(Axiom|Parameter|Conjecture|axiom)[[:space:]]+([A-Za-z0-9_′]+).*/\2/')"
-      if [ -z "${DECLARED_AXIOMS[$name]:-}" ]; then
-        fail "undeclared axiom in $f:$line — PROOF-POLICY §5 requires every axiom to be named in the ledger (proven-with-postulates)"
+      [[ -z "$line" ]] && continue
+      name="$(printf '%s\n' "$line" | sed -E 's/^[0-9]+:[[:space:]]*(Axiom|Parameter|Conjecture|axiom)[[:space:]]+([A-Za-z0-9_′'\'']+).*/\2/')"
+      if ! file_allows_axiom "$f" "$name"; then
+        fail "undeclared axiom in $f:$line — PROOF-POLICY §5 requires every axiom to be named on the owning leg in the ledger (proven-with-postulates)"
       fi
     done <<<"$ax"
   fi
@@ -883,20 +1076,18 @@ else
 fi
 scanned=0
 while IFS= read -r f; do
-  [ -z "$f" ] && continue
+  [[ -z "$f" ]] && continue
   scanned=$((scanned + 1))
   scan_one "$f"
 done <<<"$PROOF_FILES"
 
-if [ "$scanned" -eq 0 ]; then
+if [[ "$scanned" -eq 0 ]]; then
   fail "zero-work: no proof source or witness was scanned under $PROOFS_DIR"
 fi
 
 # --- 7. witnesses on disk must be claimed in the ledger ----------------------
 # Enumerated the same way as section 6: `git ls-files` inside a work tree, a
-# plain `find` otherwise. Using git alone here would make the check silently
-# vacuous in an exported tree (no .git) — a null check that reports OK, which is
-# the exact failure mode the estate instrument exists to prevent.
+# plain `find` otherwise. Covers Agda sources as well as Rocq and Lean witnesses.
 list_witnesses() {  # $1 = prover dir under $PROOFS_DIR, $2 = extension
   if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     git ls-files -- "$PROOFS_DIR/$1" 2>/dev/null | grep -E "\.$2\$" | sort
@@ -904,14 +1095,20 @@ list_witnesses() {  # $1 = prover dir under $PROOFS_DIR, $2 = extension
     find "$PROOFS_DIR/$1" -type f -name "*.$2" 2>/dev/null | sort
   fi
 }
-LEDGER_ARTIFACTS="$(jq -r '.theorems[].legs[]?.artifact // empty' "$LEDGER" | sort -u)"
-for dir in coq lean4; do
-  ext=v; [ "$dir" = "lean4" ] && ext=lean
+LEDGER_ARTIFACTS="$(jq -r '
+  [ .theorems[]
+    | (if (.source.files | type) == "array" then .source.files[] else empty end),
+      (.legs[]? | (.artifact // empty), (if (.support_files | type) == "array" then .support_files[] else empty end))
+  ][] | select(type == "string" and length > 0)' "$LEDGER" | sort -u)"
+for dir in agda coq lean4; do
+  ext=v
+  [[ "$dir" == "lean4" ]] && ext=lean
+  [[ "$dir" == "agda" ]] && ext=agda
   while IFS= read -r f; do
-    [ -z "$f" ] && continue
+    [[ -z "$f" ]] && continue
     if ! printf '%s\n' "$LEDGER_ARTIFACTS" | grep -Fxq -- "$f"; then
       fail "witness on disk is not claimed in the ledger: $f
-     Add a leg row with artifact '$f' (route, axioms, statement comparison) — an
+     Add a source/leg entry claiming '$f' (route, axioms, statement comparison) — an
      unclaimed witness is exactly the silent-drift case mathesis §11 rejects."
     fi
   done < <(list_witnesses "$dir" "$ext")
@@ -1051,8 +1248,11 @@ fi
 status="PASS"
 [ "${#FAILS[@]}" -gt 0 ] && status="FAIL"
 
-if [ -n "$RECEIPT" ]; then
-  mkdir -p "$(dirname "$RECEIPT")" 2>/dev/null || true
+if [[ -n "$RECEIPT" ]]; then
+  if ! mkdir -p "$(dirname "$RECEIPT")" 2>/dev/null; then
+    echo "FAIL: cannot create receipt directory for $RECEIPT" >&2
+    exit 1
+  fi
   {
     echo "proof-ledger receipt"
     echo "generated: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -1067,14 +1267,17 @@ if [ -n "$RECEIPT" ]; then
     echo "proven-recheck-legs: $proven_legs"
     echo "ledger-sha256: $(sha256sum "$LEDGER" | cut -d' ' -f1)"
     echo "gaps:"
-    if [ "${#GAPS[@]}" -eq 0 ]; then echo "  (none)"; else printf '  - %s\n' "${GAPS[@]}"; fi
+    if [[ "${#GAPS[@]}" -eq 0 ]]; then echo "  (none)"; else printf '  - %s\n' "${GAPS[@]}"; fi
     echo "waivered-legs:"
-    if [ "${#WAIVERS[@]}" -eq 0 ]; then echo "  (none)"; else printf '  - %s\n' "${WAIVERS[@]}"; fi
-    if [ "${#FAILS[@]}" -gt 0 ]; then
+    if [[ "${#WAIVERS[@]}" -eq 0 ]]; then echo "  (none)"; else printf '  - %s\n' "${WAIVERS[@]}"; fi
+    if [[ "${#FAILS[@]}" -gt 0 ]]; then
       echo "failures:"
       printf '  - %s\n' "${FAILS[@]}"
     fi
-  } >"$RECEIPT"
+  } >"$RECEIPT" || {
+    echo "FAIL: cannot write receipt $RECEIPT" >&2
+    exit 1
+  }
   echo "receipt written: $RECEIPT"
   if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
     {

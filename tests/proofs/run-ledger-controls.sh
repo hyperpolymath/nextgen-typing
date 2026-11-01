@@ -127,7 +127,7 @@ fi
 # --- grades and evidence ----------------------------------------------------
 jq '(.theorems[0].grade) = "2i"' "$LEDGER" > "$WORK/grade-2i.json"
 expect_refusal "5. a grade 2i claim with no proven leg" \
-  "grade 2i requires exactly one proven recheck leg" "$WORK/grade-2i.json"
+  "grade 2i requires at least one independent proven recheck leg" "$WORK/grade-2i.json"
 
 jq '(.theorems[0].history) = [{"date":"2026-11-01","target":"grade","from":"3","to":"2ii","evidence":"planted"}]' \
   "$LEDGER" > "$WORK/grade-history.json"
@@ -379,6 +379,108 @@ elif grep -qF "but the ledger says Grade 3" "$WORK/docgrade.log"; then
 else
   viol "39. the documented-grade control failed for the wrong reason"
   sed 's/^/      /' "$WORK/docgrade.log" | tail -5
+fi
+
+# --- witness assumption & reconciliation ledger controls (#131 + mathesis) ---
+# 44. A quarantined MANIFEST entry cannot back a proven leg.
+sandbox4="$WORK/repo-quarantine"
+mkdir -p "$sandbox4"
+tar --exclude=.git --exclude=target -cf - . 2>/dev/null | ( cd "$sandbox4" && tar -xf - )
+printf '(* INSTRUMENT CONTROL *)\nTheorem tp1 : True. Proof. exact I. Qed.\n' \
+  > "$sandbox4/verification/proofs/coq/QuarWitness.v"
+printf 'verification/proofs/coq|QuarWitness.v|quarantine|known broken\n' \
+  >> "$sandbox4/verification/proofs/coq/MANIFEST"
+jq '(.theorems[0].grade) = "2i"
+    | (.theorems[0].legs[0]) |= (.status = "proven" | .route = "re-proved"
+        | .reproof_reason = "control"
+        | .artifact = "verification/proofs/coq/QuarWitness.v"
+        | .declarations = [{"anchor":"TP-ECHO-1","name":"tp1"},{"anchor":"TP-ECHO-2","name":"tp2"},{"anchor":"TP-ECHO-3","name":"tp3"}]
+        | .axioms = [] | .statement_compared = "compared against EchoTyping.agda"
+        | .evidence = {"kind":"ci-receipt","commit":"3cd185939179773f177b59e6fee360719695dfc7","date":"2026-11-01","run":"https://example.invalid/run/1","assumptions_output":"Closed under the global context"})' \
+  "$sandbox4/verification/proofs/LEDGER.json" > "$sandbox4/verification/proofs/LEDGER.tmp"
+mv "$sandbox4/verification/proofs/LEDGER.tmp" "$sandbox4/verification/proofs/LEDGER.json"
+if ( cd "$sandbox4" && bash scripts/check-proof-ledger.sh ) >"$WORK/quarantine-leg.log" 2>&1; then
+  viol "44. the gate ACCEPTED a proven leg backed by a quarantined MANIFEST entry"
+elif grep -qF "is not listed as 'gated'" "$WORK/quarantine-leg.log"; then
+  ok "44. a quarantined MANIFEST entry cannot back a proven leg"
+else
+  viol "44. the quarantined-leg control failed for the wrong reason"
+  sed 's/^/      /' "$WORK/quarantine-leg.log" | tail -5
+fi
+
+# 45. sorryAx is never a permissible entry in legs[].axioms.
+jq '(.theorems[0].grade) = "2i"
+    | (.theorems[0].legs[1]) |= (.status = "proven-with-postulates" | .route = "re-proved"
+        | .reproof_reason = "control"
+        | .artifact = "tests/proofs/control/Control.lean"
+        | .axioms = ["sorryAx"] | .statement_compared = "compared against EchoTyping.agda")' \
+  "$LEDGER" > "$WORK/sorryax-ledger.json"
+expect_refusal "45. sorryAx recorded as a declared axiom in .axioms" \
+  "'sorryAx' is an incomplete-proof marker" "$WORK/sorryax-ledger.json"
+
+# 46. boolean false is not a statement comparison.
+jq '(.theorems[0].grade) = "2i"
+    | (.theorems[0].legs[1]) |= (.status = "proven" | .route = "re-proved"
+        | .reproof_reason = "control"
+        | .artifact = "tests/proofs/control/Control.lean"
+        | .axioms = [] | .statement_compared = false)' \
+  "$LEDGER" > "$WORK/false-compared.json"
+expect_refusal "46. statement_compared set to boolean false on a proven leg" \
+  "requires an affirmative statement comparison" "$WORK/false-compared.json"
+
+# 47. duplicating the source prover (agda) as a leg cannot promote Grade 3 to 2i.
+jq '(.theorems[0].grade) = "2i"
+    | (.theorems[0].legs) += [{"prover":"agda","family":"dtt","status":"proven","route":"transported","artifact":"verification/proofs/agda/EchoTyping.agda","axioms":[],"statement_compared":"self"}]' \
+  "$LEDGER" > "$WORK/dup-source-prover.json"
+expect_refusal "47. duplicating the source prover as a recheck leg to claim Grade 2i" \
+  "grade 2i requires at least one independent proven recheck leg" "$WORK/dup-source-prover.json"
+
+# 48. unmapped hyphenated Agda anchors on a proven Rocq leg are refused.
+sandbox5="$WORK/repo-unmapped"
+mkdir -p "$sandbox5"
+tar --exclude=.git --exclude=target -cf - . 2>/dev/null | ( cd "$sandbox5" && tar -xf - )
+printf '(* INSTRUMENT CONTROL *)\nTheorem tp1 : True. Proof. exact I. Qed.\n' \
+  > "$sandbox5/verification/proofs/coq/ValidWitness.v"
+printf 'verification/proofs/coq|ValidWitness.v|gated|control\n' \
+  >> "$sandbox5/verification/proofs/coq/MANIFEST"
+jq '(.theorems[0].grade) = "2i"
+    | (.theorems[0].legs[0]) |= (.status = "proven" | .route = "re-proved"
+        | .reproof_reason = "control"
+        | .artifact = "verification/proofs/coq/ValidWitness.v"
+        | .axioms = [] | .statement_compared = "compared against EchoTyping.agda"
+        | .evidence = {"kind":"ci-receipt","commit":"3cd185939179773f177b59e6fee360719695dfc7","date":"2026-11-01","run":"https://example.invalid/run/1","assumptions_output":"Closed under the global context"})' \
+  "$sandbox5/verification/proofs/LEDGER.json" > "$sandbox5/verification/proofs/LEDGER.tmp"
+mv "$sandbox5/verification/proofs/LEDGER.tmp" "$sandbox5/verification/proofs/LEDGER.json"
+if ( cd "$sandbox5" && bash scripts/check-proof-ledger.sh ) >"$WORK/unmapped-anchor.log" 2>&1; then
+  viol "48. the gate ACCEPTED a proven Rocq leg leaving hyphenated Agda anchors unmapped"
+elif grep -qF "is not a valid rocq identifier" "$WORK/unmapped-anchor.log"; then
+  ok "48. hyphenated Agda anchors left unmapped on a proven Rocq leg are refused"
+else
+  viol "48. the unmapped-anchor control failed for the wrong reason"
+  sed 's/^/      /' "$WORK/unmapped-anchor.log" | tail -5
+fi
+
+# 49. mathesis CROSS-PROVER-RECONCILIATION: bridge cannot claim RECONCILED while legs are open.
+jq '(.theorems[0].reconciliation.bridge) = "RECONCILED"' "$LEDGER" > "$WORK/premature-reconciled.json"
+expect_refusal "49. claiming bridge RECONCILED while target recheck legs remain open" \
+  "requires independently verified Rocq and Lean targets" "$WORK/premature-reconciled.json"
+
+# 50. swapping two anchors' types in statement_formal.declarations is caught.
+jq '(.theorems[0].statement_formal.declarations[0].type) as $t0
+    | (.theorems[0].statement_formal.declarations[1].type) as $t1
+    | (.theorems[0].statement_formal.declarations[0].type) = $t1
+    | (.theorems[0].statement_formal.declarations[1].type) = $t0' \
+  "$LEDGER" > "$WORK/swapped-decl-types.json"
+expect_refusal "50. swapping formal types between two declaration anchors" \
+  "statement drifted" "$WORK/swapped-decl-types.json"
+
+# 51. Imported-axiom fixtures carry zero lexical escape hatches (proving why #131
+#     requires kernel assumption queries in check-proofs.sh, not lexical scan alone).
+if bash "$GATE" --scan-file "$CONTROLS/ControlImportedAxiom.v" >/dev/null 2>&1 \
+   && bash "$GATE" --scan-file "$CONTROLS/ControlImportedAxiom.lean" >/dev/null 2>&1; then
+  ok "51. imported-axiom fixtures pass lexical scan (confirming why kernel assumption queries are necessary)"
+else
+  viol "51. imported-axiom fixtures unexpectedly tripped the lexical scan"
 fi
 
 echo ""

@@ -55,7 +55,12 @@ written inside `(* *)` in a Lean file where those characters are text
 (`PlantedLeanSubtype.lean`) — **so that they are detected**:
 `tests/proofs/run-ledger-controls.sh` fails if the instrument accepts any of
 them, and controls 35, 41 and 43 exist because those three alternatives had
-become unfirable. The remaining fixtures (`Control.v`, `Control.lean`,
+become unfirable. `ControlImportedAxiom.v` and `ControlImportedAxiom.lean` carry
+no lexical escape hatches at all and exist so `tests/proofs/run-controls.sh`
+(`K7`/`K8`, `K12`/`K13`) can prove `scripts/check-proofs.sh` catches standard-library
+imported axioms (`Coq.Logic.Classical_Prop.classic`, `Classical.em`) via kernel
+assumption queries (`coqchk -silent -o`, `Print Assumptions`, `#print axioms`).
+The remaining fixtures (`Control.v`, `Control.lean`,
 `ControlCommentAxiom.v`) are closed proofs or comment-only prose with no escape
 hatch; they are exempted only because the exemption is by directory. Recording
 any of these here as debt would both misreport the repository and invite someone
