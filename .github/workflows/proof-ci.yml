@@ -2,16 +2,40 @@
 # SPDX-License-Identifier: MPL-2.0
 # Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
 #
-# Proof CI — runs this repository's real all-proofs target, `just proof-check-all`,
-# against the cross-project proofs hosted in verification/proofs/ (issue #57).
+# Proof CI — audits the proof ledger and compiles the recheck legs it declares,
+# via `just proof-witness-check` (issue #57).
 #
-# Before this lane existed, `just proof-check-all` was never invoked by CI, and
-# each recipe ended with `SKIP: <prover> not installed; exit 0`. The proofs were
-# asserted, not enforced. This lane is deliberately intolerant:
+# Scope, per standards/3-practice/PROOF-POLICY.adoc and mathesis
+# `estate-mathematical-architecture`:
 #
-#   * a proof source that is not registered in the manifest  -> FAIL
-#   * a manifest entry with no file behind it                -> FAIL
-#   * the two registries disagreeing                         -> FAIL
+#   * §1: a theory proof's source of truth is Agda. XP-1's Agda leg is RECORDED
+#     in verification/proofs/LEDGER.json (commit + run + assumptions pinned) and
+#     audited for form here. The lane does not re-derive it.
+#   * §2: that statement must be rechecked in Rocq AND Lean — transported
+#     through Dedukti/Lambdapi or re-proved by hand, with the statement
+#     comparison recorded and no Mathlib. Those are the legs this lane
+#     examines. BOTH ARE CURRENTLY OPEN: no witness exists, so the lane
+#     compiles zero recheck modules and the gate prints the gap as a
+#     `POLICY GAP` line on every run.
+#   * §5/§6: status is the closed vocabulary (open | argued | tested-only |
+#     proven-with-postulates | proven); a grade must be supported by the legs
+#     behind it; axioms are tracked (`Print Assumptions`, `#print axioms`), not
+#     assumed; receipts are pinned to a commit.
+#   * §7: a gate must be verified BOTH WAYS. tests/proofs/run-controls.sh feeds
+#     the instrument a closed Rocq proof and a closed Lean proof (must pass), a
+#     proof closed with `Admitted` and one closed with `sorry` (must fail), a
+#     ledger claiming a grade with no leg behind it (must fail), and a witness
+#     planted on disk that no ledger row claims (must fail).
+#
+# What this lane refuses, and why it exists: before it, `just proof-check-all`
+# was never invoked by CI and each recipe ended in
+# `SKIP: <prover> not installed; exit 0`. The proofs were asserted, not
+# enforced. This lane is deliberately intolerant:
+#
+#   * a proof source that is not in the ledger / a MANIFEST  -> FAIL
+#   * a ledger or manifest entry with no file behind it      -> FAIL
+#   * the registries disagreeing                             -> FAIL
+#   * a grade the proven legs do not support                 -> FAIL
 #   * nothing checked at all ("green on zero work")          -> FAIL
 #   * a required prover not installed                        -> BLOCKED (fails)
 #   * a proof that does not typecheck                        -> FAIL
@@ -19,14 +43,21 @@
 # There is no `continue-on-error` in this workflow, and no step is skipped when
 # a tool is missing: a missing toolchain makes the run red, which is the point.
 #
-# Toolchain is pinned three ways so the lane cannot float:
+# A green run does NOT mean XP-1 is verified in an independent kernel. It means
+# the ledger is honest about what has and has not been proven. Today it records
+# Grade 3 (Agda only) with both recheck legs open.
+#
+# Toolchains are pinned so the lane cannot float:
 #   * Agda 2.8.0 — official release binary, sha256-verified before extraction
 #   * just 1.59.0 — exact version, installed from crates.io with --locked
+#   * Rocq/Coq 8.18 — Ubuntu 24.04's package, version asserted after install
+#   * Lean 4 — official release archive, exact version asserted
 #   * libraries — agda-stdlib v2.3 (tag + commit asserted), echo-types and
 #     absolute-zero pinned by commit, each re-verified after checkout
 #
-# Receipts (versions, pins, registry hashes, per-prover results) are written to
-# target/proof-receipts/ and uploaded as the `proof-receipts` artifact.
+# Receipts (versions, pins, ledger hash, census, policy gaps, per-prover
+# results) are written to target/proof-receipts/ and uploaded as the
+# `proof-receipts` artifact.
 name: Proof CI
 
 on:
@@ -37,7 +68,10 @@ on:
       - '.machine_readable/bot_directives/placement.a2ml'
       - 'scripts/check-coordination-boundary.sh'
       - 'scripts/check-proof-enrolment.sh'
+      - 'scripts/check-proof-ledger.sh'
+      - 'scripts/check-proofs.sh'
       - 'scripts/proof-scan-dangerous.sh'
+      - 'tests/proofs/**'
       - 'Justfile'
       - 'PROOF-NEEDS.adoc'
       - 'PROOF-STATUS.adoc'
@@ -49,7 +83,10 @@ on:
       - '.machine_readable/bot_directives/placement.a2ml'
       - 'scripts/check-coordination-boundary.sh'
       - 'scripts/check-proof-enrolment.sh'
+      - 'scripts/check-proof-ledger.sh'
+      - 'scripts/check-proofs.sh'
       - 'scripts/proof-scan-dangerous.sh'
+      - 'tests/proofs/**'
       - 'Justfile'
       - 'PROOF-NEEDS.adoc'
       - 'PROOF-STATUS.adoc'
@@ -68,6 +105,10 @@ env:
   # sha256 of Agda-v2.8.0-linux.tar.xz (official GitHub release asset, agda/agda)
   AGDA_LINUX_SHA256: '824081b8dcbe431289a50ac6bd83e451f390c51c3884ac7a8c4a5c0df2632faf'
   JUST_VERSION: '1.59.0'
+  # Ubuntu 24.04 (noble) ships this exact Rocq/Coq build; asserted below.
+  ROCQ_VERSION: '8.18'
+  # No Mathlib (PROOF-POLICY §2): the lean leg must be core Lean. Asserted below.
+  LEAN_VERSION: '4.15.0'
   STDLIB_TAG: 'v2.3'
   STDLIB_COMMIT: '8326c7475af1fa456ca04a0203c168d5d7ff842b'
   # echo-types: the library the XP-1 proof is *about* (PROOF-STATUS.adoc).
@@ -78,7 +119,7 @@ env:
 
 jobs:
   proofs:
-    name: just proof-check-all (strict)
+    name: just proof-witness-check (strict)
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     permissions:
@@ -109,6 +150,44 @@ jobs:
           cargo install just --version "${JUST_VERSION}" --locked
           command -v just
           just --version
+
+      - name: Install pinned Rocq (Ubuntu package, version asserted)
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          # zstd is for the Lean archive; coq is the Rocq recheck leg's compiler.
+          sudo apt-get install -y --no-install-recommends coq zstd
+          for tool in coqc coqtop coqchk; do command -v "$tool"; done
+          coqc --version
+          coqc --version | grep -F "${ROCQ_VERSION}" \
+            || { echo "::error::Rocq is not the pinned ${ROCQ_VERSION}"; coqc --version; exit 1; }
+
+      - name: Install pinned Lean 4 (official release archive, version asserted)
+        run: |
+          set -euo pipefail
+          # Core Lean only. Mathlib is forbidden by PROOF-POLICY §2, so nothing
+          # here fetches a package cache or a library: the leg must stand on the
+          # Lean kernel alone.
+          NAME="lean-${LEAN_VERSION}-linux.tar.zst"
+          URL="https://github.com/leanprover/lean4/releases/download/v${LEAN_VERSION}/${NAME}"
+          mkdir -p "$RUNNER_TEMP/lean-dl" "$RUNNER_TEMP/lean"
+          curl -fsSL -o "$RUNNER_TEMP/lean-dl/$NAME" "$URL"
+          # The release asset ships no published digest, so the archive identity
+          # is recorded rather than asserted against an upstream constant. The
+          # version assertion below is what actually pins the toolchain: a
+          # substituted archive that is not this Lean fails the step.
+          echo "$(stat -c%s "$RUNNER_TEMP/lean-dl/$NAME") bytes  sha256 $(sha256sum "$RUNNER_TEMP/lean-dl/$NAME" | cut -d' ' -f1)" \
+            | tee "$RUNNER_TEMP/lean-dl/archive.txt"
+          tar --zstd -xf "$RUNNER_TEMP/lean-dl/$NAME" -C "$RUNNER_TEMP/lean"
+          # Do NOT copy the binaries elsewhere: Lean resolves its core library
+          # relative to the executable, so a copied binary loses its sysroot.
+          echo "$RUNNER_TEMP/lean/lean-${LEAN_VERSION}-linux/bin" >> "$GITHUB_PATH"
+          export PATH="$RUNNER_TEMP/lean/lean-${LEAN_VERSION}-linux/bin:$PATH"
+          command -v lean lake
+          lean --version
+          lean --version | grep -F "${LEAN_VERSION}" \
+            || { echo "::error::Lean is not the pinned ${LEAN_VERSION}"; lean --version; exit 1; }
+          lake --version
 
       - name: Fetch pinned proof libraries
         id: libs
@@ -196,6 +275,10 @@ jobs:
             echo "runner-image: ${ImageOS:-unknown} ${ImageVersion:-unknown}"
             echo "agda: $(agda --version | head -n1)"
             echo "just: $(just --version)"
+            echo "rocq: $(coqc --version | head -n1)"
+            echo "rocq deb: $(dpkg-query -W -f='\${Version}' coq 2>/dev/null || echo unknown)"
+            echo "lean: $(lean --version | head -n1)"
+            echo "lean archive: $(cat "$RUNNER_TEMP/lean-dl/archive.txt" 2>/dev/null || echo unknown)"
             echo "agda-stdlib: $STDLIB_TAG @ $STDLIB_COMMIT"
             echo "echo-types: $ECHO_TYPES_COMMIT"
             echo "absolute-zero: $ABSOLUTE_ZERO_COMMIT"
@@ -208,14 +291,91 @@ jobs:
             || { echo "::error::Agda version is not the pinned ${AGDA_VERSION}"; agda --version; exit 1; }
           just --version | grep -F "${JUST_VERSION}" \
             || { echo "::error::just version is not the pinned ${JUST_VERSION}"; just --version; exit 1; }
+          coqc --version | grep -F "${ROCQ_VERSION}" \
+            || { echo "::error::Rocq version is not the pinned ${ROCQ_VERSION}"; coqc --version; exit 1; }
+          lean --version | grep -F "${LEAN_VERSION}" \
+            || { echo "::error::Lean version is not the pinned ${LEAN_VERSION}"; lean --version; exit 1; }
 
       - name: Enrolment gate (unlisted proofs, registry drift, missing provers)
         run: just proof-enrolment
 
-      - name: Run the real all-proofs target
+      # PROOF-POLICY §7: a gate that has only ever been seen to pass is
+      # indistinguishable from one that cannot fail. These controls feed the
+      # instrument closed proofs (must pass) and planted violations (must fail)
+      # before the lane is trusted with the real ledger. exit 2 = BLOCKED, which
+      # fails this step: an instrument that could not be exercised proved nothing.
+      - name: Instrument controls, both ways (§7)
         run: |
           set -o pipefail
-          just proof-check-all 2>&1 | tee "$RUNNER_TEMP/proof-check-all.log"
+          bash tests/proofs/run-controls.sh 2>&1 | tee "$RUNNER_TEMP/proof-controls.log"
+          cp "$RUNNER_TEMP/proof-controls.log" "$PROOF_RECEIPT_DIR/controls.txt"
+
+      # The CI target: audit the ledger, then compile every recheck leg the
+      # ledger declares. XP-1 declares Rocq and Lean 4, both `open`, so these
+      # compile zero modules — and the ledger gate refuses any claim that they
+      # compiled. The gate's receipt (census + POLICY GAP lines) is written to
+      # $PROOF_RECEIPT_DIR/ledger.txt by `just proof-ledger-check`.
+      - name: Ledger audit + declared recheck legs (Rocq, Lean 4)
+        run: |
+          set -o pipefail
+          just proof-witness-check 2>&1 | tee "$RUNNER_TEMP/proof-witness-check.log"
+
+      # "PASS" from a per-prover step must never be reachable with nothing
+      # compiled. scripts/check-proofs.sh is the estate instrument and is used
+      # verbatim, so its zero-module case is closed around it here: if the ledger
+      # records a proven Rocq/Lean leg, that leg's MANIFEST must list at least one
+      # gated module. With no proven legs (today) zero compiled modules is the
+      # honest count and is stated as such, not glossed as a pass.
+      - name: Zero-work guard (a proven leg cannot compile nothing)
+        run: |
+          set -euo pipefail
+          LEDGER=verification/proofs/LEDGER.json
+          bad=0
+          while IFS= read -r leg; do
+            [ -z "$leg" ] && continue
+            case "$leg" in
+              rocq|coq)  dir=coq;   prover="Rocq" ;;
+              lean4|lean) dir=lean4; prover="Lean 4" ;;
+              *) continue ;;
+            esac
+            gated="$(awk -F'|' '/^[[:space:]]*#/ || NF < 3 { next } $3 == "gated" { c++ } END { print c+0 }'               "verification/proofs/$dir/MANIFEST")"
+            echo "$prover: ledger records a proven leg; $dir/MANIFEST lists $gated gated module(s)"
+            if [ "$gated" -lt 1 ]; then
+              echo "::error::zero-work: the ledger records a proven $prover leg but verification/proofs/$dir/MANIFEST lists no gated module"
+              bad=1
+            fi
+          done < <(jq -r '.theorems[].legs[]? | select(.status == "proven" or .status == "proven-with-postulates") | .prover' "$LEDGER" | sort -u)
+          if [ "$bad" -ne 0 ]; then exit 1; fi
+          echo "no recheck leg is recorded proven, so zero compiled recheck modules is the honest count — not a pass"
+
+      # The Agda SOURCE leg. PROOF-POLICY §1 makes Agda the source of truth; the
+      # ledger records it at a pinned commit and the audit checks that record.
+      # Typechecking it here keeps the recorded status true rather than assumed.
+      - name: Agda source leg (recorded in the ledger, re-typechecked here)
+        run: |
+          set -o pipefail
+          just proof-check-agda 2>&1 | tee "$RUNNER_TEMP/proof-agda.log"
+
+      # A green run means "the ledger is honest", NOT "the theorem is verified in
+      # an independent kernel". Say so on the check run itself, where it cannot
+      # be missed by someone who only reads the badge.
+      - name: Announce policy gaps (recorded, not verified)
+        run: |
+          set -uo pipefail
+          RECEIPT="$PROOF_RECEIPT_DIR/ledger.txt"
+          if [ ! -f "$RECEIPT" ]; then
+            echo "::error::no ledger receipt was written — the ledger gate did not run"
+            exit 0
+          fi
+          GAPS="$(awk '/^gaps:/{f=1;next} /^[a-z-]+:/{f=0} f' "$RECEIPT" | sed 's/^  - //')"
+          if [ -z "${GAPS//[[:space:]]/}" ] || [ "$GAPS" = "(none)" ]; then
+            echo "no policy gaps recorded"
+            exit 0
+          fi
+          while IFS= read -r gap; do
+            [ -z "${gap// }" ] && continue
+            echo "::warning::PROOF-POLICY §2 obligation UNMET (recorded as open, not verified):%0A${gap}"
+          done <<< "$GAPS"
 
       # Diagnostics only: the run is already red by the time this executes.
       # Proof failures are annotated so the failing module/error is visible in
@@ -224,9 +384,9 @@ jobs:
         if: failure()
         run: |
           set -uo pipefail
-          LOG="$RUNNER_TEMP/proof-check-all.log"
+          LOG="$RUNNER_TEMP/proof-witness-check.log"
           if [ ! -f "$LOG" ]; then
-            echo "::error::proof-check-all produced no log (a step before it failed)"
+            echo "::error::proof-witness-check produced no log (an earlier step failed); see the step logs above"
             exit 0
           fi
           # GitHub caps annotations at 10 per step and each annotation is
@@ -234,9 +394,9 @@ jobs:
           # newline-encoded (%0A). That keeps the failing prover's own
           # diagnostic attached to the check run, not buried in runner logs.
           PAYLOAD="$(grep -vE '^[[:space:]]*$' "$LOG" | tail -n 100 | head -c 60000 | sed ':a;N;$!ba;s/\n/%0A/g')"
-          echo "::error::proof-check-all failed. Log tail:%0A${PAYLOAD}"
+          echo "::error::proof-witness-check failed. Log tail:%0A${PAYLOAD}"
           {
-            echo "### proof-check-all log tail (failure diagnostics)"
+            echo "### proof-witness-check log tail (failure diagnostics)"
             echo '```'
             tail -n 60 "$LOG"
             echo '```'

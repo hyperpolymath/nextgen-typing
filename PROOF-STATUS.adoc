@@ -3,59 +3,149 @@
 ____
 Coordination repo. The only proofs tracked here are *cross-project*
 proofs (spanning ≥2 constituent repos). Single-project proof status is
-tracked in the owning repos. Requirements: `+PROOF-NEEDS.md+`.
+tracked in the owning repos. Requirements: `+PROOF-NEEDS.adoc+`.
 ____
 
-=== Summary
+The machine-readable record of every proof is
+`+verification/proofs/LEDGER.json+`. This page is a *summary of that ledger*;
+where the two disagree the ledger is authoritative and
+`+just proof-ledger-check+` fails. Nothing here is a percentage, a confidence
+estimate, or a count of "done" work: mathesis §6 requires the exact form —
+Open / Claimed, the grade, the axiom list, and the commit the receipt was taken
+at.
 
-[cols=",,,,",options="header",]
+=== The one theorem
+
+[cols="10%,12%,9%,26%,21%,22%",options="header",]
 |===
-|Category |Total |Done |In Progress |Remaining
-|Cross-project (XP) |1 |1 |0 |0
-|*Total* |*1* |*1* |*0* |*0*
+|ID |Kind |Grade |Source leg |Rocq recheck leg |Lean 4 recheck leg
+|XP-1 |theory |*3* |Agda — `+proven+`
+(`+EchoTyping.agda+`, `+Verification.agda+`)
+|*open* — no witness |*open* — no witness
 |===
 
-The earlier "`0 of 7`" RSR ABI/TP figure was template residue: it
-counted mandatory ABI/FFI + typing proofs that belong in `+typed-wasm+`
-/ `+typell+`, not in this coordination layer. Those scaffold files were
-removed (the ABI proof obligations are owned by `+typed-wasm+`).
+`+XP-1+` states that the pipeline's information-losing typing operations
+(AffineScript affine weakening; refinement erasure into the
+typed-wasm/kernel layer) are instances of echo-types' fiber construction.
 
-=== Proofs Present
+=== What the grade means
 
-[width="100%",cols="12%,15%,15%,17%,13%,28%",options="header",]
+mathesis `+estate-mathematical-architecture+` §5 defines the rungs. *Grade 3*
+is the lowest: a proof carried by Agda alone, under `+--safe --without-K+`, and
+*not translated* to another prover. That is exactly and only what is
+established here.
+
+The rungs above it (`+2i+` = one independent prover, `+2ii+` = two
+fundamentally distinct architectures, `+1+` = machine-checked through a
+verified checker API) are *not established*. They are named here only so the
+gap is unmistakable: *no leg other than Agda has been proven for XP-1.*
+
+* `+2i+` needs exactly one independent system (Lean 4 or Rocq) to carry the
+  statement. Neither does.
+* `+2ii+` needs two, *and* the family caveat applies: Agda, Rocq and Lean are
+  all dependently-typed (DTT/CIC). Translating between them does not produce a
+  second architecture, so `+2ii+` is unreachable from the Agda/Rocq/Lean
+  family alone — it would need a non-DTT leg such as Isabelle/HOL.
+* `+1+` needs the statement checked through a verified checker API (AXLE for
+  Lean, coq-lsp's REST surface for Rocq, isabelle-server). No such surface is
+  wired up.
+
+=== The recheck obligation, stated plainly
+
+`+standards/3-practice/PROOF-POLICY.adoc+` §1 makes Agda the source of truth
+for theory proofs and §2 makes Rocq *and* Lean the recheck legs: each theorem
+must be *transported* (Dedukti/Lambdapi) or *re-proved by hand*, the route and
+the statement comparison recorded, and no Mathlib allowed. **That obligation is
+currently unmet for XP-1.** Both legs are recorded `+open+` in the ledger, with
+the blocker that stops each one, and the gate prints them as `+POLICY GAP+`
+lines on every run. An `+open+` leg is a legal state in the §5 vocabulary; it
+is not verification, and no part of this page or of CI claims that it is.
+
+[cols="14%,30%,56%",options="header",]
 |===
-|ID |Proof |Spans |Prover |File |Verified By
-|XP-1 |Pipeline information-loss = echo-types fibers |echo-types ↔
-affinescript ↔ typed-wasm |Agda (`+--safe --without-K+`)
-|`+verification/proofs/agda/EchoTyping.agda+`
-|`+just proof-check-all+` in `.github/workflows/proof-ci.yml`
+|Leg |Status |What would have to happen (the recorded blocker)
+|Rocq |*open* |Transport the Agda term through Dedukti/Lambdapi (recording the
+statement comparison and the `+Print Assumptions+` output), or re-prove the
+statement by hand in Rocq. No `+TypeSafety.v+`-style witness exists here yet —
+the Rocq MANIFEST is a header explaining this, and
+`+just proof-check-coq+` therefore compiles zero modules while the ledger
+refuses any claim that they were compiled.
+
+|Lean 4 |*open* |Same choice, re-proved by hand in core Lean: Mathlib is
+forbidden by §2, and until a released Lambdapi Lean exporter exists there is no
+transport route to use. `+#print axioms+` must then show no axiom, and
+`+sorryAx+` must not appear.
+|===
+
+=== Assumptions and axiom tracking
+
+mathesis §6 requires the axioms behind a proof to be tracked, not assumed away:
+`+#print axioms+` in Lean, `+Print Assumptions+` in Rocq. Those are kernel
+queries, and they are the only accepted evidence that a compiled witness is
+closed — compiling is not: Rocq accepts `+Admitted+` and Lean accepts `+sorry+`
+with exit status 0. Since no witness exists on either leg there is no axiom
+list for them yet; recording one would be fabrication.
+
+The Agda source leg rests on these pinned, recorded assumptions (all in the
+ledger):
+
+[cols="30%,70%",options="header",]
+|===
+|Component |Pin
+|Agda |2.8.0
+|agda-stdlib |v2.3 (`+8326c7475af1fa456ca04a0203c168d5d7ff842b+`)
+|echo-types |`+b0982c44f36133acd2d0e1d4e03cf031fff7a470+`
+|absolute-zero |`+f486c29903434589117fa0662c6f29b0f17d1d5f+`
+|Receipt commit |`+4c6b918998b9756fdeb1e64c74de27a968677ac1+` (run 41299544043)
 |===
 
 === Enforcement (CI)
 
-Until 2026-11-01 these proofs were *asserted*: `+just proof-check-all+`
-existed but no workflow invoked it, and every prover recipe ended in
-`+SKIP: <prover> not installed+` followed by `+exit 0+`. Worse, a prover
-directory with no sources still printed `+PASS+`, and the banned-pattern scan
-matched the prose "zero postulates" in `+EchoTyping.agda+` while ignoring real
-escape hatches inside block comments. The lane below closes all three.
+Nothing on this page is trusted because it is written here. Each claim is
+gated, and every gate refuses rather than skips:
 
 [cols="30%,70%",options="header",]
 |===
 |Guard |Behaviour
+|`+just proof-ledger-check+`
+(`+scripts/check-proof-ledger.sh+`)
+|Audits `+LEDGER.json+` against PROOF-POLICY §5 and mathesis §5-§6: schema and
+closed status vocabulary; a grade the proven legs do not support (a moved leg
+with no artifact, no MANIFEST entry, no route, no statement comparison or no
+axiom list); `+proven+` carrying axioms; `+proven-with-postulates+` without
+them; a Mathlib import; escape hatches; undeclared axioms; registry drift
+between the MANIFESTs, `+ALLOWED_PROOFS+` and the files on disk; a witness on
+disk that neither the ledger nor a MANIFEST claims; and this page claiming a
+grade the ledger does not record. Open legs are printed as `+POLICY GAP+`, and
+are never counted as verification.
+
+|`+just proof-witness-check+`
+|The CI target: the enrolment and banned-pattern gates, the ledger audit, and
+*every recheck leg the ledger declares* (`+proof-check-coq+`, `+proof-check-lean4+`). Today both legs are declared open,
+so the manifests compile nothing and the gate says so — the lane is green on
+"the ledger is honest", never on "the theorem is verified".
+
+|`+tests/proofs/run-controls.sh+`
+|PROOF-POLICY §7 requires a gate to be verified *both ways*. These controls
+feed the instrument a closed Rocq proof and a closed Lean proof (must be
+accepted, `+Print Assumptions+` / `+#print axioms+` must report them closed and
+axiom-free), a proof closed with `+Admitted+` and one closed with `+sorry+`
+(must be rejected), a ledger claiming a grade with no leg behind it, and a
+witness planted on disk that no ledger row claims. A control that stops
+failing is a broken instrument, and the run goes red. Where `+coqc+` or
+`+lean+` is absent the controls report **BLOCKED**, never a pass.
+
 |`+just proof-enrolment+`
 (`+scripts/check-proof-enrolment.sh+`)
 |Parses `+[verification].allowed-proofs+` (placement.a2ml) and
 `+ALLOWED_PROOFS+` (`+scripts/check-coordination-boundary.sh+`) and requires
 them to agree. Fails when a proof source is unlisted, when a registered entry
 has no file behind it, when zero proofs are enrolled, or when an `.agda` proof
-loses `+--safe+`/`+--without-K+`. A required prover missing from `PATH` is
-**BLOCKED** (exit 2) — never a skip, never a pass.
+loses `+--safe+`/`+--without-K+`.
 
 |`+just proof-check-agda+` (and the Idris2/Lean4/Coq equivalents)
 |Exits 2 (BLOCKED) when proofs for that prover are enrolled but the prover is
-absent; exits 1 on any typecheck failure; prints `+NONE+` instead of `+PASS+`
-when that prover has no enrolled sources.
+absent; exits 1 on any typecheck failure.
 
 |`+just proof-scan-dangerous+`
 (`+scripts/proof-scan-dangerous.sh+`)
@@ -64,62 +154,59 @@ when that prover has no enrolled sources.
 on any hit outside a comment, and fails when it scans zero files.
 
 |`.github/workflows/proof-ci.yml`
-|Hosted lane running `+just proof-check-all+` on pushes/PRs that touch
-`+verification/proofs/**+`, the two registries, the gate scripts, `+Justfile+`
-or the workflow itself. Pins Agda 2.8.0 (official binary, sha256-verified),
-agda-stdlib v2.3 (tag + commit asserted), `+just+` 1.59.0, and
+|Hosted lane running `+just proof-witness-check+` (plus the Agda source leg and
+the both-ways controls) on pushes/PRs that touch `+verification/proofs/**+`,
+`+tests/proofs/**+`, the two registries, the gate scripts, `+Justfile+` or the
+workflow itself. Pins Agda 2.8.0 (official binary, sha256-verified),
+agda-stdlib v2.3 (tag + commit asserted), `+just+` 1.59.0, Rocq, Lean 4, and
 echo-types / absolute-zero by commit. No `+continue-on-error+`, no
-skip-on-missing-tool. Receipts are uploaded as the `+proof-receipts+` artifact.
+skip-on-missing-tool.
 |===
 
 === Verification
 
 [source,bash]
 ----
-# Everything, exactly as CI runs it (this is the real all-proofs target):
+# What CI runs — ledger audit + every declared recheck leg:
+just proof-witness-check
+
+# The instrument verified both ways (needs coqc + lean; BLOCKED without them):
+bash tests/proofs/run-controls.sh
+
+# The ledger at a glance (grade, and each leg's status and blocker):
+just proof-status
+
+# Everything, local only — the ledger plus all four provers:
 just proof-check-all
 
-# Just the registry/manifest gate (no prover needed):
+# Registry gate, no prover needed:
 bash scripts/check-proof-enrolment.sh --static-only
-
-# One prover, directly. The repo's own library manifest must be activated or
-# Agda reports [ModuleNameDoesntMatchFileName] for every module (receipt:
-# proof-ci run 41299261152, 2026-11-01). Register once with
-# `agda --print-agda-app-dir`, then add
-#   verification/proofs/agda/nextgen-typing.agda-lib
-# plus the `standard-library`, `echo-types` and `absolute-zero` manifests
-# (echo-types' own manifest depends on absolute-zero) to
-# <agda-app-dir>/libraries:
-agda --safe --library=nextgen-typing verification/proofs/agda/Verification.agda
-
-# Enforce the coordination boundary (no project code / non-allowlisted proofs)
-bash scripts/check-coordination-boundary.sh
 ----
 
-=== Enforcement receipts
+=== Receipts
 
 [cols="16%,20%,64%",options="header",]
 |===
 |Date |Receipt |Result
-|2026-11-01 |proof-ci run
-https://github.com/hyperpolymath/nextgen-typing/actions/runs/41299544043
-(sha `+4c6b918+`) |**PASS** — `+just proof-check-all+` green on the hosted
-lane: enrolment gate PASS (2 proof sources, 3 registered entries, registries
-agree), Agda 2.8.0 typecheck of `+EchoTyping.agda+` and `+Verification.agda+`
-under `+--safe --library=nextgen-typing+` against agda-stdlib v2.3,
-echo-types `+b0982c4+` and absolute-zero `+f486c29+`, banned-pattern scan
-clean. This is the first CI receipt that these proofs typecheck.
+|2026-11-01 |proof-ci run 41299544043 (sha `+4c6b918+`) |**PASS** for the Agda
+source leg: enrolment gate PASS (2 proof sources, registered entries agree),
+Agda 2.8.0 typecheck of `+EchoTyping.agda+` and `+Verification.agda+` under
+`+--safe --library=nextgen-typing+` against agda-stdlib v2.3, echo-types
+`+b0982c4+` and absolute-zero `+f486c29+`, banned-pattern scan clean. This is
+the receipt pinned in the ledger for the Agda leg — it is *not* a receipt for
+XP-1 as a whole.
 
 |2026-11-01 |proof-ci runs 41298824595, 41299096293 (first attempts) |**FAIL**,
 and correctly so: the proofs had never actually been run, and the old
 documented invocation did not activate `+nextgen-typing.agda-lib+`, so every
 module failed with `+[ModuleNameDoesntMatchFileName]+`. Fixed by activating the
-library in the recipe; no proof source or safety flag was changed.
+library; no proof source or safety flag was changed.
 
-|2026-11-01 |local receipts (this repository, no Agda installed) |Enrolment
-gate `+--static-only+`: **PASS** (2 sources, 3 registered entries).
-Banned-pattern scan: **PASS** (2 files). `+just proof-check-all+`:
-**BLOCKED** (exit 2, Agda absent) — recorded as blocked, not as a pass.
+|2026-11-01 |local receipts (no prover toolchain installed) |Enrolment gate
+`+--static-only+`: **PASS**. Banned-pattern scan: **PASS** (2 files).
+`+just proof-witness-check+` and the both-ways controls: **BLOCKED** — no
+`+agda+`, `+coqc+` or `+lean+` here. Recorded as blocked (PROOF-POLICY §6: say
+so instead of reporting the leg as passing), not as a pass.
 |===
 
 === Changelog
@@ -127,6 +214,13 @@ Banned-pattern scan: **PASS** (2 files). `+just proof-check-all+`:
 [width="100%",cols="32%,42%,26%",options="header",]
 |===
 |Date |Change |By
+|2026-11-01 |Status re-anchored to `+verification/proofs/LEDGER.json+` in the
+policy's vocabulary. XP-1 recorded as *Grade 3* (Agda only); Rocq and Lean 4
+recheck legs recorded `+open+` under PROOF-POLICY §2, with their blockers. The
+"1 of 1 done" figure is withdrawn: it inflated a single-prover proof into a
+finished one (mathesis §11). Gate `+scripts/check-proof-ledger.sh+` added, plus
+both-ways controls `+tests/proofs/run-controls.sh+` |Arena agent
+
 |2026-11-01 |Proofs are now *enforced*, not asserted: `+just proof-check-all+`
 runs in `.github/workflows/proof-ci.yml`; enrolment gate fails unlisted/stale/
 zero-work runs and blocks on a missing prover. Lane green at `+4c6b918+`

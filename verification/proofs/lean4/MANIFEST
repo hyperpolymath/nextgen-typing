@@ -1,0 +1,10 @@
+# Lean 4 recheck-leg manifest — read by scripts/check-proofs.sh lean4
+# Format: <source-root>|<module-relative-to-source-root>|gated|quarantine|<note>
+#
+# PROOF-POLICY §2 requires every Agda theory proof to be rechecked in Lean 4 as
+# well as Rocq, and forbids Mathlib. No Lean witness exists yet: XP-1's lean4
+# leg is recorded `open` in ../LEDGER.json, so no artifact is listed here.
+#
+# A Lean leg must be re-proved in core Lean until a released Lambdapi Lean
+# exporter exists. Record the leg's route, statement comparison, axiom list
+# (`#print axioms`) and evidence commit in ../LEDGER.json in the same change.

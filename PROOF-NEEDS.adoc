@@ -68,12 +68,21 @@ When adding one, register it in `+[verification].allowed-proofs+` of
 
 CI rejects any PR introducing these. The enforcement is
 `+just proof-scan-dangerous+` (`+scripts/proof-scan-dangerous.sh+`, run inside
-`+just proof-check-all+`), plus the enrolment gate
+`+just proof-check-all+`) and the ledger gate
+`+just proof-ledger-check+` (`+scripts/check-proof-ledger.sh+`, run in CI and
+inside every sweep), plus the enrolment gate
 (`+scripts/check-proof-enrolment.sh+`) which fails any proof that is not
 registered in both `+[verification].allowed-proofs+` of
 `+placement.a2ml+` and `+ALLOWED_PROOFS+` of
 `+scripts/check-coordination-boundary.sh+`. Hosted lane:
-`+.github/workflows/proof-ci.yml+`.
+`+.github/workflows/proof-ci.yml+`, which runs `+just proof-witness-check+` —
+the ledger audit plus every recheck leg the ledger declares — after the
+both-ways instrument controls in `+tests/proofs/run-controls.sh+`.
+
+Status vocabulary (PROOF-POLICY §5) and grades (mathesis
+`+estate-mathematical-architecture+` §5) live in `+PROOF-STATUS.adoc+` and are
+recorded machine-readably in `+verification/proofs/LEDGER.json+`. Today XP-1 is
+*Grade 3* (Agda only) with its Rocq and Lean 4 recheck legs `+open+`.
 
 === References
 

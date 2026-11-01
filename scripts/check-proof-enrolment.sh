@@ -154,8 +154,16 @@ while IFS= read -r entry; do
 done <<<"$boundary_list"
 
 # --- 2. enumerate what is actually on disk ----------------------------------
+# Proof METADATA is not a proof. The per-prover MANIFEST (the compile list read
+# by scripts/check-proofs.sh) and LEDGER.json (the policy ledger, audited by
+# scripts/check-proof-ledger.sh) are deliberately tracked under $PROOFS_DIR, but
+# registering them in allowed-proofs/ALLOWED_PROOFS would mean registering the
+# gate's own inputs as proofs. They are excluded here exactly as they are in
+# scripts/check-coordination-boundary.sh, and the ledger gate cross-checks them
+# against each other and against this registry.
 disk_files="$(git ls-files -- "$PROOFS_DIR" \
   | grep -Ev '\.(a2ml|adoc|md)$|(^|/)\.gitkeep$' \
+  | grep -Ev '(^|/)MANIFEST$|(^|/)LEDGER\.json$' \
   | sort)"
 
 disk_proofs="$(while IFS= read -r f; do

@@ -21,15 +21,21 @@ boundary via `.github/workflows/coordination-boundary.yml`
 (`scripts/check-coordination-boundary.sh`).
 ====
 
-== Current contents
+== Layout
 
 [source]
 ----
 proofs/
-└── agda/
-    ├── EchoTyping.agda          # echo-types <-> AffineScript/typed-wasm pipeline
-    ├── Verification.agda        # aggregator: `agda Verification.agda` checks the set
-    └── nextgen-typing.agda-lib  # depends on: standard-library, echo-types
+├── LEDGER.json                  # the machine-readable record of every theorem
+├── agda/                        # SOURCE leg (PROOF-POLICY §1: theory is Agda)
+│   ├── EchoTyping.agda          # echo-types <-> AffineScript/typed-wasm pipeline
+│   ├── Verification.agda        # aggregator: checks the set
+│   ├── nextgen-typing.agda-lib  # depends on: standard-library, echo-types
+│   └── MANIFEST
+├── coq/                         # recheck leg (§2) — currently OPEN, no witness
+│   └── MANIFEST
+└── lean4/                       # recheck leg (§2) — currently OPEN, no witness
+    └── MANIFEST
 ----
 
 `EchoTyping.agda` is the worked example of a qualifying proof: it depends on the
@@ -39,40 +45,53 @@ erasure into the typed-wasm/kernel layer) are instances of echo-types' fiber
 construction. It genuinely spans `echo-types`, `affinescript`, and `typed-wasm`,
 so it is coordination material rather than any one project's.
 
-== Adding a proof here
+== Two records, one truth
 
-Before adding anything, check the gate:
+*`LEDGER.json`* is the record of what has actually been proven and how far it
+has travelled. Under `standards/3-practice/PROOF-POLICY.adoc` §1 a theory proof
+has an Agda source leg, and §2 requires that statement to be *rechecked* in Rocq
+and Lean — `transported` (Dedukti/Lambdapi) or `re-proved` by hand, with the
+statement comparison recorded and no Mathlib. Each theorem in the ledger carries
+its grade (mathesis `estate-mathematical-architecture` §5), the status of every
+leg from the §5 vocabulary (`open`, `argued`, `tested-only`,
+`proven-with-postulates`, `proven`), the route taken, the axioms and the exact
+commit of the receipt.
 
-. *Does it import or relate two or more constituent repos?* If not, it is a
-  single-project proof — put it in the owning repo (see `placement.a2ml`).
-. If it qualifies, add the file under the appropriate prover subdirectory, then
-  register it in **both**:
-  * `[verification].allowed-proofs` in `.machine_readable/bot_directives/placement.a2ml`, and
-  * `ALLOWED_PROOFS` in `scripts/check-coordination-boundary.sh`.
-. Ensure `--safe` / `%default total` / no escape hatches (see Banned Patterns).
-. Run the gate. `just proof-enrolment` fails when a proof source under
-  `verification/proofs/` is not registered in *both* places above, when a
-  registered entry has no file behind it, when the two registries disagree,
-  and when zero proofs are enrolled. It is the first dependency of
-  `just proof-check-all`, so an unlisted proof cannot reach `main` green.
+*A `MANIFEST` per prover* is the compile list. One entry per line:
 
-== How a proof is checked
+[source]
+----
+<source-root>|<module-rel-to-source-root>|gated|quarantine|<note>
+----
 
-Every proof source here is typechecked by the real all-proofs target, which CI
-runs on any change to proofs, registries, `Justfile` or the lane:
+`gated` must compile. `quarantine` must *continue* to fail — if a quarantined
+module starts compiling, the gate fails and tells you to promote it, so the list
+cannot rot into a permanent excuse. Blank lines and `#` comments are ignored,
+which is why `coq/MANIFEST` and `lean4/MANIFEST` can explain their empty state.
+
+A witness on disk that neither the ledger nor a MANIFEST claims is an error, in
+both directions: no ledger row without a file, no file without a ledger row.
+
+== Current state
+
+`XP-1` is *Grade 3*: Agda only, not translated. The Rocq and Lean 4 recheck legs
+are `open` — the estate policy's §2 obligation is *unmet*, and the ledger says so
+with the blocker that stops each leg rather than leaving a blank. Both legs are
+reported as `POLICY GAP` on every run; neither is counted as verification.
+
+== How a proof here is checked
 
 [source,bash]
 ----
-just proof-check-all        # .github/workflows/proof-ci.yml
+just proof-witness-check     # what CI runs: ledger audit + declared recheck legs
+just proof-status            # grade, and each leg's status and blocker
+just proof-check-all         # local only: ledger + all four provers
 ----
 
-A prover that is required (because proofs for it are enrolled) but absent from
-`PATH` makes the run **BLOCKED** (exit 2) — the lane never skips it and never
-turns that into a pass. A prover with no enrolled sources prints `NONE`, not
-`PASS`.
-
-The Agda layer needs its library manifest activated, otherwise Agda reports
-`[ModuleNameDoesntMatchFileName]` for every module (observed on 2026-11-01):
+The Agda source leg is *recorded and audited for form*; the lane does not
+re-derive it. It can still be typechecked locally, which needs its library
+manifest activated — otherwise Agda reports `[ModuleNameDoesntMatchFileName]` for
+every module (observed on 2026-11-01):
 
 [source,bash]
 ----
@@ -83,9 +102,27 @@ agda --safe --library=nextgen-typing verification/proofs/agda/Verification.agda
 dependency `absolute-zero` must be registered in `<agda-app-dir>/libraries`
 (`agda --print-agda-app-dir`). `.github/workflows/proof-ci.yml` pins all four.
 
+A prover that is required but absent from `PATH` makes the run **BLOCKED** — the
+lane never skips it and never turns that into a pass.
+
+== Adding or promoting a witness
+
+. Write the witness under `verification/proofs/<prover>/` (no Mathlib).
+. Register it in that prover's `MANIFEST` as `gated` (or `quarantine` if it is
+  known broken and tracked).
+. Add it to `LEDGER.json`: the leg's status, the route (`transported` /
+  `re-proved`), how the statement was compared with the Agda one, the axioms
+  from `Print Assumptions` (Rocq) or `#print axioms` (Lean), and the receipt
+  commit. A grade above 3 is refused unless the legs behind it are `proven`.
+. Register the proof in **both** registries:
+  `[verification].allowed-proofs` in `.machine_readable/bot_directives/placement.a2ml`
+   and `ALLOWED_PROOFS` in `scripts/check-coordination-boundary.sh`.
+. Run `just proof-witness-check`. An unlisted proof, a stale manifest entry, a
+   registry disagreement, a grade without evidence, or a zero-work run each fail.
+
 == Banned patterns
 
-The following MUST NOT appear in any proof file:
+The following MUST NOT appear in any proof file outside a comment:
 
 * `believe_me`, `assert_total` (Idris2)
 * `postulate` (Idris2/Agda)
@@ -94,8 +131,13 @@ The following MUST NOT appear in any proof file:
 * `unsafeCoerce` (Haskell)
 * `Obj.magic` (OCaml/ReScript)
 
-CI enforces this with `just proof-scan-dangerous`
-(`scripts/proof-scan-dangerous.sh`), which runs inside `just proof-check-all`.
-It is comment-aware — a prose mention such as "zero postulates" is not flagged,
-while a real escape hatch is, including inside `{- ... -}` blocks. A scan that
-finds no proof files to scan fails rather than reporting clean.
+`just proof-scan-dangerous` (`scripts/proof-scan-dangerous.sh`) and the ledger
+gate's escape-hatch scan are both comment-aware — a prose mention such as "zero
+postulates" is not flagged, while a real escape hatch is, including inside
+`{- ... -}` blocks. A scan that finds no proof files to scan fails rather than
+reporting clean.
+
+This matters because a compiler exit code is not evidence: Rocq accepts
+`Admitted` and Lean accepts `sorry` with status 0. The controls in
+`tests/proofs/` prove the instrument catches both — a gate must be shown to
+fail, not only to pass (PROOF-POLICY §7).

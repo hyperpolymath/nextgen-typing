@@ -1,0 +1,97 @@
+{
+  "schema": "hyperpolymath/proof-ledger/1",
+  "policy": {
+    "proof_policy": "standards/3-practice/PROOF-POLICY.adoc",
+    "grade_model": "mathesis/estate-mathematical-architecture §5 (Verification Pipeline) and §6 (Epistemic Precision)",
+    "escape_hatches": "standards/docs/TRUSTED-BASE-REDUCTION-POLICY.adoc",
+    "note": "Theory proofs are Agda (source of truth) rechecked in Rocq and Lean. This ledger records, per theorem, the source leg and each recheck leg, with the route, the axioms and the exact commit of the verification receipt."
+  },
+  "status_vocabulary": [
+    "open",
+    "argued",
+    "tested-only",
+    "proven-with-postulates",
+    "proven"
+  ],
+  "theorems": [
+    {
+      "id": "XP-1",
+      "kind": "theory",
+      "spans": [
+        "affinescript",
+        "echo-types",
+        "typed-wasm"
+      ],
+      "statement": "The pipeline's information-losing typing operations are instances of the echo-types fiber Echo f y := Sigma A (lambda x -> f x === y): affine weakening (AffineScript linear is below affine) collapses a distinction, has no section, and refinement erasure is non-injective.",
+      "grade": "3",
+      "grade_basis": "mathesis §5 Grade 3: type-checks in Agda, has not been translated to an independent foundational system. The Rocq and Lean recheck legs required by PROOF-POLICY §2 are recorded here as open.",
+      "source": {
+        "prover": "agda",
+        "family": "dtt",
+        "status": "proven",
+        "files": [
+          "verification/proofs/agda/EchoTyping.agda",
+          "verification/proofs/agda/Verification.agda"
+        ],
+        "safety_flags": [
+          "--safe",
+          "--without-K"
+        ],
+        "evidence": {
+          "kind": "ci-receipt",
+          "commit": "4c6b918998b9756fdeb1e64c74de27a968677ac1",
+          "date": "2026-11-01",
+          "run": "https://github.com/hyperpolymath/nextgen-typing/actions/runs/41299544043",
+          "checked_by": "proof-ci.yml (then the Agda typecheck lane): Agda 2.8.0, --safe --library=nextgen-typing, agda-stdlib v2.3, echo-types b0982c4, absolute-zero f486c29",
+          "note": "Recorded, not re-run. This lane examines the §2 recheck legs; the Agda source leg is audited for form and evidence only. Use `just proof-check-agda` to re-typecheck it locally."
+        },
+        "assumptions": [
+          {
+            "kind": "dependency-pin",
+            "name": "agda",
+            "version": "2.8.0"
+          },
+          {
+            "kind": "dependency-pin",
+            "name": "agda-stdlib",
+            "version": "v2.3"
+          },
+          {
+            "kind": "dependency-pin",
+            "name": "echo-types",
+            "version": "b0982c44f36133acd2d0e1d4e03cf031fff7a470"
+          },
+          {
+            "kind": "dependency-pin",
+            "name": "absolute-zero",
+            "version": "f486c29903434589117fa0662c6f29b0f17d1d5f"
+          }
+        ]
+      },
+      "legs": [
+        {
+          "prover": "rocq",
+          "family": "dtt",
+          "status": "open",
+          "route": null,
+          "artifact": null,
+          "axioms": null,
+          "statement_compared": null,
+          "api_receipt": null,
+          "blocker": "no Rocq witness exists. PROOF-POLICY §2 requires one: transport the Agda term through Dedukti/Lambdapi (record the statement comparison) or re-prove the statement in Rocq by hand."
+        },
+        {
+          "prover": "lean4",
+          "family": "dtt",
+          "status": "open",
+          "route": null,
+          "artifact": null,
+          "axioms": null,
+          "statement_compared": null,
+          "api_receipt": null,
+          "blocker": "no Lean 4 witness exists. PROOF-POLICY §2 requires one and forbids Mathlib; until a released Lambdapi Lean exporter exists the lean leg is re-proved by hand in core Lean."
+        }
+      ]
+    }
+  ]
+}

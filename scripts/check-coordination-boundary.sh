@@ -45,7 +45,12 @@ is_allowed_proof() {
 if [ -d verification/proofs ]; then
   while IFS= read -r f; do
     case "$f" in
-      *.a2ml | *.adoc | *.md | *.gitkeep) continue ;; # docs/metadata are fine
+      # Proof METADATA is not a proof: the per-prover MANIFEST (the compile
+      # gate's input, scripts/check-proofs.sh) and LEDGER.json (the policy
+      # ledger, audited by scripts/check-proof-ledger.sh) are tracked here
+      # deliberately, but they are not hosted proofs.
+      *.a2ml | *.adoc | *.md | *.gitkeep) continue ;;
+      */MANIFEST | *.json) continue ;;
     esac
     if ! is_allowed_proof "$f"; then
       err "Proof outside the cross-project allowlist: $f
@@ -60,7 +65,30 @@ fi
 # --- 3. No implementation/proof source languages outside verification/proofs/
 # The coordination repo holds docs, .a2ml, k9/ncl, shell, and CI — not Rust,
 # Zig, Idris, Agda, Lean, Coq, Isabelle, Haskell, or OCaml source.
+# Narrow, self-policing exception: tests/proofs/control/ holds the both-ways
+# controls for the proof gate (PROOF-POLICY §7). They exist to be pointed at the
+# instrument, not to prove anything, so the allowance is deliberately tiny and
+# each fixture must police itself:
+#   * it must declare what it is in a header comment ("INSTRUMENT CONTROL"), and
+#   * it must stay <= 20 lines. A fixture that grows into a real proof has
+#     escaped the boundary, which is precisely what this check exists to stop.
+INSTRUMENT_MARKER='INSTRUMENT CONTROL'
+INSTRUMENT_MAX_LINES=20
 while IFS= read -r f; do
+  case "$f" in
+    tests/proofs/control/*)
+      if grep -qF "$INSTRUMENT_MARKER" "$f" \
+         && [ "$(wc -l < "$f")" -le "$INSTRUMENT_MAX_LINES" ]; then
+        continue
+      fi
+      err "Instrument fixture outside its narrow allowance: $f
+     tests/proofs/control/ may hold only tiny self-declaring controls: a header
+     comment containing '$INSTRUMENT_MARKER' and at most $INSTRUMENT_MAX_LINES
+     lines. Anything larger, or undeclared, is proof code escaping the
+     coordination boundary — host it in the owning repo instead."
+      continue
+      ;;
+  esac
   err "Implementation source outside the coordination boundary: $f
      Compiler / kernel / proof code belongs in the owning project repo (see $ROUTE)."
 done < <(
