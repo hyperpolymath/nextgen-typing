@@ -72,11 +72,12 @@ note() { NOTES+=("$1"); }
 # Escape-hatch scan (shared by the repo audit and the both-ways control).
 # Comment-aware: PROOF-POLICY keeps escape-hatch *policy* in
 # docs/TRUSTED-BASE-REDUCTION-POLICY.adoc, and a prose mention of a banned
-# construct is not a hole. Block comments {- -} and (* *) and line comments
-# -- and // are stripped before matching, with line numbers preserved.
+# construct is not a hole. The delegated scanner strips comments according to
+# the file's language and preserves line numbers.
 # ---------------------------------------------------------------------------
 scan_escape_hatches() {
-  # $1 = file. Prints "line:token:text" for each real hit.
+  # $1 = file. Prints numbered matching lines; scanner errors become a
+  # synthetic line 0 hit, so callers treat them as failures.
   #
   # ONE pattern list, not two. This function used to carry its own copy, which
   # drifted: it knew `believe_me|assert_total|postulate|sorry|admit|Admitted|
@@ -183,6 +184,9 @@ VOCAB='["argued","open","proven","proven-with-postulates","tested-only"]'
 # Prover families, from mathesis §5 (the Grade 2ii diversity rule).
 FAMILIES='{"agda":"dtt","rocq":"dtt","lean4":"dtt","idris2":"dtt","isabelle":"hol","tla+":"state-machine","smt":"smt"}'
 
+# Return success if the manifest has a gated entry for the target path;
+# return 1 if the manifest is missing or a readable manifest has no such entry.
+# An awk error also returns a non-zero status.
 manifest_is_gated() {
   local mfile="$1" target="$2"
   [[ -f "$mfile" ]] || return 1
@@ -1037,6 +1041,9 @@ done < <(jq -r '.theorems[].source.files[]? | select(endswith(".agda"))' "$LEDGE
 # Axioms are scoped to the specific leg(s) claiming each file (never pooled
 # globally across unrelated legs), so an axiom permitted on one leg cannot
 # license an undeclared axiom in another witness.
+# Return success if an unwaived proven-with-postulates leg claiming the file
+# lists the axiom, either by its name or with a qualified prefix. A jq failure
+# also returns a non-zero status.
 file_allows_axiom() {
   local file="$1" ax_name="$2"
   jq -e --arg f "$file" --arg ax "$ax_name" '
@@ -1049,6 +1056,7 @@ file_allows_axiom() {
   ' "$LEDGER" >/dev/null 2>&1
 }
 
+# Add escape-hatch and unrecorded axiom findings for the file to $FAILS.
 scan_one() {
   local f="$1" hits
   hits="$(scan_escape_hatches "$f")"
@@ -1115,6 +1123,9 @@ for dir in agda coq lean4; do
 done
 
 # --- 8. cross-project registry: manifest <-> boundary allowlist <-> disk -----
+# Print non-empty registry entries from stdin in sorted order, after removing
+# comments, quotes, spaces, tabs, carriage returns and trailing commas. An
+# empty result or a pipeline failure returns a non-zero status.
 normalize_list_entries() {
   sed 's/#.*//' | tr -d "\"' \t\r" | sed 's/,*$//' | grep -v '^$' | sort
 }

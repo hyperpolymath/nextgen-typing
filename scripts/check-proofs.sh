@@ -105,6 +105,8 @@ while [[ "$#" -gt 0 ]]; do
   esac
 done
 
+# Resolve a relative path against the original caller's directory; leave an
+# absolute path unchanged. This does not check whether the path exists.
 resolve_caller_path() {
   local p="$1"
   if [[ "$p" == /* ]]; then
@@ -152,6 +154,8 @@ append_receipt_section() {
   RECEIPT_SECTIONS+=("$1")
 }
 
+# Write the verdict, module counts and collected query output to $RECEIPT.
+# With no receipt path this does nothing; a write failure exits the script.
 write_receipt() {
   local status="$1" gated_cnt="$2" quar_cnt="$3" note_line="${4:-}"
   [[ -n "$RECEIPT" ]] || return 0
@@ -265,6 +269,8 @@ normalize_rel_path() {
   fi
 }
 
+# Copy a source root into the scratch tree once and print its staged path.
+# Subsequent calls reuse it, including any compiled modules already there.
 stage_source_root() {
   local root="${1%/}"
   root="${root#./}"
@@ -278,6 +284,9 @@ stage_source_root() {
 }
 
 LAST_OUT=""
+# Compile the module relative to its source root. Return 1 and set $LAST_OUT
+# to the tool output on failure; clear $LAST_OUT on success. Rocq and Lean
+# compile in the staged tree, while Idris2 and Agda run from the source root.
 check_one() {
   local root="$1" rel="$2" out rc work_root olean_rel olean_out
   set +e
@@ -354,6 +363,8 @@ coq_axiom_allowed() {
 
 ASSUMPTION_ERR=""
 
+# Return 1 and set $ASSUMPTION_ERR if the ledger is missing or invalid JSON.
+# The path argument identifies the witness in the error message.
 verify_ledger_ready() {
   local full_rel="$1"
   if [[ ! -f "$LEDGER" ]]; then
@@ -368,7 +379,9 @@ verify_ledger_ready() {
 }
 
 # Emit matching non-open legs for ($1 = prover_kind: coq|lean4, $2 = full_rel).
-# Output lines use US (\x1f): role(primary|support), tid, status, axioms_json, decls_json, bad_axioms_flag
+# Output lines use US (\x1f): role (primary|support), theorem id, status,
+# axioms JSON and declarations JSON. A jq failure returns non-zero, although
+# callers using process substitution do not receive that status.
 query_claiming_legs() {
   local pkind="$1" full_rel="$2"
   jq -r --arg kind "$pkind" --arg path "$full_rel" '
@@ -408,6 +421,9 @@ query_claiming_legs() {
   ' "$LEDGER"
 }
 
+# Check a compiled Rocq module against each claiming ledger leg. The arguments
+# are its source root, path relative to that root and staged root. Append query
+# output to the receipt sections; on rejection return 1 and set $ASSUMPTION_ERR.
 verify_coq_assumptions() {
   local root="$1" rel="$2" work_root="$3"
   local clean_rel="${rel#./}"
@@ -659,6 +675,9 @@ $probe_out"
   return 0
 }
 
+# Check a compiled Lean module against each claiming ledger leg. The arguments
+# are its source root, path relative to that root and staged root. Append query
+# output to the receipt sections; on rejection return 1 and set $ASSUMPTION_ERR.
 verify_lean_assumptions() {
   local root="$1" rel="$2" work_root="$3"
   local clean_rel="${rel#./}"

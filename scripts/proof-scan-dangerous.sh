@@ -126,9 +126,8 @@ echo "scope:    $SCAN_DIRS"
 #     counted as code. Only double-quoted strings are masked: a prime is part of
 #     an ordinary identifier in Agda and Idris, and masking from it would hide
 #     the rest of the line.
-#   * An unknown extension is scanned RAW. Stripping nothing can only produce a
-#     false positive, which someone fixes; guessing a syntax can hide an escape
-#     hatch, which nobody sees again.
+#   * For an unknown extension, comments are left intact and double-quoted
+#     strings are masked; no comment syntax is guessed.
 #
 # Nested block comments are not supported; an unclosed block comment runs to the
 # end of the file. Delimiters are matched after string masking, so `"(*"` is
@@ -233,6 +232,8 @@ if [ -f "$IGNORE_FILE" ]; then
   done < <(sed 's/[[:space:]]*$//' "$IGNORE_FILE")
 fi
 
+# Return success if the path contains any non-empty ignore pattern as a literal
+# substring, or 1 if none matches.
 is_ignored() {
   local f="$1" p
   for p in "${IGNORE_PATTERNS[@]:-}"; do
