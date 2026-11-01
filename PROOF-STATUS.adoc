@@ -409,6 +409,20 @@ so instead of reporting the leg as passing), not as a pass.
 [width="100%",cols="32%,42%,26%",options="header",]
 |===
 |Date |Change |By
+|2026-11-01 |Reconciled with the estate policy, which moved twice: owner ruling
+2026-10-26, amended *today* (pinned `+46ee1832+`, recorded in the ledger, printed
+by the gate, and a missing pin is now a failure). `+D-2026-10-12+` is amended
+clause by clause — "Coq archived" and "Lean is provenance only" are superseded,
+so the Rocq and Lean legs below are *obligations*, not waivers. The Agda receipt
+was re-baselined: §2.1 makes a `+--safe+`-only run historical evidence, so the
+pin moved to run 41314454646 (`+3cd1859+`, canonical invocation). Dependencies
+are no longer two version strings: echo-types (identity claim open) and
+absolute-zero (61 undischarged axioms) are recorded with what they are, with
+evidence, and with caveats the gate refuses to see dropped; `+import_cone+`
+records the 3-module trust base and what is deliberately outside it. XP-1's scope
+is stated where a reader starts: it does not prove echo-types' identity claim.
+Controls: 15 → 26 |Arena agent
+
 |2026-11-01 |The rung *below* `+2i+` is now substantiated rather than labelled:
 the grade-3 claim is tied to named Agda declarations (`+TP-ECHO-1..3+`, whose
 types the gate re-reads), to the flags actually in force (read out of the files
