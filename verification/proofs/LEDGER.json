@@ -256,6 +256,18 @@
         "echo-types: its own identity claim is OPEN by design (README at b0982c4: 'Positive identity is open ... Criterion 2 is open'). XP-1 relates the pipeline's loss operations to that construction; it discharges nothing of echo-types' claim about itself, and must not be cited as if it did.",
         "absolute-zero: a proof-bearing CONSUMER with 61 undischarged axioms and OND-6 open by design — not axiom-free ground truth. None of those axioms is in this proof's import cone (see source.import_cone), but this record must not be read as saying absolute-zero is axiom-free.",
         "scope: the Rocq and Lean recheck legs are unbuilt, so the theorem is Grade 3. Nothing here says a second kernel checked the statement, and no waiver is claimed — PROOF-POLICY §4 waives a leg only when the statement cannot be expressed in the mapped prover, not when the estate has archived a tool."
+      ],
+      "local_evidence": [
+        {
+          "kind": "local-recheck",
+          "date": "2026-11-01",
+          "toolchain": "Agda 2.7.0.1 (PyPI manylinux wheel, GHC 9.6.5) with agda-stdlib v2.3 @8326c74, echo-types b0982c44, absolute-zero f486c29 — a DIFFERENT Agda version from the pinned 2.8.0 the receipt uses",
+          "invocation": "agda --safe --without-K --cubical-compatible EchoTyping.agda and Verification.agda, from verification/proofs/agda, with all four library manifests registered",
+          "observed_result": "PASS — both modules typecheck; only -WnoUnsupportedIndexedMatch warnings from echo-types' own indexed matches, which the pinned lane sees too",
+          "planted_control": "a module asserting `⊥` by self-reference was rejected with Agda exit 42 in the same environment, so the pass is not vacuous",
+          "corroboration_only": true,
+          "note": "Not the receipt. PROOF-POLICY §2.1 pins the toolchain with the result, and the recorded receipt is the CI run at Agda 2.8.0; this entry says the same two modules also typecheck under 2.7.0.1. It cannot raise the grade and is not evidence for a §2 recheck leg."
+        }
       ]
     }
   ]

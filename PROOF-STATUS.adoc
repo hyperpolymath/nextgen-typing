@@ -68,6 +68,30 @@ gap is unmistakable: *no leg other than Agda has been proven for XP-1.*
   Lean, coq-lsp's REST surface for Rocq, isabelle-server). No such surface is
   wired up.
 
+=== Corroboration: the same proof under a second Agda
+
+The receipt is one run of one toolchain. On 2026-11-01 the two modules were also
+type-checked in an agent sandbox with a *different* Agda — 2.7.0.1 (PyPI
+manylinux wheel, GHC 9.6.5) rather than the pinned 2.8.0 — against agda-stdlib
+v2.3, echo-types `+b0982c44+` and absolute-zero `+f486c29+`, under the same
+canonical invocation:
+
+[source,bash]
+----
+agda --safe --without-K --cubical-compatible EchoTyping.agda
+agda --safe --without-K --cubical-compatible Verification.agda
+----
+
+Both passed, with only the `+-WnoUnsupportedIndexedMatch+` warnings that come
+from echo-types' own indexed matches. The environment was shown to reject a
+planted `+⊥+` (Agda exit 42) in the same session, so the pass is not vacuous.
+
+This is recorded in the ledger as `+local_evidence+` and it is deliberately
+*not* the receipt: §2.1 pins the compiler version with the result, and a run at
+a different version cannot carry the grade. It answers a different question —
+"is this proof an artifact of one toolchain?" — and the gate refuses a local run
+that sets `+corroboration_only+` to anything but true.
+
 === Where each requirement comes from, and how it is met
 
 Two documents govern this, and they are not the same kind of document. mathesis

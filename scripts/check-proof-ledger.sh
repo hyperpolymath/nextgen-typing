@@ -733,6 +733,22 @@ while IFS=$'\x1f' read -r tid status files; do
   fi
 done < <(jq -r '.theorems[] | [ .id, (.source.status // ""), ((.source.files // []) | join(",")) ] | map(tostring) | join("\u001f")' "$LEDGER")
 
+# --- 5a. corroboration is not a receipt -------------------------------------
+# A local run under a different compiler version is useful — it says the proof is
+# not an artifact of one toolchain — but §2.1 pins the version *with* the result,
+# and a receipt is what the grade rests on. So a corroborating run must declare
+# itself as such, and must say which toolchain produced it.
+while IFS=$'\x1f' read -r tid toolchain invocation result corrob; do
+  [ -z "$tid" ] && continue
+  [ -n "${toolchain// }" ] || fail "$tid: local evidence with no toolchain — a check that does not name its compiler cannot be reproduced (§2.1)"
+  [ -n "${invocation// }" ] || fail "$tid: local evidence with no recorded invocation (§2.2)"
+  [ -n "${result// }" ] || fail "$tid: local evidence with no observed result (§2.2)"
+  [ "$corrob" = "true" ] || fail "$tid: local evidence must set corroboration_only: true — it cannot stand in for the pinned receipt"
+done < <(jq -r '
+  .theorems[] | .id as $id | (.local_evidence // [])[] |
+  [ $id, (.toolchain // ""), (.invocation // ""), (.observed_result // ""),
+    ((.corroboration_only // false) | tostring) ] | map(tostring) | join("\u001f")' "$LEDGER")
+
 # --- 5b. receipt lineage: an archived receipt says why (mathesis §6) --------
 # mathesis §6 introduces `Superseded` and `Regressed` as first-class states for a
 # receipt. A receipt kept but not marked is indistinguishable from one that is

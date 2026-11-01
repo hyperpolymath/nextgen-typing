@@ -199,6 +199,17 @@ else
   sed 's/^/      /' "$WORK/waiver-ok.log" | tail -5
 fi
 
+# --- corroboration cannot become a receipt ---------------------------------
+jq '(.theorems[0].local_evidence[0].corroboration_only) = false' \
+  "$LEDGER" > "$WORK/local-as-receipt.json"
+expect_refusal "31. a local run promoted into the receipt" \
+  "cannot stand in for the pinned receipt" "$WORK/local-as-receipt.json"
+
+jq 'del(.theorems[0].local_evidence[0].toolchain)' \
+  "$LEDGER" > "$WORK/local-no-toolchain.json"
+expect_refusal "32. a local run that does not name its compiler" \
+  "cannot be reproduced" "$WORK/local-no-toolchain.json"
+
 # --- mathesis §6: receipt lineage ------------------------------------------
 jq '(.theorems[0].source.evidence.historical_evidence[0]) |= del(.state)' \
   "$LEDGER" > "$WORK/unnamed-history.json"
