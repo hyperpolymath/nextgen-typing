@@ -179,6 +179,7 @@ if bash "$CHECK_PROOFS" coq --root "$k6" --receipt "$k6/receipt.txt" >"$k6/out.l
 else
   viol "K6. check-proofs.sh coq failed on a closed Rocq witness or omitted verbatim receipt"
   sed 's/^/      /' "$k6/out.log" | tail -20
+  [[ -f "$k6/receipt.txt" ]] && sed 's/^/      [receipt] /' "$k6/receipt.txt" | tail -25
 fi
 
 # K7: Rocq witness importing Classical_Prop.classic (lexically clean) is REFUSED when axioms: [].
@@ -210,6 +211,7 @@ if bash "$CHECK_PROOFS" coq --root "$k8" --receipt "$k8/receipt.txt" >"$k8/out.l
 else
   viol "K8. check-proofs.sh coq rejected a properly declared Rocq axiom in proven-with-postulates"
   sed 's/^/      /' "$k8/out.log" | tail -20
+  [[ -f "$k8/receipt.txt" ]] && sed 's/^/      [receipt] /' "$k8/receipt.txt" | tail -25
 fi
 
 # K9: Cross-module local helper Axiom imported by a clean surface witness is REFUSED when unrecorded.
@@ -277,6 +279,7 @@ if bash "$CHECK_PROOFS" lean4 --root "$k11" --receipt "$k11/receipt.txt" >"$k11/
 else
   viol "K11. check-proofs.sh lean4 failed on a closed Lean witness or omitted verbatim receipt"
   sed 's/^/      /' "$k11/out.log" | tail -20
+  [[ -f "$k11/receipt.txt" ]] && sed 's/^/      [receipt] /' "$k11/receipt.txt" | tail -25
 fi
 
 # K12: Lean witness using Classical.em (lexically clean) is REFUSED when axioms: [].
@@ -308,6 +311,7 @@ if bash "$CHECK_PROOFS" lean4 --root "$k13" --receipt "$k13/receipt.txt" >"$k13/
 else
   viol "K13. check-proofs.sh lean4 rejected a properly declared Lean axiom set in proven-with-postulates"
   sed 's/^/      /' "$k13/out.log" | tail -20
+  [[ -f "$k13/receipt.txt" ]] && sed 's/^/      [receipt] /' "$k13/receipt.txt" | tail -25
 fi
 
 # K14: Cross-module imported sorry (sorryAx) is REFUSED both when axioms: [] and when axioms: ["sorryAx"].

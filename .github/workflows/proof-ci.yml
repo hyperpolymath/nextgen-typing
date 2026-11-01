@@ -344,8 +344,8 @@ jobs:
       - name: Instrument controls, both ways (§7)
         run: |
           set -o pipefail
-          bash tests/proofs/run-controls.sh 2>&1 | tee "$RUNNER_TEMP/proof-controls.log"
-          cp "$RUNNER_TEMP/proof-controls.log" "$PROOF_RECEIPT_DIR/controls.txt"
+          mkdir -p "$PROOF_RECEIPT_DIR"
+          bash tests/proofs/run-controls.sh 2>&1 | tee "$RUNNER_TEMP/proof-controls.log" "$PROOF_RECEIPT_DIR/controls.txt"
 
       # The CI target: audit the ledger, then compile every recheck leg the
       # ledger declares. XP-1 declares Rocq and Lean 4, both `open`, so these
@@ -421,23 +421,23 @@ jobs:
         if: failure()
         run: |
           set -uo pipefail
-          LOG="$RUNNER_TEMP/proof-witness-check.log"
-          if [ ! -f "$LOG" ]; then
-            echo "::error::proof-witness-check produced no log (an earlier step failed); see the step logs above"
-            exit 0
+          found_log=0
+          for candidate in "$RUNNER_TEMP/proof-controls.log" "$RUNNER_TEMP/proof-witness-check.log" "$RUNNER_TEMP/proof-agda.log"; do
+            [ -f "$candidate" ] || continue
+            found_log=1
+            label="$(basename "$candidate")"
+            PAYLOAD="$(grep -vE '^[[:space:]]*$' "$candidate" | tail -n 80 | head -c 50000 | sed ':a;N;$!ba;s/\n/%0A/g')"
+            echo "::error::${label} tail:%0A${PAYLOAD}"
+            {
+              echo "### ${label} tail (failure diagnostics)"
+              echo '```'
+              tail -n 60 "$candidate"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          done
+          if [ "$found_log" -eq 0 ]; then
+            echo "::error::proof-ci failed before producing step logs; see the step logs above"
           fi
-          # GitHub caps annotations at 10 per step and each annotation is
-          # single-line, so emit ONE annotation carrying the last 100 lines
-          # newline-encoded (%0A). That keeps the failing prover's own
-          # diagnostic attached to the check run, not buried in runner logs.
-          PAYLOAD="$(grep -vE '^[[:space:]]*$' "$LOG" | tail -n 100 | head -c 60000 | sed ':a;N;$!ba;s/\n/%0A/g')"
-          echo "::error::proof-witness-check failed. Log tail:%0A${PAYLOAD}"
-          {
-            echo "### proof-witness-check log tail (failure diagnostics)"
-            echo '```'
-            tail -n 60 "$LOG"
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Note receipts
         run: |
