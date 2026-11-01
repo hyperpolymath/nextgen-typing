@@ -1335,23 +1335,50 @@ help-me:
 # FORMAL VERIFICATION (PROOFS)
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# Check all formal proofs (Idris2 + Lean4 + Agda + Coq)
-proof-check-all: proof-check-idris2 proof-check-lean4 proof-check-agda proof-check-coq proof-scan-dangerous
+# Strictness contract for every proof recipe below (they are what CI runs via
+# .github/workflows/proof-ci.yml):
+#
+#   exit 0  PASS    the run actually checked something and it is clean
+#   exit 1  FAIL    a proof failed, a proof is unlisted, or nothing was checked
+#   exit 2  BLOCKED a prover required by an enrolled proof is not installed
+#
+# No silent skips, no `continue-on-error`, no green run on zero work. A prover
+# with no enrolled sources prints "NONE" instead of claiming a pass, and
+# `proof-enrolment` guarantees at least one proof source is checked overall.
+#
+# Check all formal proofs — the real all-proofs target used by CI (strict)
+proof-check-all: proof-enrolment proof-check-idris2 proof-check-lean4 proof-check-agda proof-check-coq proof-scan-dangerous
     @echo "=== All proof checks complete ==="
+
+# Enrolment gate: manifest <-> boundary allowlist <-> disk parity, required
+# provers present, zero-work guard, --safe/--without-K still in force.
+# Check proof enrolment (unlisted proofs, stale entries, missing provers)
+proof-enrolment:
+    @bash scripts/check-proof-enrolment.sh --receipt "${PROOF_RECEIPT_DIR:-target/proof-receipts}/enrolment.txt"
 
 # Check Idris2 proofs (ABI, types, dependent type proofs)
 proof-check-idris2:
     #!/usr/bin/env bash
     set -euo pipefail
     echo "=== Checking Idris2 proofs ==="
-    if ! command -v idris2 &>/dev/null; then
-        echo "SKIP: idris2 not installed"
+    mapfile -t FILES < <(find verification/proofs/idris2 -name '*.idr' -type f 2>/dev/null | sort)
+    RECEIPT_DIR="${PROOF_RECEIPT_DIR:-target/proof-receipts}"
+    mkdir -p "$RECEIPT_DIR"
+    if [ "${#FILES[@]}" -eq 0 ]; then
+        echo "NONE: no Idris2 proof sources enrolled under verification/proofs/idris2"
+        printf 'idris2: none-enrolled (0 files)\n' >>"$RECEIPT_DIR/provers.txt"
         exit 0
     fi
+    if ! command -v idris2 &>/dev/null; then
+        echo "BLOCKED: ${#FILES[@]} Idris2 proof source(s) present but 'idris2' is not on PATH."
+        echo "         A missing prover is BLOCKED, never a skip and never a pass."
+        printf 'idris2: BLOCKED (prover missing, %d files)\n' "${#FILES[@]}" >>"$RECEIPT_DIR/provers.txt"
+        exit 2
+    fi
     ERRORS=0
-    for f in $(find verification/proofs/idris2 -name '*.idr' 2>/dev/null); do
+    for f in "${FILES[@]}"; do
         echo -n "  Checking $f ... "
-        if idris2 --check "$f" 2>/dev/null; then
+        if idris2 --check "$f"; then
             echo "OK"
         else
             echo "FAIL"
@@ -1360,23 +1387,35 @@ proof-check-idris2:
     done
     if [ "$ERRORS" -gt 0 ]; then
         echo "FAIL: $ERRORS Idris2 proof(s) failed"
+        printf 'idris2: FAIL (%d failed of %d)\n' "$ERRORS" "${#FILES[@]}" >>"$RECEIPT_DIR/provers.txt"
         exit 1
     fi
-    echo "PASS: All Idris2 proofs verified"
+    echo "PASS: ${#FILES[@]} Idris2 proof(s) verified"
+    printf 'idris2: PASS (%d files)\n' "${#FILES[@]}" >>"$RECEIPT_DIR/provers.txt"
 
 # Check Lean4 proofs
 proof-check-lean4:
     #!/usr/bin/env bash
     set -euo pipefail
     echo "=== Checking Lean4 proofs ==="
-    if ! command -v lean &>/dev/null; then
-        echo "SKIP: lean not installed"
+    mapfile -t FILES < <(find verification/proofs/lean4 -name '*.lean' -type f 2>/dev/null | sort)
+    RECEIPT_DIR="${PROOF_RECEIPT_DIR:-target/proof-receipts}"
+    mkdir -p "$RECEIPT_DIR"
+    if [ "${#FILES[@]}" -eq 0 ]; then
+        echo "NONE: no Lean4 proof sources enrolled under verification/proofs/lean4"
+        printf 'lean4: none-enrolled (0 files)\n' >>"$RECEIPT_DIR/provers.txt"
         exit 0
     fi
+    if ! command -v lean &>/dev/null; then
+        echo "BLOCKED: ${#FILES[@]} Lean4 proof source(s) present but 'lean' is not on PATH."
+        echo "         A missing prover is BLOCKED, never a skip and never a pass."
+        printf 'lean4: BLOCKED (prover missing, %d files)\n' "${#FILES[@]}" >>"$RECEIPT_DIR/provers.txt"
+        exit 2
+    fi
     ERRORS=0
-    for f in $(find verification/proofs/lean4 -name '*.lean' 2>/dev/null); do
+    for f in "${FILES[@]}"; do
         echo -n "  Checking $f ... "
-        if lean "$f" 2>/dev/null; then
+        if lean "$f"; then
             echo "OK"
         else
             echo "FAIL"
@@ -1385,23 +1424,37 @@ proof-check-lean4:
     done
     if [ "$ERRORS" -gt 0 ]; then
         echo "FAIL: $ERRORS Lean4 proof(s) failed"
+        printf 'lean4: FAIL (%d failed of %d)\n' "$ERRORS" "${#FILES[@]}" >>"$RECEIPT_DIR/provers.txt"
         exit 1
     fi
-    echo "PASS: All Lean4 proofs verified"
+    echo "PASS: ${#FILES[@]} Lean4 proof(s) verified"
+    printf 'lean4: PASS (%d files)\n' "${#FILES[@]}" >>"$RECEIPT_DIR/provers.txt"
 
-# Check Agda proofs
+# Check Agda proofs (--safe; the proof sources also carry --without-K)
 proof-check-agda:
     #!/usr/bin/env bash
     set -euo pipefail
     echo "=== Checking Agda proofs ==="
-    if ! command -v agda &>/dev/null; then
-        echo "SKIP: agda not installed"
+    mapfile -t FILES < <(find verification/proofs/agda -name '*.agda' -type f 2>/dev/null | sort)
+    RECEIPT_DIR="${PROOF_RECEIPT_DIR:-target/proof-receipts}"
+    mkdir -p "$RECEIPT_DIR"
+    if [ "${#FILES[@]}" -eq 0 ]; then
+        echo "NONE: no Agda proof sources enrolled under verification/proofs/agda"
+        printf 'agda: none-enrolled (0 files)\n' >>"$RECEIPT_DIR/provers.txt"
         exit 0
     fi
+    if ! command -v agda &>/dev/null; then
+        echo "BLOCKED: ${#FILES[@]} Agda proof source(s) present but 'agda' is not on PATH."
+        echo "         Install Agda (see .github/workflows/proof-ci.yml for the pinned"
+        echo "         toolchain and library registration). BLOCKED is not a pass."
+        printf 'agda: BLOCKED (prover missing, %d files)\n' "${#FILES[@]}" >>"$RECEIPT_DIR/provers.txt"
+        exit 2
+    fi
+    echo "  toolchain: $(agda --version | head -n1)"
     ERRORS=0
-    for f in $(find verification/proofs/agda -name '*.agda' 2>/dev/null); do
+    for f in "${FILES[@]}"; do
         echo -n "  Checking $f ... "
-        if agda --safe "$f" 2>/dev/null; then
+        if agda --safe "$f"; then
             echo "OK"
         else
             echo "FAIL"
@@ -1410,23 +1463,35 @@ proof-check-agda:
     done
     if [ "$ERRORS" -gt 0 ]; then
         echo "FAIL: $ERRORS Agda proof(s) failed"
+        printf 'agda: FAIL (%d failed of %d)\n' "$ERRORS" "${#FILES[@]}" >>"$RECEIPT_DIR/provers.txt"
         exit 1
     fi
-    echo "PASS: All Agda proofs verified"
+    echo "PASS: ${#FILES[@]} Agda proof(s) verified"
+    printf 'agda: PASS (%d files)\n' "${#FILES[@]}" >>"$RECEIPT_DIR/provers.txt"
 
 # Check Coq proofs
 proof-check-coq:
     #!/usr/bin/env bash
     set -euo pipefail
     echo "=== Checking Coq proofs ==="
-    if ! command -v coqc &>/dev/null; then
-        echo "SKIP: coqc not installed"
+    mapfile -t FILES < <(find verification/proofs/coq -name '*.v' -type f 2>/dev/null | sort)
+    RECEIPT_DIR="${PROOF_RECEIPT_DIR:-target/proof-receipts}"
+    mkdir -p "$RECEIPT_DIR"
+    if [ "${#FILES[@]}" -eq 0 ]; then
+        echo "NONE: no Coq proof sources enrolled under verification/proofs/coq"
+        printf 'coq: none-enrolled (0 files)\n' >>"$RECEIPT_DIR/provers.txt"
         exit 0
     fi
+    if ! command -v coqc &>/dev/null; then
+        echo "BLOCKED: ${#FILES[@]} Coq proof source(s) present but 'coqc' is not on PATH."
+        echo "         A missing prover is BLOCKED, never a skip and never a pass."
+        printf 'coq: BLOCKED (prover missing, %d files)\n' "${#FILES[@]}" >>"$RECEIPT_DIR/provers.txt"
+        exit 2
+    fi
     ERRORS=0
-    for f in $(find verification/proofs/coq -name '*.v' 2>/dev/null); do
+    for f in "${FILES[@]}"; do
         echo -n "  Checking $f ... "
-        if coqc "$f" 2>/dev/null; then
+        if coqc "$f"; then
             echo "OK"
         else
             echo "FAIL"
@@ -1435,47 +1500,30 @@ proof-check-coq:
     done
     if [ "$ERRORS" -gt 0 ]; then
         echo "FAIL: $ERRORS Coq proof(s) failed"
+        printf 'coq: FAIL (%d failed of %d)\n' "$ERRORS" "${#FILES[@]}" >>"$RECEIPT_DIR/provers.txt"
         exit 1
     fi
-    echo "PASS: All Coq proofs verified"
+    echo "PASS: ${#FILES[@]} Coq proof(s) verified"
+    printf 'coq: PASS (%d files)\n' "${#FILES[@]}" >>"$RECEIPT_DIR/provers.txt"
 
-# Scan for dangerous patterns in proof files (believe_me, sorry, Admitted, etc.)
+# Scan for banned escape hatches in proof files (comment-aware; zero-work fails)
 proof-scan-dangerous:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    echo "=== Scanning for dangerous patterns in proofs ==="
-    DANGEROUS=0
-    PATTERNS="believe_me|assert_total|postulate|sorry|Admitted|unsafeCoerce|Obj\.magic"
-    for f in $(find verification/proofs -name '*.idr' -o -name '*.lean' -o -name '*.agda' -o -name '*.v' 2>/dev/null); do
-        MATCHES=$(grep -nE "$PATTERNS" "$f" 2>/dev/null || true)
-        if [ -n "$MATCHES" ]; then
-            echo "  DANGEROUS: $f"
-            echo "$MATCHES" | sed 's/^/    /'
-            DANGEROUS=$((DANGEROUS + 1))
-        fi
-    done
-    if [ "$DANGEROUS" -gt 0 ]; then
-        echo "FAIL: $DANGEROUS file(s) contain dangerous patterns"
-        exit 1
-    fi
-    echo "PASS: No dangerous patterns found in proofs"
+    @bash scripts/proof-scan-dangerous.sh --receipt "${PROOF_RECEIPT_DIR:-target/proof-receipts}/dangerous-patterns.txt"
 
-# Show proof status summary
+# Show proof status summary (counts on disk vs. registered in the manifest)
 proof-status:
     #!/usr/bin/env bash
     echo "=== Proof Status ==="
     echo ""
-    echo "Idris2: $(find verification/proofs/idris2 -name '*.idr' 2>/dev/null | wc -l) files"
-    echo "Lean4:  $(find verification/proofs/lean4 -name '*.lean' 2>/dev/null | wc -l) files"
-    echo "Agda:   $(find verification/proofs/agda -name '*.agda' 2>/dev/null | wc -l) files"
-    echo "Coq:    $(find verification/proofs/coq -name '*.v' 2>/dev/null | wc -l) files"
-    echo "TLA+:   $(find verification/proofs/tlaplus -name '*.tla' 2>/dev/null | wc -l) files"
+    echo "Idris2: $(find verification/proofs/idris2 -name '*.idr' -type f 2>/dev/null | wc -l) files"
+    echo "Lean4:  $(find verification/proofs/lean4 -name '*.lean' -type f 2>/dev/null | wc -l) files"
+    echo "Agda:   $(find verification/proofs/agda -name '*.agda' -type f 2>/dev/null | wc -l) files"
+    echo "Coq:    $(find verification/proofs/coq -name '*.v' -type f 2>/dev/null | wc -l) files"
+    echo "TLA+:   $(find verification/proofs/tlaplus -name '*.tla' -type f 2>/dev/null | wc -l) files"
     echo ""
-    if [ -f PROOF-STATUS.md ]; then
-        grep -E "^\| \*\*Total\*\*" PROOF-STATUS.md 2>/dev/null || echo "(No summary row in PROOF-STATUS.md)"
-    else
-        echo "(No PROOF-STATUS.md found)"
-    fi
+    echo "Registered in .machine_readable/bot_directives/placement.a2ml:"
+    bash scripts/check-proof-enrolment.sh --static-only | sed -n '/proof sources on disk/,/^$/p'
+    echo ""
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SESSION MANAGEMENT (THIN BINDINGS TO CENTRAL STANDARDS)

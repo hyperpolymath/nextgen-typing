@@ -1,0 +1,228 @@
+# This workflow is managed by gh actions-lock.
+# SPDX-License-Identifier: MPL-2.0
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+#
+# Proof CI — runs this repository's real all-proofs target, `just proof-check-all`,
+# against the cross-project proofs hosted in verification/proofs/ (issue #57).
+#
+# Before this lane existed, `just proof-check-all` was never invoked by CI, and
+# each recipe ended with `SKIP: <prover> not installed; exit 0`. The proofs were
+# asserted, not enforced. This lane is deliberately intolerant:
+#
+#   * a proof source that is not registered in the manifest  -> FAIL
+#   * a manifest entry with no file behind it                -> FAIL
+#   * the two registries disagreeing                         -> FAIL
+#   * nothing checked at all ("green on zero work")          -> FAIL
+#   * a required prover not installed                        -> BLOCKED (fails)
+#   * a proof that does not typecheck                        -> FAIL
+#
+# There is no `continue-on-error` in this workflow, and no step is skipped when
+# a tool is missing: a missing toolchain makes the run red, which is the point.
+#
+# Toolchain is pinned three ways so the lane cannot float:
+#   * Agda 2.8.0 — official release binary, sha256-verified before extraction
+#   * just 1.59.0 — exact version, installed from crates.io with --locked
+#   * libraries — agda-stdlib v2.3 (tag + commit asserted), echo-types and
+#     absolute-zero pinned by commit, each re-verified after checkout
+#
+# Receipts (versions, pins, registry hashes, per-prover results) are written to
+# target/proof-receipts/ and uploaded as the `proof-receipts` artifact.
+name: Proof CI
+
+on:
+  push:
+    branches: [main, master, develop]
+    paths:
+      - 'verification/proofs/**'
+      - '.machine_readable/bot_directives/placement.a2ml'
+      - 'scripts/check-coordination-boundary.sh'
+      - 'scripts/check-proof-enrolment.sh'
+      - 'scripts/proof-scan-dangerous.sh'
+      - 'Justfile'
+      - 'PROOF-NEEDS.adoc'
+      - 'PROOF-STATUS.adoc'
+      - '.github/workflows/proof-ci.yml'
+  pull_request:
+    branches: [main, master, develop]
+    paths:
+      - 'verification/proofs/**'
+      - '.machine_readable/bot_directives/placement.a2ml'
+      - 'scripts/check-coordination-boundary.sh'
+      - 'scripts/check-proof-enrolment.sh'
+      - 'scripts/proof-scan-dangerous.sh'
+      - 'Justfile'
+      - 'PROOF-NEEDS.adoc'
+      - 'PROOF-STATUS.adoc'
+      - '.github/workflows/proof-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: proof-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  AGDA_VERSION: '2.8.0'
+  # sha256 of Agda-v2.8.0-linux.tar.xz (official GitHub release asset, agda/agda)
+  AGDA_LINUX_SHA256: '824081b8dcbe431289a50ac6bd83e451f390c51c3884ac7a8c4a5c0df2632faf'
+  JUST_VERSION: '1.59.0'
+  STDLIB_TAG: 'v2.3'
+  STDLIB_COMMIT: '8326c7475af1fa456ca04a0203c168d5d7ff842b'
+  # echo-types: the library the XP-1 proof is *about* (PROOF-STATUS.adoc).
+  # absolute-zero: declared dependency of echo-types' own .agda-lib.
+  ECHO_TYPES_COMMIT: 'b0982c44f36133acd2d0e1d4e03cf031fff7a470'
+  ABSOLUTE_ZERO_COMMIT: 'f486c29903434589117fa0662c6f29b0f17d1d5f'
+  PROOF_RECEIPT_DIR: 'target/proof-receipts'
+
+jobs:
+  proofs:
+    name: just proof-check-all (strict)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
+      - name: Install pinned Agda (official binary, sha256-verified)
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/agda" "$HOME/.local/bin"
+          URL="https://github.com/agda/agda/releases/download/v${AGDA_VERSION}/Agda-v${AGDA_VERSION}-linux.tar.xz"
+          curl -fsSL -o "$RUNNER_TEMP/agda.tar.xz" "$URL"
+          echo "${AGDA_LINUX_SHA256}  $RUNNER_TEMP/agda.tar.xz" | sha256sum --check --strict
+          tar -xJf "$RUNNER_TEMP/agda.tar.xz" -C "$RUNNER_TEMP/agda"
+          install -m 0755 "$RUNNER_TEMP/agda/agda" "$HOME/.local/bin/agda"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          "$HOME/.local/bin/agda" --version
+          "$HOME/.local/bin/agda" --setup
+
+      - name: Install pinned just
+        run: |
+          set -euo pipefail
+          command -v cargo >/dev/null 2>&1 \
+            || { echo "::error::cargo is required to build the pinned just; refusing to continue"; exit 1; }
+          cargo install just --version "${JUST_VERSION}" --locked
+          command -v just
+          just --version
+
+      - name: Fetch pinned proof libraries
+        id: libs
+        run: |
+          set -euo pipefail
+          fetch_pinned() {  # $1=url $2=dest $3=expected commit
+            git init -q "$2"
+            git -C "$2" remote add origin "$1"
+            git -C "$2" fetch -q --depth 1 origin "$3"
+            git -C "$2" checkout -q FETCH_HEAD
+            actual="$(git -C "$2" rev-parse HEAD)"
+            if [ "$actual" != "$3" ]; then
+              echo "::error::pin mismatch for $1: want $3 got $actual"
+              exit 1
+            fi
+            echo "pinned $1 at $actual"
+          }
+
+          # standard-library: tag and commit both asserted (a moved tag fails).
+          git clone -q --depth 1 --branch "$STDLIB_TAG" \
+            https://github.com/agda/agda-stdlib.git "$RUNNER_TEMP/agda-stdlib"
+          actual="$(git -C "$RUNNER_TEMP/agda-stdlib" rev-parse HEAD)"
+          if [ "$actual" != "$STDLIB_COMMIT" ]; then
+            echo "::error::agda-stdlib $STDLIB_TAG moved: want $STDLIB_COMMIT got $actual"
+            exit 1
+          fi
+          echo "pinned agda-stdlib $STDLIB_TAG at $actual"
+
+          fetch_pinned https://github.com/hyperpolymath/echo-types.git \
+            "$RUNNER_TEMP/echo-types" "$ECHO_TYPES_COMMIT"
+          fetch_pinned https://github.com/hyperpolymath/absolute-zero.git \
+            "$RUNNER_TEMP/absolute-zero" "$ABSOLUTE_ZERO_COMMIT"
+
+      - name: Register Agda libraries
+        run: |
+          set -euo pipefail
+          AGDA_DIR="$(agda --print-agda-app-dir)"
+          mkdir -p "$AGDA_DIR"
+
+          # The upstream stdlib manifest is named `standard-library-2.3`, but
+          # nextgen-typing.agda-lib and echo-types.agda-lib both depend on
+          # `standard-library`, so register a manifest under that exact name
+          # (same include, same flags as upstream v2.3).
+          STDLIB_LIB="$RUNNER_TEMP/standard-library.agda-lib"
+          {
+            echo "name: standard-library"
+            echo "include: $RUNNER_TEMP/agda-stdlib/src"
+            echo "flags:"
+            echo "  --warning=noUnsupportedIndexedMatch"
+          } > "$STDLIB_LIB"
+
+          # Register the upstream manifests of the two pinned dependencies so
+          # their declared dependency graph (echo-types -> standard-library,
+          # absolute-zero) is honoured rather than shadowed.
+          ls "$RUNNER_TEMP/echo-types/echo-types.agda-lib"
+          ls "$RUNNER_TEMP/absolute-zero/absolute-zero.agda-lib"
+
+          printf '%s\n%s\n%s\n' \
+            "$STDLIB_LIB" \
+            "$RUNNER_TEMP/echo-types/echo-types.agda-lib" \
+            "$RUNNER_TEMP/absolute-zero/absolute-zero.agda-lib" \
+            > "$AGDA_DIR/libraries"
+          printf 'standard-library\n' > "$AGDA_DIR/defaults"
+          echo "AGDA_DIR=$AGDA_DIR"
+          cat "$AGDA_DIR/libraries"
+
+      - name: Toolchain receipt
+        run: |
+          set -euo pipefail
+          mkdir -p "$PROOF_RECEIPT_DIR"
+          {
+            echo "proof-ci toolchain receipt"
+            echo "generated: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "commit: $GITHUB_SHA"
+            echo "workflow-run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            echo "runner-image: ${ImageOS:-unknown} ${ImageVersion:-unknown}"
+            echo "agda: $(agda --version | head -n1)"
+            echo "just: $(just --version)"
+            echo "agda-stdlib: $STDLIB_TAG @ $STDLIB_COMMIT"
+            echo "echo-types: $ECHO_TYPES_COMMIT"
+            echo "absolute-zero: $ABSOLUTE_ZERO_COMMIT"
+            echo "placement.a2ml sha256: $(sha256sum .machine_readable/bot_directives/placement.a2ml | cut -d' ' -f1)"
+            echo "check-coordination-boundary.sh sha256: $(sha256sum scripts/check-coordination-boundary.sh | cut -d' ' -f1)"
+          } | tee "$PROOF_RECEIPT_DIR/toolchain.txt"
+
+          # Version assertions: the lane must not silently run a different prover.
+          agda --version | grep -F "${AGDA_VERSION}" \
+            || { echo "::error::Agda version is not the pinned ${AGDA_VERSION}"; agda --version; exit 1; }
+          just --version | grep -F "${JUST_VERSION}" \
+            || { echo "::error::just version is not the pinned ${JUST_VERSION}"; just --version; exit 1; }
+
+      - name: Enrolment gate (unlisted proofs, registry drift, missing provers)
+        run: just proof-enrolment
+
+      - name: Run the real all-proofs target
+        run: just proof-check-all
+
+      - name: Note receipts
+        run: |
+          echo "## Proof CI receipts" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          for f in "$PROOF_RECEIPT_DIR"/*.txt; do
+            [ -f "$f" ] || continue
+            echo "### $(basename "$f")" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            cat "$f" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          done
+
+      - name: Upload receipts
+        if: always()
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: proof-receipts
+          path: target/proof-receipts/
+          retention-days: 90
+          if-no-files-found: warn
