@@ -46,8 +46,10 @@ echo "=== Scanning for dangerous patterns in proofs ==="
 echo "patterns: $PATTERNS"
 echo "scope:    $PROOFS_DIR"
 
-# Strip comments (line comments: -- and //; block comments: {- -} and (* *))
-# while preserving line numbers, so hits are reported against the real file.
+# Print $1 with line comments (-- and //) and block comments ({- -} and (* *))
+# removed, preserving line numbers. Delimiters in strings are treated as comments
+# and nested blocks are not supported. An awk read error returns non-zero; the
+# scan's calling pipeline suppresses that error.
 strip_comments() {
   awk '
     BEGIN { block = 0 }

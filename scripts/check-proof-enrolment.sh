@@ -53,10 +53,12 @@ FAILS=()
 BLOCKED=()
 NOTES=()
 
+# Add an enrolment error to the global list used for the final verdict.
 fail() { FAILS+=("$1"); }
 
 # --- prover table ------------------------------------------------------------
 # extension -> label|binary|extra safety requirement
+# Print the display label for a prover key, or "unknown" for an unrecognised key.
 prover_label() {
   case "$1" in
     agda) echo "Agda" ;;
@@ -67,6 +69,7 @@ prover_label() {
     *) echo "unknown" ;;
   esac
 }
+# Print the executable for a prover key, or an empty line if none is wired.
 prover_binary() {
   case "$1" in
     agda) echo "agda" ;;
@@ -105,8 +108,10 @@ echo ""
 
 # --- 1. parse the two registries and require them to agree -------------------
 # [verification].allowed-proofs = [ "path", ... ]  (comments allowed)
+# Read registry lines from stdin, remove comments, quotes, spaces, tabs, carriage
+# returns and trailing commas, then print non-empty lines sorted. Return non-zero
+# if no lines remain or a pipeline command fails.
 normalize_list_entries() {
-  # strip comments, quotes, commas and all whitespace; drop blanks; sort
   sed 's/#.*//' \
     | tr -d "\"' \t\r" \
     | sed 's/,*$//' \

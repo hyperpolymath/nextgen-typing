@@ -114,6 +114,8 @@ jobs:
         id: libs
         run: |
           set -euo pipefail
+          # Initialise $2, fetch and check out $3 from $1, and exit 1 if HEAD
+          # differs from $3. Git errors terminate this step under set -e.
           fetch_pinned() {  # $1=url $2=dest $3=expected commit
             git init -q "$2"
             git -C "$2" remote add origin "$1"
