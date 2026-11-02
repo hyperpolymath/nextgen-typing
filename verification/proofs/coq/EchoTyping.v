@@ -93,8 +93,8 @@ Proof.
 Qed.
 
 Theorem affine_subtyping_irreversible :
-  ~ { reify : LEcho affine -> LEcho linear &
-      forall e : LEcho linear, reify (affine_weakening e) = e }.
+  { reify : LEcho affine -> LEcho linear &
+    forall e : LEcho linear, reify (affine_weakening e) = e } -> False.
 Proof.
   intros [reify sec].
   apply echo_true_neq_echo_false.
@@ -156,14 +156,14 @@ Proof.
   destruct p12.
   - exact eq_refl.
   - refine (
-      match p23 in ModeLe b c
+      match p23 as q0 in ModeLe b c
         return (match b return ModeLe b c -> Prop with
                 | linear => fun _ => True
                 | affine => fun q =>
                     forall e0 : LEcho linear,
                       degradeMode q (degradeMode linear_le_affine e0) =
                       degradeMode (mode_le_trans linear_le_affine q) e0
-                end) p23
+                end) q0
       with
       | linear_le_linear => I
       | linear_le_affine => I
@@ -219,8 +219,8 @@ Proof.
 Qed.
 
 Theorem tp_echo_2 :
-  ~ { reify : LEcho affine -> LEcho linear &
-      forall e : LEcho linear, reify (affine_weakening e) = e }.
+  { reify : LEcho affine -> LEcho linear &
+    forall e : LEcho linear, reify (affine_weakening e) = e } -> False.
 Proof.
   exact affine_subtyping_irreversible.
 Qed.

@@ -87,8 +87,8 @@ theorem affine_subtyping_forgets :
   rfl
 
 theorem affine_subtyping_irreversible :
-    ¬ PSigma (fun (reify : LEcho Mode.affine → LEcho Mode.linear) =>
-        ∀ e : LEcho Mode.linear, reify (affine_weakening e) = e) :=
+    PSigma (fun (reify : LEcho Mode.affine → LEcho Mode.linear) =>
+      ∀ e : LEcho Mode.linear, reify (affine_weakening e) = e) → False :=
   fun ⟨reify, sec⟩ =>
     echo_true_neq_echo_false
       (Eq.trans
@@ -96,7 +96,7 @@ theorem affine_subtyping_irreversible :
         (Eq.trans (congrArg reify affine_subtyping_forgets) (sec echo_false)))
 
 theorem affine_canonical (e : LEcho Mode.affine) :
-    e = PSigma.mk (β := fun r : Unit => TrivialCert r ()) () () :=
+    e = (⟨(), ()⟩ : LEcho Mode.affine) :=
   match e with
   | ⟨(), ()⟩ => rfl
 
@@ -165,8 +165,8 @@ theorem tp_echo_1 :
   affine_subtyping_forgets
 
 theorem tp_echo_2 :
-    ¬ PSigma (fun (reify : LEcho Mode.affine → LEcho Mode.linear) =>
-        ∀ e : LEcho Mode.linear, reify (affine_weakening e) = e) :=
+    PSigma (fun (reify : LEcho Mode.affine → LEcho Mode.linear) =>
+      ∀ e : LEcho Mode.linear, reify (affine_weakening e) = e) → False :=
   affine_subtyping_irreversible
 
 def tp_echo_3 :

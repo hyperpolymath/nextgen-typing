@@ -18,7 +18,7 @@
       {
         "clause": "§6 (toolchains)",
         "subject": "CI install path for Rocq and Lean 4",
-        "deviation": "installed in .github/workflows/proof-ci.yml from the Ubuntu package index (coq 8.18.0, version asserted) and from the official Lean 4 release archive (4.15.0, version asserted, sha256 recorded per run) — not through a Guix manifest or through container/",
+        "deviation": "installed in .github/workflows/proof-ci.yml from the Ubuntu package index (coq 8.18.0, version asserted) and from the official Lean 4 release archive (4.15.0, sha256-verified before extraction and version asserted) — not through a Guix manifest or through container/",
         "reason": "container/ is the development environment and does not carry the proof toolchains; pinning them through Guix or the container is a separate change with its own review",
         "state": "open",
         "note": "Recorded as a deviation, not a waiver: §4 is a capability exception for a proof leg, not a bootstrap exception for how a toolchain is installed."
