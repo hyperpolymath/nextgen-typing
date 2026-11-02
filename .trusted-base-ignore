@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: MPL-2.0
+# Comments start with `#`.
+# Each non-comment line is a path-fragment substring match against the
+# repo-relative file path. Narrow the fragment to avoid hiding adjacent
+# findings.
+#
+# Scanner test fixtures: exist solely to verify the detector fires.
+# tests/proofs/control/PlantedAdmitted.v and PlantedSorry.lean contain a real
+# `Admitted` and a real `sorry` on purpose. The instrument must reject them —
+# tests/proofs/run-controls.sh asserts that it does — so documenting them as
+# debt would be wrong twice: they are not soundness holes in this repository,
+# and the whole point is that they stay detectable.
+tests/proofs/control/

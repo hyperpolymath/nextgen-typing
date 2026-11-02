@@ -1,0 +1,301 @@
+{
+  "schema": "hyperpolymath/proof-ledger/1",
+  "policy": {
+    "proof_policy": {
+      "repo": "metadatastician/standards",
+      "path": "3-practice/PROOF-POLICY.adoc",
+      "commit": "46ee18323305d5b36e2eef936e47dd54c39ea736",
+      "ruling": "owner ruling 2026-10-26",
+      "amended": "2026-11-01 (§2.1 canonical Agda invocation, §2.2 correspondence evidence, §2.3 evidence-first rollout)",
+      "url": "https://github.com/metadatastician/standards/blob/46ee18323305d5b36e2eef936e47dd54c39ea736/3-practice/PROOF-POLICY.adoc",
+      "vendored_here": false,
+      "note": "Referenced, not vendored: this repository carries no copy of the policy, so a bare path would be a dangling citation. The gate names this commit when it reports which policy it audited against, and fails when the pin is missing."
+    },
+    "grade_model": "mathesis docs/proposals/estate-mathematical-architecture.adoc §5 (Verification Pipeline) and §6 (Epistemic Precision) — unratified grade/evidence framework; subordinate to metadatastician/standards 3-practice/PROOF-POLICY.adoc per mathesis docs/standards/AUTHORITY.adoc",
+    "reconciliation_model": "mathesis docs/status/CROSS-PROVER-RECONCILIATION.adoc (non-collapsing per-prover + bridge status vocabulary)",
+    "escape_hatches": "standards/docs/TRUSTED-BASE-REDUCTION-POLICY.adoc",
+    "deviations": [
+      {
+        "clause": "§6 (toolchains)",
+        "subject": "CI install path for Rocq and Lean 4",
+        "deviation": "installed in .github/workflows/proof-ci.yml from the Ubuntu package index (coq 8.18.0, version asserted) and from the official Lean 4 release archive (4.15.0, version asserted, sha256 recorded per run) — not through a Guix manifest or through container/",
+        "reason": "container/ is the development environment and does not carry the proof toolchains; pinning them through Guix or the container is a separate change with its own review",
+        "state": "open",
+        "note": "Recorded as a deviation, not a waiver: §4 is a capability exception for a proof leg, not a bootstrap exception for how a toolchain is installed."
+      }
+    ],
+    "note": "Theory proofs are Agda (source of truth) rechecked in Rocq and Lean. This ledger records, per theorem, the source leg and each recheck leg, with the route, the axioms and the exact commit of the verification receipt.",
+    "grade_note": "Grades are recorded, not averaged: no percentages (mathesis §6). A grade must be supported by the legs behind it, and the flags in force must be the flags recorded — see .source.flags_provenance."
+  },
+  "status_vocabulary": [
+    "open",
+    "argued",
+    "tested-only",
+    "proven-with-postulates",
+    "proven"
+  ],
+  "theorems": [
+    {
+      "id": "XP-1",
+      "kind": "theory",
+      "spans": [
+        "affinescript",
+        "echo-types",
+        "typed-wasm"
+      ],
+      "statement": "The pipeline's information-losing typing operations are instances of the echo-types fiber Echo f y := Sigma A (lambda x -> f x === y): affine weakening (AffineScript linear is below affine) collapses a distinction, has no section, and refinement erasure is non-injective.",
+      "grade": "3",
+      "grade_basis": "mathesis §5 Grade 3: type-checks in Agda, has not been translated to an independent foundational system. The Rocq and Lean recheck legs required by PROOF-POLICY §2 are recorded here as open.",
+      "reconciliation": {
+        "vocabulary": "mathesis docs/status/CROSS-PROVER-RECONCILIATION.adoc",
+        "agda": "AGDA-VERIFIED",
+        "rocq": "NOT-INVENTORIED",
+        "lean4": "NOT-INVENTORIED",
+        "bridge": "BRIDGE-PENDING",
+        "note": "Never collapse source verification, target kernel checking, and bridge correspondence: XP-1 is AGDA-VERIFIED under canonical `--safe --without-K --cubical-compatible`, while neither Rocq nor Lean has an independent target witness yet and the cross-prover bridge remains BRIDGE-PENDING."
+      },
+      "source": {
+        "prover": "agda",
+        "family": "dtt",
+        "status": "proven",
+        "files": [
+          "verification/proofs/agda/EchoTyping.agda",
+          "verification/proofs/agda/Verification.agda"
+        ],
+        "safety_flags": [
+          "--cubical-compatible",
+          "--safe",
+          "--without-K"
+        ],
+        "evidence": {
+          "kind": "ci-receipt",
+          "commit": "3cd185939179773f177b59e6fee360719695dfc7",
+          "date": "2026-11-01",
+          "run": "https://github.com/hyperpolymath/nextgen-typing/actions/runs/41314454646",
+          "invocation": "agda --safe --without-K --cubical-compatible verification/proofs/agda/EchoTyping.agda and .../Verification.agda, via `just proof-check-agda` -> scripts/check-proofs.sh agda, with the standard-library, echo-types and absolute-zero library manifests registered",
+          "observed_result": "PASS — 2 gated modules typecheck, 0 failures, 0 quarantined; manifest coverage 2/2 files accounted for",
+          "checked_by": "proof-ci.yml, Agda 2.8.0, agda-stdlib v2.4 @2a5a0dec0a3cb5c87468ce101388a513d39dbf10, echo-types b0982c44f36133acd2d0e1d4e03cf031fff7a470, absolute-zero f486c29903434589117fa0662c6f29b0f17d1d5f",
+          "note": "PROOF-POLICY §2.1 (2026-11-01) makes the canonical invocation `agda --safe --without-K --cubical-compatible` and says a prior `--safe` or `--safe --without-K` success is historical evidence rather than a receipt for that combined profile. This receipt is the first canonical one; the earlier receipt is kept below as historical, not as evidence.",
+          "historical_evidence": [
+            {
+              "state": "superseded",
+              "kind": "ci-receipt (historical under §2.1)",
+              "commit": "4c6b918998b9756fdeb1e64c74de27a968677ac1",
+              "date": "2026-11-01",
+              "run": "https://github.com/hyperpolymath/nextgen-typing/actions/runs/41299544043",
+              "checked_by": "proof-ci.yml (then the Agda typecheck lane): Agda 2.8.0, --safe --library=nextgen-typing, agda-stdlib v2.3, echo-types b0982c4, absolute-zero f486c29",
+              "why_not_current": "invoked `agda --safe --library=nextgen-typing`, so `--without-K` came from the file's OPTIONS and `--cubical-compatible` was not passed; §2.1 says that is not a receipt for the combined profile"
+            }
+          ]
+        },
+        "assumptions": [
+          {
+            "kind": "dependency-pin",
+            "name": "agda",
+            "version": "2.8.0"
+          },
+          {
+            "kind": "dependency-pin",
+            "name": "agda-stdlib",
+            "version": "v2.4",
+            "commit": "2a5a0dec0a3cb5c87468ce101388a513d39dbf10"
+          },
+          {
+            "kind": "external-development",
+            "name": "echo-types",
+            "version": "b0982c44f36133acd2d0e1d4e03cf031fff7a470",
+            "relation": "construction-under-comparison",
+            "identity_claim": "open",
+            "note": "The library whose fiber construction XP-1 compares the pipeline's loss operations against. Its own identity claim is OPEN by design: the README at this commit says 'Positive identity is open ... Criterion 2 is open'. This ledger records that status and claims nothing about it.",
+            "evidence": "README.adoc at b0982c44 (read 2026-11-01, section 'Identity Claim and Falsifiability')"
+          },
+          {
+            "kind": "external-development",
+            "name": "absolute-zero",
+            "version": "f486c29903434589117fa0662c6f29b0f17d1d5f",
+            "relation": "proof-bearing-consumer",
+            "undischarged_axioms": 61,
+            "note": "A CONSUMER of the estate's proof infrastructure, not a provider of axiom-free ground truth: its README at HEAD reports 115 Qed / 0 Admitted / 61 undischarged axioms, with OND-6 (conditional composition) open by design, and an archive notice (2026-10-10) moving its Coq, Lean 4, Isabelle/HOL and Mizar developments under archive/proofs/. It reaches this proof only through echo-types' Agda library manifest; none of its Coq is in our import cone.",
+            "evidence": "README.adoc at HEAD (read 2026-11-01): '115 Qed, 0 Admitted, 61 Axioms'; 'OND-6 ... remains open by design'; archive notice 2026-10-10"
+          }
+        ],
+        "flags_provenance": {
+          "file_options": [
+            "--safe",
+            "--without-K"
+          ],
+          "file_options_source": "line 1 of each file: {-# OPTIONS --safe --without-K #-}",
+          "cli": [
+            "--cubical-compatible",
+            "--safe",
+            "--without-K"
+          ],
+          "cli_source": "scripts/check-proofs.sh, the agda branch (used by `just proof-check-agda`)",
+          "note": "safety_flags is the union of what the files declare and what the instrument passes. The gate reads both out of the tree and fails if this record drifts."
+        },
+        "escape_hatch_evidence": "--safe (the compiler refuses postulates, --injective-type-constructors and the other unsafe pragmas) plus scripts/proof-scan-dangerous.sh and the ledger gate's comment-aware escape-hatch scan, both of which run over these files in the same CI lane.",
+        "universe_discipline": "Declarations live in Agda `Set` (the module has no `Setω`/universe-polymorphic machinery of its own); `--without-K` withholds UIP, so no K axiom is assumed; no `--cubical`, so univalence is neither available nor used. This is the §2.2 'type/universe discipline' record.",
+        "import_cone": {
+          "verified": "2026-11-01",
+          "method": "read each imported module's {-# OPTIONS #-} and counted `postulate` at commit b0982c44f36133acd2d0e1d4e03cf031fff7a470 via the GitHub contents API",
+          "library_pins": {
+            "echo-types": "b0982c44f36133acd2d0e1d4e03cf031fff7a470",
+            "agda-stdlib": "v2.4 @2a5a0dec0a3cb5c87468ce101388a513d39dbf10"
+          },
+          "modules": [
+            {
+              "module": "Echo",
+              "library": "echo-types",
+              "options": [
+                "--cubical-compatible",
+                "--exact-split",
+                "--no-guardedness",
+                "--no-sized-types",
+                "--safe",
+                "--without-K"
+              ],
+              "postulates": 0
+            },
+            {
+              "module": "EchoCharacteristic",
+              "library": "echo-types",
+              "options": [
+                "--cubical-compatible",
+                "--exact-split",
+                "--no-guardedness",
+                "--no-sized-types",
+                "--safe",
+                "--without-K"
+              ],
+              "postulates": 0
+            },
+            {
+              "module": "EchoLinear",
+              "library": "echo-types",
+              "options": [
+                "--cubical-compatible",
+                "--exact-split",
+                "--no-guardedness",
+                "--no-sized-types",
+                "--safe",
+                "--without-K"
+              ],
+              "postulates": 0
+            }
+          ],
+          "outside_cone": [
+            {
+              "module": "EchoImageFactorizationPropPostulated",
+              "postulates": 4,
+              "counted_at": "e38fd465c4269ab9e9940802525630d7aae1e848 (D-2026-10-12 inventory; not re-counted at the pin)",
+              "why": "excluded from echo-types' All.agda / Smoke.agda and outside its --safe set; not imported here"
+            },
+            {
+              "module": "Ordinal/Buchholz/Fidelity",
+              "postulates": 2,
+              "counted_at": "e38fd465c4269ab9e9940802525630d7aae1e848 (D-2026-10-12 inventory; not re-counted at the pin)",
+              "why": "same"
+            }
+          ],
+          "note": "Agda's --safe refuses an import that is not itself safe, so this cone IS the trust base for the 'no escape hatches' claim. The gate cannot fetch the dependencies, so it checks the shape of this record (every module listed, postulates counted, a postulated module forcing a `proven-with-postulates` status); the counts themselves are re-read by hand when the pin moves."
+        },
+        "related_developments": [
+          {
+            "name": "epistemic-types",
+            "version": "5422cd5bf1418c44321bf0f77e894737a451d8f5",
+            "relation": "sibling-formalisation-not-consumed",
+            "consumed_by_this_proof": false,
+            "note": "Formalises the same object differently from a different premise: `EpistemicTypes.EchoBridge.Echo` is a CERTIFIED RESIDUE (fields `residue` and `certified : Cert residue y`) over a `Retention` record with `observe/retain/Cert/sound`, whereas echo-types' `Echo f y` — the one XP-1 uses — is a fibre `Σ A (λ x → f x ≡ y)`. Neither imports the other. XP-1 says nothing about the certified-residue form, about epistemic-types' warrant transport (`checkerSound`, `proofCannotSupportFalse`, `opaqueNotCertifying`, `verifyReceiptIsGap`), or about its rejection fixture `tests/reject/ForgedResidue.agda`.",
+            "evidence": "read at 5422cd5 on 2026-11-01: src/EpistemicTypes/EchoBridge.agda (header flags `--safe --without-K --cubical-compatible --exact-split --no-sized-types --no-guardedness`), src/EpistemicTypes/ProofTransport.agda, PROOF-STATUS.adoc (36 Agda modules, --no-libraries, zero postulates, --double-check -W error)",
+            "why_not_an_assumption": "XP-1 does not import it, so nothing in the proof rests on it. It belongs here rather than in `.source.assumptions` because that array means 'what this proof rests on', and a related formalisation is not that."
+          }
+        ]
+      },
+      "legs": [
+        {
+          "prover": "rocq",
+          "family": "dtt",
+          "status": "open",
+          "route": null,
+          "artifact": null,
+          "support_files": null,
+          "declarations": null,
+          "axioms": null,
+          "statement_compared": null,
+          "evidence": null,
+          "api_receipt": null,
+          "blocker": "no Rocq witness exists. PROOF-POLICY §2 requires one: transport the Agda term through Dedukti/Lambdapi (record the statement comparison) or re-prove the statement in Rocq by hand, map TP-ECHO-1..3 in .declarations, and record the verbatim coqchk + Print Assumptions output in .evidence.assumptions_output."
+        },
+        {
+          "prover": "lean4",
+          "family": "dtt",
+          "status": "open",
+          "route": null,
+          "artifact": null,
+          "support_files": null,
+          "declarations": null,
+          "axioms": null,
+          "statement_compared": null,
+          "evidence": null,
+          "api_receipt": null,
+          "blocker": "no Lean 4 witness exists. PROOF-POLICY §2 requires one and forbids Mathlib; until a released Lambdapi Lean exporter exists the lean leg is re-proved by hand in core Lean, with TP-ECHO-1..3 mapped in .declarations and verbatim #print axioms output recorded in .evidence.assumptions_output."
+        }
+      ],
+      "statement_anchor": [
+        "TP-ECHO-1",
+        "TP-ECHO-2",
+        "TP-ECHO-3"
+      ],
+      "statement_formal": {
+        "source_of_truth": "verification/proofs/agda/EchoTyping.agda",
+        "note": "The Agda declarations a Rocq/Lean recheck leg must match. PROOF-POLICY §2 requires the statement comparison to be recorded, so the text here is checked against the file: if the Agda statement moves, this record must move with it or the gate fails.",
+        "declarations": [
+          {
+            "name": "TP-ECHO-1",
+            "states": "affine subtyping forgets a distinction",
+            "type": "affine-weakening echo-true ≡ affine-weakening echo-false"
+          },
+          {
+            "name": "TP-ECHO-2",
+            "states": "affine subtyping is irreversible: there is no section",
+            "type": "¬ (Σ (LEcho affine → LEcho linear) (λ reify → ∀ e → reify (affine-weakening e) ≡ e))"
+          },
+          {
+            "name": "TP-ECHO-3",
+            "states": "refinement erasure is non-injective",
+            "type": "Σ SurfaceTy (λ s₁ → Σ SurfaceTy (λ s₂ → (erase s₁ ≡ erase s₂) × (s₁ ≢ s₂)))"
+          }
+        ]
+      },
+      "grade_deviation": "mathesis §5 names the Grade 3 configurations parenthetically ('--safe --erasure', or 'Full --cubical'), and neither is exactly what runs here: this proof is checked under '--safe --without-K --cubical-compatible', with --erasure off and full --cubical unused. The later, normative estate policy (metadatastician/standards 3-practice/PROOF-POLICY.adoc §2.1, amended 2026-11-01) fixes that combined invocation as the canonical one, and §5 of mathesis says 'e.g.', so the example flags are illustrative rather than closed. The grade therefore stays 3 on mathesis' own operative clause — it type-checks in Agda and has not been translated to an independent foundational system — and the flag difference is recorded here instead of being paraphrased away.",
+      "history": [
+        {
+          "date": "2026-11-01",
+          "target": "agda",
+          "from": "proven",
+          "to": "proven",
+          "evidence": "re-baselined under PROOF-POLICY §2.1: run 41314454646 (3cd1859) invoked the canonical `agda --safe --without-K --cubical-compatible`; created by scripts/check-proof-ledger.sh, which refuses a recorded invocation that is not the canonical one",
+          "reason": "the earlier receipt (41299544043) predates §2.1 and is retained as historical evidence only"
+        }
+      ],
+      "caveats": [
+        "echo-types: its own identity claim is OPEN by design (README at b0982c4: 'Positive identity is open ... Criterion 2 is open'). XP-1 relates the pipeline's loss operations to that construction; it discharges nothing of echo-types' claim about itself, and must not be cited as if it did.",
+        "absolute-zero: a proof-bearing CONSUMER with 61 undischarged axioms and OND-6 open by design — not axiom-free ground truth. None of those axioms is in this proof's import cone (see source.import_cone), but this record must not be read as saying absolute-zero is axiom-free.",
+        "scope: the Rocq and Lean recheck legs are unbuilt, so the theorem is Grade 3. Nothing here says a second kernel checked the statement, and no waiver is claimed — PROOF-POLICY §4 waives a leg only when the statement cannot be expressed in the mapped prover, not when the estate has archived a tool.",
+        "epistemic-types: a SIBLING formalisation, not a consumed one. Its `Echo` is a certified residue over a `Retention` record; the `Echo` XP-1 uses is echo-types' fibre `Σ A (λ x → f x ≡ y)`. Neither imports the other, so nothing here supports its warrant-transport results (`checkerSound`, `proofCannotSupportFalse`, `opaqueNotCertifying`, `verifyReceiptIsGap`) or its `ForgedResidue` rejection — and reading XP-1 as covering them would be a category error, not an overstatement."
+      ],
+      "local_evidence": [
+        {
+          "kind": "local-recheck",
+          "date": "2026-11-01",
+          "toolchain": "Agda 2.7.0.1 (PyPI manylinux wheel, GHC 9.6.5) with agda-stdlib v2.4 @2a5a0de, echo-types b0982c44, absolute-zero f486c29 — a DIFFERENT Agda version from the pinned 2.8.0 the receipt uses",
+          "invocation": "agda --safe --without-K --cubical-compatible EchoTyping.agda and Verification.agda, from verification/proofs/agda, with all four library manifests registered",
+          "observed_result": "PASS — both modules typecheck; only -WnoUnsupportedIndexedMatch warnings from echo-types' own indexed matches, which the pinned lane sees too",
+          "planted_control": "a module asserting `⊥` by self-reference was rejected with Agda exit 42 in the same environment, so the pass is not vacuous",
+          "corroboration_only": true,
+          "note": "Not the receipt. PROOF-POLICY §2.1 pins the toolchain with the result, and the recorded receipt is the CI run at Agda 2.8.0; this entry says the same two modules also typecheck under 2.7.0.1. It cannot raise the grade and is not evidence for a §2 recheck leg. The same run was repeated against agda-stdlib v2.4 @2a5a0de and also passed, which is the evidence behind the v2.3 -> v2.4 pin bump in this commit."
+        }
+      ]
+    }
+  ]
+}

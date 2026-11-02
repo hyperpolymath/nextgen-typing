@@ -22,6 +22,16 @@
 -- `--safe --without-K`, zero postulates, against the real echo-types
 -- source (registered in ~/.agda/libraries as `echo-types`).
 --
+-- Scope, stated so the result cannot be over-read.  This module shows that
+-- the PIPELINE's loss operations are instances of echo-types' `Echo`.  It does
+-- NOT show that echo-types' own identity claim holds: at the pinned revision
+-- that claim is OPEN (echo-types' README, "Positive identity is open ...
+-- Criterion 2 is open").  Citing this module as evidence for the identity
+-- claim would be circular — the claim would rest on a library that has not
+-- closed it.  When echo-types closes criterion 2, this module inherits the
+-- result; until then it is a consumer of a construction, not a witness to the
+-- thesis that the construction is the identity.
+--
 -- See:
 --   * echo-types `EchoLinear.agda`   (linear/affine modes; `weaken`)
 --   * echo-types `EchoResidue.agda`  (`no-section-collapse-to-residue`)

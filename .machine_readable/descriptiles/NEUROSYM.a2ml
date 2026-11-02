@@ -3,15 +3,23 @@
 #
 # NEUROSYM.a2ml — Neurosymbolic integration metadata
 # Configuration for Hypatia scanning and symbolic reasoning.
+#
+# Local divergence from the fleet template written by gitbot-fleet
+# (robot-repo-automaton/templates/skeleton/): that template still says
+# report-format = "logtalk", removed as a Hypatia format on 2026-04-14.
+# Reported upstream: https://github.com/hyperpolymath/gitbot-fleet/issues/641
 
 [metadata]
-version = "0.1.0"
-last-updated = "2026-06-12"
+version = "0.2.0"
+last-updated = "2026-11-01"
 
 [hypatia-config]
 scan-enabled = true
 scan-depth = "standard"  # quick | standard | deep
-report-format = "logtalk"
+# JSON AssailReport from panic-attack. Logtalk was removed as a report format on
+# 2026-04-14 (hypatia .machine_readable/descriptiles/NEUROSYM.a2ml); the "logtalk"
+# value that shipped in the fleet template is dead and this repo emits no .lgt.
+report-format = "json"
 
 [symbolic-rules]
 # Custom symbolic rules for this project

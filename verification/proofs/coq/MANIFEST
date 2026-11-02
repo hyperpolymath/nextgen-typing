@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: MPL-2.0
+# Rocq (Coq) recheck-leg manifest — read by scripts/check-proofs.sh coq
+# Format: <source-root>|<module-relative-to-source-root>|gated|quarantine|<note>
+# Entries compile in listed dependency order: support modules precede importers.
+#
+# PROOF-POLICY §2 requires every Agda theory proof to be rechecked in Rocq (and
+# Lean). No Rocq witness exists yet: XP-1's rocq leg is recorded `open` in
+# ../LEDGER.json, so no artifact is listed here for the compile gate to run.
+#
+# Adding the witness means all four steps, in one change:
+#   1. write verification/proofs/coq/<Witness>.v
+#   2. list it below as `gated`
+#   3. fill in the rocq leg row in ../LEDGER.json: status, route
+#      (transported|re-proved), statement_compared, axioms, evidence
+#   4. re-derive the grade in ../LEDGER.json
+# The ledger gate fails if the artifact exists but is unlisted (here or in the
+# ledger), or if the ledger claims a leg with no artifact behind it.

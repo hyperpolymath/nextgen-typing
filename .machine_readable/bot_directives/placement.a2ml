@@ -76,6 +76,11 @@ allowed-proofs = [
   "verification/proofs/agda/Verification.agda", # aggregator that typechecks the cross-project set
   "verification/proofs/agda/nextgen-typing.agda-lib",
 ]
+enforced-by = [
+  "just proof-enrolment (scripts/check-proof-enrolment.sh) -- FAILs when a proof is unlisted, when a registered entry has no file behind it, when this list and ALLOWED_PROOFS in scripts/check-coordination-boundary.sh disagree, or when zero proofs are enrolled; BLOCKED (exit 2) when a required prover is missing",
+  "just proof-scan-dangerous (scripts/proof-scan-dangerous.sh) -- FAILs on believe_me/assert_total/postulate/sorry/Admitted/unsafeCoerce/Obj.magic outside comments",
+  ".github/workflows/proof-ci.yml -- runs `just proof-witness-check` (audit verification/proofs/LEDGER.json, then compile every declared Rocq/Lean recheck leg) plus the both-ways instrument controls, on proof, ledger, manifest, tests/proofs, Justfile and workflow changes; a green run means the ledger is honest, NOT that XP-1 is verified in an independent kernel",
+]
 route-elsewhere = [
   "ABI/FFI/memory-layout proofs -> typed-wasm",
   "TypeLL kernel proofs -> typell",

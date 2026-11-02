@@ -1335,147 +1335,151 @@ help-me:
 # FORMAL VERIFICATION (PROOFS)
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# Check all formal proofs (Idris2 + Lean4 + Agda + Coq)
-proof-check-all: proof-check-idris2 proof-check-lean4 proof-check-agda proof-check-coq proof-scan-dangerous
-    @echo "=== All proof checks complete ==="
+# Proof work follows metadatastician/standards 3-practice/PROOF-POLICY.adoc
+# (owner ruling 2026-10-26, amended 2026-11-01). The commit this repository
+# audits against is pinned in verification/proofs/LEDGER.json .policy.proof_policy,
+# and scripts/check-proof-ledger.sh fails when that pin is missing:
+#   * theory is Agda (source of truth) and is RECHECKED in Rocq and Lean (§1, §2)
+#   * engineering is Idris2 (§1)
+#   * status is the closed vocabulary of §5: open | argued | tested-only |
+#     proven-with-postulates | proven
+#   * grades are mathesis/estate-mathematical-architecture §5 (Grade 3 → Grade 1)
+#
+# This repository's proof CI audits verification/proofs/LEDGER.json, compiles and
+# kernel-queries any declared §2 recheck legs (Rocq and Lean) via
+# `just proof-witness-check`, and separately re-typechecks the §1 Agda source leg
+# via `just proof-check-agda` once the pinned Agda libraries are registered.
+#
+# No silent skips anywhere: scripts/check-proofs.sh (the estate instrument) makes
+# a missing prover FATAL, and scripts/check-proof-ledger.sh fails on a claim the
+# evidence does not support.
+#
+# The CI target: registry gates + ledger audit + every recheck leg declared
+proof-witness-check: proof-enrolment proof-ledger-check proof-scan-dangerous proof-check-coq proof-check-lean4
 
-# Check Idris2 proofs (ABI, types, dependent type proofs)
-proof-check-idris2:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    echo "=== Checking Idris2 proofs ==="
-    if ! command -v idris2 &>/dev/null; then
-        echo "SKIP: idris2 not installed"
-        exit 0
-    fi
-    ERRORS=0
-    for f in $(find verification/proofs/idris2 -name '*.idr' 2>/dev/null); do
-        echo -n "  Checking $f ... "
-        if idris2 --check "$f" 2>/dev/null; then
-            echo "OK"
-        else
-            echo "FAIL"
-            ERRORS=$((ERRORS + 1))
-        fi
-    done
-    if [ "$ERRORS" -gt 0 ]; then
-        echo "FAIL: $ERRORS Idris2 proof(s) failed"
-        exit 1
-    fi
-    echo "PASS: All Idris2 proofs verified"
+# Enrolment gate: manifest <-> boundary allowlist <-> disk parity, required
+# provers present, zero-work guard, --safe/--without-K still in force.
+#
+# Check proof enrolment (unlisted proofs, stale entries, missing provers)
+proof-enrolment:
+    @bash scripts/check-proof-enrolment.sh --receipt "${PROOF_RECEIPT_DIR:-target/proof-receipts}/enrolment.txt"
 
-# Check Lean4 proofs
-proof-check-lean4:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    echo "=== Checking Lean4 proofs ==="
-    if ! command -v lean &>/dev/null; then
-        echo "SKIP: lean not installed"
-        exit 0
-    fi
-    ERRORS=0
-    for f in $(find verification/proofs/lean4 -name '*.lean' 2>/dev/null); do
-        echo -n "  Checking $f ... "
-        if lean "$f" 2>/dev/null; then
-            echo "OK"
-        else
-            echo "FAIL"
-            ERRORS=$((ERRORS + 1))
-        fi
-    done
-    if [ "$ERRORS" -gt 0 ]; then
-        echo "FAIL: $ERRORS Lean4 proof(s) failed"
-        exit 1
-    fi
-    echo "PASS: All Lean4 proofs verified"
-
-# Check Agda proofs
-proof-check-agda:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    echo "=== Checking Agda proofs ==="
-    if ! command -v agda &>/dev/null; then
-        echo "SKIP: agda not installed"
-        exit 0
-    fi
-    ERRORS=0
-    for f in $(find verification/proofs/agda -name '*.agda' 2>/dev/null); do
-        echo -n "  Checking $f ... "
-        if agda --safe "$f" 2>/dev/null; then
-            echo "OK"
-        else
-            echo "FAIL"
-            ERRORS=$((ERRORS + 1))
-        fi
-    done
-    if [ "$ERRORS" -gt 0 ]; then
-        echo "FAIL: $ERRORS Agda proof(s) failed"
-        exit 1
-    fi
-    echo "PASS: All Agda proofs verified"
-
-# Check Coq proofs
-proof-check-coq:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    echo "=== Checking Coq proofs ==="
-    if ! command -v coqc &>/dev/null; then
-        echo "SKIP: coqc not installed"
-        exit 0
-    fi
-    ERRORS=0
-    for f in $(find verification/proofs/coq -name '*.v' 2>/dev/null); do
-        echo -n "  Checking $f ... "
-        if coqc "$f" 2>/dev/null; then
-            echo "OK"
-        else
-            echo "FAIL"
-            ERRORS=$((ERRORS + 1))
-        fi
-    done
-    if [ "$ERRORS" -gt 0 ]; then
-        echo "FAIL: $ERRORS Coq proof(s) failed"
-        exit 1
-    fi
-    echo "PASS: All Coq proofs verified"
-
-# Scan for dangerous patterns in proof files (believe_me, sorry, Admitted, etc.)
+# Comment-aware escape-hatch scan (believe_me, assert_total, postulate, sorry,
+# Admitted, unsafeCoerce, Obj.magic). Fails on a hit outside a comment, and on a
+# scan that finds no proof files at all.
+#
+# Scan proof sources for banned escape hatches
 proof-scan-dangerous:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    echo "=== Scanning for dangerous patterns in proofs ==="
-    DANGEROUS=0
-    PATTERNS="believe_me|assert_total|postulate|sorry|Admitted|unsafeCoerce|Obj\.magic"
-    for f in $(find verification/proofs -name '*.idr' -o -name '*.lean' -o -name '*.agda' -o -name '*.v' 2>/dev/null); do
-        MATCHES=$(grep -nE "$PATTERNS" "$f" 2>/dev/null || true)
-        if [ -n "$MATCHES" ]; then
-            echo "  DANGEROUS: $f"
-            echo "$MATCHES" | sed 's/^/    /'
-            DANGEROUS=$((DANGEROUS + 1))
-        fi
-    done
-    if [ "$DANGEROUS" -gt 0 ]; then
-        echo "FAIL: $DANGEROUS file(s) contain dangerous patterns"
-        exit 1
-    fi
-    echo "PASS: No dangerous patterns found in proofs"
+    @bash scripts/proof-scan-dangerous.sh --receipt "${PROOF_RECEIPT_DIR:-target/proof-receipts}/dangerous-patterns.txt"
 
-# Show proof status summary
+# Audit the proof ledger against PROOF-POLICY §5 and mathesis §5-§6
+proof-ledger-check:
+    @bash scripts/check-proof-ledger.sh --receipt "${PROOF_RECEIPT_DIR:-target/proof-receipts}/ledger.txt"
+
+# Compile Rocq recheck witnesses per verification/proofs/coq/MANIFEST and query
+# kernel assumptions (coqchk -silent -o + Print Assumptions) against LEDGER.json.
+# Fatal if coqc/coqchk/coqtop is absent when work exists: never a skip.
+#
+# Compile and assumption-check the declared Rocq recheck witnesses
+proof-check-coq:
+    @bash scripts/check-proofs.sh coq --receipt "${PROOF_RECEIPT_DIR:-target/proof-receipts}/witness-coq.txt"
+
+# Compile Lean 4 recheck witnesses per verification/proofs/lean4/MANIFEST and
+# query kernel assumptions (#print axioms probe) against LEDGER.json.
+# Fatal if lean is absent when work exists: never a skip.
+#
+# Compile and assumption-check the declared Lean 4 recheck witnesses
+proof-check-lean4:
+    @bash scripts/check-proofs.sh lean4 --receipt "${PROOF_RECEIPT_DIR:-target/proof-receipts}/witness-lean4.txt"
+
+# Re-typecheck the Agda SOURCE leg under `agda --safe --without-K --cubical-compatible`.
+# Invoked as a dedicated step in .github/workflows/proof-ci.yml (after library
+# registration) and available locally once nextgen-typing, standard-library,
+# echo-types and absolute-zero are registered in <agda-app-dir>/libraries + defaults.
+#
+# Re-typecheck the Agda source leg (needs registered libraries)
+proof-check-agda:
+    @bash scripts/check-proofs.sh agda --receipt "${PROOF_RECEIPT_DIR:-target/proof-receipts}/witness-agda.txt"
+
+# Compile Idris2 engineering proofs per verification/proofs/idris2/MANIFEST.
+# This repository hosts none: engineering proofs belong in the owning repo.
+#
+# Compile Idris2 engineering proofs (this repository hosts none)
+proof-check-idris2:
+    @bash scripts/check-proofs.sh idris2 --receipt "${PROOF_RECEIPT_DIR:-target/proof-receipts}/witness-idris2.txt"
+
+# Full local sweep: ledger audit + every leg, including the Agda source leg.
+#
+# Full local sweep (registry gates + ledger + all four provers)
+proof-check-all: proof-enrolment proof-ledger-check proof-check-idris2 proof-check-lean4 proof-check-agda proof-check-coq proof-scan-dangerous
+
+# Show the ledger: per theorem, its grade and each leg's status
 proof-status:
     #!/usr/bin/env bash
-    echo "=== Proof Status ==="
+    set -euo pipefail
+    LEDGER="verification/proofs/LEDGER.json"
+    echo "=== Proof status (source of truth: $LEDGER) ==="
     echo ""
-    echo "Idris2: $(find verification/proofs/idris2 -name '*.idr' 2>/dev/null | wc -l) files"
-    echo "Lean4:  $(find verification/proofs/lean4 -name '*.lean' 2>/dev/null | wc -l) files"
-    echo "Agda:   $(find verification/proofs/agda -name '*.agda' 2>/dev/null | wc -l) files"
-    echo "Coq:    $(find verification/proofs/coq -name '*.v' 2>/dev/null | wc -l) files"
-    echo "TLA+:   $(find verification/proofs/tlaplus -name '*.tla' 2>/dev/null | wc -l) files"
+    echo "Proof files on disk:"
+    echo "  Agda:   $(git ls-files -- 'verification/proofs/agda/*.agda' 2>/dev/null | wc -l)"
+    echo "  Rocq:   $(git ls-files -- 'verification/proofs/coq/*.v' 2>/dev/null | wc -l)"
+    echo "  Lean4:  $(git ls-files -- 'verification/proofs/lean4/*.lean' 2>/dev/null | wc -l)"
+    echo "  Idris2: $(git ls-files -- 'verification/proofs/idris2/*.idr' 2>/dev/null | wc -l)"
     echo ""
-    if [ -f PROOF-STATUS.md ]; then
-        grep -E "^\| \*\*Total\*\*" PROOF-STATUS.md 2>/dev/null || echo "(No summary row in PROOF-STATUS.md)"
-    else
-        echo "(No PROOF-STATUS.md found)"
+    if [ ! -f "$LEDGER" ]; then
+        echo "FAIL: no ledger at $LEDGER"
+        exit 1
     fi
+    echo "Ledger:"
+    jq -r '.theorems[] | "  \(.id)  [\(.kind)]  grade \(.grade)  source=\(.source.prover):\(.source.status)", (.legs[]? | "      leg \(.prover): \(.status)\(if .status == "open" then "  (" + (.blocker // "no blocker recorded") + ")" else "" end)")' "$LEDGER"
+    echo ""
+    echo "Policy gaps are printed by: just proof-ledger-check"
+
+
+# Show the grade ladder: what the current grade rests on, and the exact delta
+# up to the next rung (mathesis §5), computed from the ledger
+proof-grade:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    LEDGER="verification/proofs/LEDGER.json"
+    [ -f "$LEDGER" ] || { echo "FAIL: no ledger at $LEDGER" >&2; exit 1; }
+    jq -r '
+      def proven: [ .legs[]? | select(.status == "proven" or .status == "proven-with-postulates") ] | length;
+      def non_dtt: [ .legs[]? | select(.status == "proven" or .status == "proven-with-postulates") | select(.prover == "isabelle" or .prover == "tla+" or .prover == "smt") ] | length;
+      "=== Grade ladder (mathesis §5) — recorded, not estimated ===",
+      "",
+      (.theorems[] |
+        "\(.id)   kind=\(.kind)   recorded grade: \(.grade)",
+        "  source leg: \(.source.prover) \(.source.status)   flags: \(.source.safety_flags | join(" "))",
+        (if (.grade_deviation // "") != "" then
+           "  grade note: deviation from the §5 parenthetical is recorded in the ledger"
+         else empty end),
+        "  recheck legs:",
+        (.legs[] | "    \(.prover) [\(.family)]: \(.status)"
+          + (if .status == "open" then "   blocker: " + (.blocker // "not recorded")
+             else "   route: " + (.route // "not recorded") end)),
+        "",
+        "  next rung:",
+        (if proven == 0 then
+           "    grade 2i needs AT LEAST ONE independent proven recheck leg (Rocq or Lean),\n" +
+           "    with its route (transported through Dedukti/Lambdapi, or re-proved by hand),\n" +
+           "    the statement comparison against the Agda declarations, and the kernel\n" +
+           "    assumption query recorded. Proven today: 0."
+         elif .grade == "3" then
+           "    INCONSISTENT: a leg is proven while the grade still says 3 — the gate should\n" +
+           "    have refused this ledger. Re-record the grade."
+         elif .grade == "2i" then
+           "    grade 2ii needs TWO proven legs and one of them outside the DTT/CIC family.\n" +
+           "    Agda, Rocq and Lean are all DTT, so a Rocq+Lean pair cannot reach 2ii: it needs\n" +
+           "    a non-DTT leg such as Isabelle/HOL (proven non-DTT legs today: \(non_dtt))."
+         elif .grade == "2ii" then
+           "    grade 1 needs the statement checked through a verified checker API — AXLE for\n" +
+           "    Lean, coq-lsp for Rocq, isabelle-server for Isabelle — with the receipt recorded."
+         else
+           "    grade 1 recorded: nothing higher is defined by the model."
+         end)),
+      "",
+      "Nothing here is a percentage: grades are recorded, never averaged (mathesis §6)."' "$LEDGER"
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SESSION MANAGEMENT (THIN BINDINGS TO CENTRAL STANDARDS)

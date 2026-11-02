@@ -15,8 +15,26 @@ ____
 
 === Proof Tier
 
-*Tier*: T5 — Exempt (coordination layer; no owned code to prove).
-Cross-project proofs are hosted, not mandated.
+*Tier*: T5 — Exempt from the RSR template's *mandated* obligations
+(coordination layer; no owned code to prove). Cross-project proofs are hosted,
+not mandated.
+
+*Exempt is not outside the policy.* Reading T5 as "the proof policy does not
+apply here" would license exactly the weak treatment the estate policies exist
+to prevent, so this repository states the other reading, which is the true one:
+
+. **Hosting a proof makes this repo proof-bearing.** It owns no code to prove,
+  but it owns the proof it hosts. `docs/TRUSTED-BASE-REDUCTION-POLICY.adoc`
+  requires a `docs/proof-debt.md` from a proof-bearing repo, and PROOF-POLICY §7
+  requires any gate enforcing the policy to be verified both ways — both apply
+  here, and both are wired.
+. **"Not mandated" is about starting a proof, not about finishing one.** XP-1 is
+  recorded `proven` at Grade 3 (mathesis §5), which puts it under PROOF-POLICY §2
+  like any other theory proof: a Rocq recheck leg and a Lean recheck leg are
+  owed. They are `open`, reported as policy gaps on every run, and the grade is
+  held at 3 rather than inflated.
+. **A hosted proof is not a lower grade.** The rungs are about the proof, not
+  about which repository stores it.
 
 === Cross-Project Proofs (the only category that applies here)
 
@@ -66,11 +84,29 @@ When adding one, register it in `+[verification].allowed-proofs+` of
 |`+Obj.magic+` |OCaml/ReScript |Unsafe type cast
 |===
 
-CI rejects any PR introducing these (`+panic-attack assail+`).
+CI rejects any PR introducing these. The enforcement is
+`+just proof-scan-dangerous+` (`+scripts/proof-scan-dangerous.sh+`, run inside
+`+just proof-check-all+`) and the ledger gate
+`+just proof-ledger-check+` (`+scripts/check-proof-ledger.sh+`, run in CI and
+inside every sweep), plus the enrolment gate
+(`+scripts/check-proof-enrolment.sh+`) which fails any proof that is not
+registered in both `+[verification].allowed-proofs+` of
+`+placement.a2ml+` and `+ALLOWED_PROOFS+` of
+`+scripts/check-coordination-boundary.sh+`. Hosted lane:
+`+.github/workflows/proof-ci.yml+`, which runs `+just proof-witness-check+` —
+the ledger audit plus every recheck leg the ledger declares — after the
+both-ways instrument controls in `+tests/proofs/run-controls.sh+`.
+
+Status vocabulary (PROOF-POLICY §5) and grades (mathesis
+`+estate-mathematical-architecture+` §5) live in `+PROOF-STATUS.adoc+` and are
+recorded machine-readably in `+verification/proofs/LEDGER.json+`. Today XP-1 is
+*Grade 3* (Agda only) with its Rocq and Lean 4 recheck legs `+open+`.
 
 === References
 
 * Routing table: `+.machine_readable/bot_directives/placement.a2ml+`
-* CI guard: `+scripts/check-coordination-boundary.sh+` /
+* CI guard (coordination boundary): `+scripts/check-coordination-boundary.sh+` /
 `+.github/workflows/coordination-boundary.yml+`
-* Proof status tracking: `+PROOF-STATUS.md+` (this repo)
+* CI guard (proofs): `+scripts/check-proof-enrolment.sh+`,
+`+scripts/proof-scan-dangerous.sh+` / `+.github/workflows/proof-ci.yml+`
+* Proof status tracking: `+PROOF-STATUS.adoc+` (this repo)
