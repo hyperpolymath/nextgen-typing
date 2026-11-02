@@ -109,14 +109,14 @@ inductive ModeLe : Mode → Mode → Type where
   | affine_le_affine : ModeLe Mode.affine Mode.affine
 
 def mode_le_trans : ∀ {m₁ m₂ m₃ : Mode}, ModeLe m₁ m₂ → ModeLe m₂ m₃ → ModeLe m₁ m₃
-  | ModeLe.linear_le_linear, p23 => p23
-  | ModeLe.linear_le_affine, ModeLe.affine_le_affine => ModeLe.linear_le_affine
-  | ModeLe.affine_le_affine, ModeLe.affine_le_affine => ModeLe.affine_le_affine
+  | _, _, _, ModeLe.linear_le_linear, p23 => p23
+  | _, _, _, ModeLe.linear_le_affine, ModeLe.affine_le_affine => ModeLe.linear_le_affine
+  | _, _, _, ModeLe.affine_le_affine, ModeLe.affine_le_affine => ModeLe.affine_le_affine
 
 def degradeMode : ∀ {m₁ m₂ : Mode}, ModeLe m₁ m₂ → LEcho m₁ → LEcho m₂
-  | ModeLe.linear_le_linear, e => e
-  | ModeLe.linear_le_affine, e => weaken e
-  | ModeLe.affine_le_affine, e => e
+  | _, _, ModeLe.linear_le_linear, e => e
+  | _, _, ModeLe.linear_le_affine, e => weaken e
+  | _, _, ModeLe.affine_le_affine, e => e
 
 def subsume {m₁ m₂ : Mode} (p : ModeLe m₁ m₂) : LEcho m₁ → LEcho m₂ :=
   degradeMode p
@@ -124,9 +124,9 @@ def subsume {m₁ m₂ : Mode} (p : ModeLe m₁ m₂) : LEcho m₁ → LEcho m�
 theorem subsume_coherent :
     ∀ {m₁ m₂ m₃ : Mode} (p12 : ModeLe m₁ m₂) (p23 : ModeLe m₂ m₃) (e : LEcho m₁),
       degradeMode p23 (degradeMode p12 e) = degradeMode (mode_le_trans p12 p23) e
-  | ModeLe.linear_le_linear, _, _ => rfl
-  | ModeLe.linear_le_affine, ModeLe.affine_le_affine, _ => rfl
-  | ModeLe.affine_le_affine, ModeLe.affine_le_affine, _ => rfl
+  | _, _, _, ModeLe.linear_le_linear, _, _ => rfl
+  | _, _, _, ModeLe.linear_le_affine, ModeLe.affine_le_affine, _ => rfl
+  | _, _, _, ModeLe.affine_le_affine, ModeLe.affine_le_affine, _ => rfl
 
 -- =====================================================================
 -- § 2. Refinement erasure is a fiber (the Echo of erasure).
@@ -182,17 +182,17 @@ def tp_echo_3 :
 inductive Path {α : Type} : α → α → Type where
   | refl (a : α) : Path a a
 
-def path_sym {α : Type} {x y : α} (p : Path x y) : Path y x :=
-  @Path.rec α x (fun z _ => Path z x) (Path.refl x) y p
+def path_sym {α : Type} : ∀ {x y : α}, Path x y → Path y x
+  | _, _, Path.refl a => Path.refl a
 
-def path_trans {α : Type} {x y z : α} (p : Path x y) (q : Path y z) : Path x z :=
-  @Path.rec α x (fun w _ => Path w z → Path x z) (fun r => r) y p q
+def path_trans {α : Type} : ∀ {x y z : α}, Path x y → Path y z → Path x z
+  | _, _, _, Path.refl _, q => q
 
-def path_cong {α β : Type} (f : α → β) {x y : α} (p : Path x y) : Path (f x) (f y) :=
-  @Path.rec α x (fun z _ => Path (f x) (f z)) (Path.refl (f x)) y p
+def path_cong {α β : Type} (f : α → β) : ∀ {x y : α}, Path x y → Path (f x) (f y)
+  | _, _, Path.refl a => Path.refl (f a)
 
-def path_subst {α : Type} (P : α → Type) {x y : α} (p : Path x y) (px : P x) : P y :=
-  @Path.rec α x (fun z _ => P z) px y p
+def path_subst {α : Type} (P : α → Type) : ∀ {x y : α}, Path x y → P x → P y
+  | _, _, Path.refl _, px => px
 
 def EchoPath {A B : Type} (f : A → B) (y : B) : Type :=
   Sigma (fun x : A => Path (f x) y)
@@ -200,8 +200,12 @@ def EchoPath {A B : Type} (f : A → B) (y : B) : Type :=
 def echo_path_true : EchoPath collapse () := ⟨true, Path.refl ()⟩
 def echo_path_false : EchoPath collapse () := ⟨false, Path.refl ()⟩
 
+def bool_code : Bool → Type
+  | true => Unit
+  | false => Empty
+
 def bool_path_disjoint (h : Path true false) : Empty :=
-  @Path.rec Bool true (fun b _ => match b with | true => Unit | false => Empty) () false h
+  path_subst bool_code h ()
 
 def echo_path_distinct (h : Path echo_path_true echo_path_false) : Empty :=
   bool_path_disjoint (path_cong Sigma.fst h)
@@ -218,7 +222,7 @@ def affine_weakening_path (e : LEchoPath Mode.linear) : LEchoPath Mode.affine :=
 
 def tp_echo_1_path :
     Path (affine_weakening_path echo_path_true) (affine_weakening_path echo_path_false) :=
-  Path.refl ⟨(), ()⟩
+  Path.refl (⟨(), ()⟩ : LEchoPath Mode.affine)
 
 def tp_echo_2_path :
     Sigma (fun (reify : LEchoPath Mode.affine → LEchoPath Mode.linear) =>
@@ -229,10 +233,12 @@ def tp_echo_2_path :
         (path_sym (sec echo_path_true))
         (path_trans (path_cong reify tp_echo_1_path) (sec echo_path_false)))
 
+def surface_code : SurfaceTy → Type
+  | SurfaceTy.even => Empty
+  | _ => Unit
+
 def surface_path_distinct (h : Path SurfaceTy.pos SurfaceTy.even) : Empty :=
-  @Path.rec SurfaceTy SurfaceTy.pos
-    (fun s _ => match s with | SurfaceTy.even => Empty | _ => Unit)
-    () SurfaceTy.even h
+  path_subst surface_code h ()
 
 def tp_echo_3_path :
     Sigma (fun s₁ : SurfaceTy =>
