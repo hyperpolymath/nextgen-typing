@@ -53,6 +53,7 @@ SCAN_DIRS="verification tests"
 RECEIPT=""
 
 SCAN_FILE=""
+STRIP_FILE=""
 SHOW_PATTERNS=0
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -60,6 +61,8 @@ while [ "$#" -gt 0 ]; do
     --receipt=*) RECEIPT="${1#--receipt=}"; shift ;;
     --scan-file) SCAN_FILE="${2:-}"; shift 2 ;;
     --scan-file=*) SCAN_FILE="${1#--scan-file=}"; shift ;;
+    --strip-comments) STRIP_FILE="${2:-}"; shift 2 ;;
+    --strip-comments=*) STRIP_FILE="${1#--strip-comments=}"; shift ;;
     --patterns) SHOW_PATTERNS=1; shift ;;
     -h|--help) sed -n '2,34p' "$0"; exit 0 ;;
     *) echo "unknown argument: $1" >&2; exit 1 ;;
@@ -107,36 +110,13 @@ write_receipt() {
   } >"$RECEIPT" || { echo "FAIL: cannot write receipt $RECEIPT" >&2; exit 1; }
 }
 
-echo "=== Scanning for dangerous patterns in proofs ==="
-echo "patterns: $PATTERNS"
-echo "scope:    $SCAN_DIRS"
-
 # Print $1 with the comment syntax of ITS language removed, and string literals
-# masked, preserving line numbers. Three things matter here:
-#
-#   * One comment syntax for every language is wrong in the dangerous direction.
-#     `(*` is a comment in Coq and TLA+ but ordinary text in Lean, so a Lean file
-#     containing `(* ... Axiom ... *)` had the Axiom treated as commented-out and
-#     the scan called it clean. The delimiters are now chosen per extension.
-#   * Lean is not one of the languages with `//` comments: `{x // p x}` is
-#     subtype notation, so treating `//` as a comment would cut the line short
-#     and hide whatever followed on it. Lean takes `--` and `/- -/` only.
-#   * A comment marker inside a string is not a comment. Masks keep `"--"` in a
-#     string from opening one, and keep a banned word inside a string from being
-#     counted as code. Only double-quoted strings are masked: a prime is part of
-#     an ordinary identifier in Agda and Idris, and masking from it would hide
-#     the rest of the line.
-#   * For an unknown extension, comments are left intact and double-quoted
-#     strings are masked; no comment syntax is guessed.
-#
-# Nested block comments are not supported; an unclosed block comment runs to the
-# end of the file. Delimiters are matched after string masking, so `"(*"` is
-# text. Comment *text* is dropped rather than blanked, which keeps `grep -n`
-# line numbers aligned with the file.
+# masked, preserving line numbers. Supports nested block comments in Agda,
+# Idris, Lean and Coq.
 strip_comments() {
   local f="$1" mode
   case "$f" in
-    *.agda|*.lagda|*.lagda.md|*.lagda.rst|*.lagda.tex) mode=agda ;;
+    *.agda|*.lagda|*.lagda.*) mode=agda ;;
     *.idr) mode=idris ;;
     *.lean) mode=lean ;;
     *.v) mode=coq ;;
@@ -146,12 +126,12 @@ strip_comments() {
   esac
   awk -v mode="$mode" '
     BEGIN {
-      lop1 = ""; lop2 = ""; bop = ""; bcl = ""
-      if (mode == "agda" || mode == "idris") { lop1 = "--"; bop = "{-"; bcl = "-}" }
-      else if (mode == "lean")              { lop1 = "--"; bop = "/-"; bcl = "-/" }
-      else if (mode == "coq")               { bop = "(*"; bcl = "*)" }
-      else if (mode == "tla")               { lop1 = "\\*"; bop = "(*"; bcl = "*)" }
-      else if (mode == "fstar")             { lop2 = "//"; bop = "(*"; bcl = "*)" }
+      lop1 = ""; lop2 = ""; bop = ""; bcl = ""; nested = 0
+      if (mode == "agda" || mode == "idris") { lop1 = "--"; bop = "{-"; bcl = "-}"; nested = 1 }
+      else if (mode == "lean")              { lop1 = "--"; bop = "/-"; bcl = "-/"; nested = 1 }
+      else if (mode == "coq")               { bop = "(*"; bcl = "*)"; nested = 1 }
+      else if (mode == "tla")               { lop1 = "\\*"; bop = "(*"; bcl = "*)"; nested = 1 }
+      else if (mode == "fstar")             { lop2 = "//"; bop = "(*"; bcl = "*)"; nested = 1 }
       block = 0
     }
     {
@@ -163,8 +143,15 @@ strip_comments() {
           if (c == instr) { instr = ""; out = out c; i += 1; continue }
           out = out " "; i += 1; continue
         }
-        if (block == 1) {
-          if (two == bcl) { block = 0; i += 2 } else { i += 1 }
+        if (block > 0) {
+          if (nested && bop != "" && two == bop) { block += 1; i += 2; continue }
+          if (two == bcl) {
+            block -= 1
+            if (block == 0) { out = out " " }
+            i += 2
+          } else {
+            i += 1
+          }
           continue
         }
         if (c == "\"") { instr = c; out = out c; i += 1; continue }
@@ -177,6 +164,16 @@ strip_comments() {
     }
   ' "$f"
 }
+
+if [ -n "$STRIP_FILE" ]; then
+  [ -f "$STRIP_FILE" ] || { echo "BLOCKED: --strip-comments target does not exist: $STRIP_FILE" >&2; exit 2; }
+  strip_comments "$STRIP_FILE"
+  exit 0
+fi
+
+echo "=== Scanning for dangerous patterns in proofs ==="
+echo "patterns: $PATTERNS"
+echo "scope:    $SCAN_DIRS"
 
 if [ -n "$SCAN_FILE" ]; then
   [ -f "$SCAN_FILE" ] || { echo "BLOCKED: --scan-file target does not exist: $SCAN_FILE" >&2; exit 2; }

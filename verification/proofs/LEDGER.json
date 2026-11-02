@@ -44,15 +44,15 @@
         "typed-wasm"
       ],
       "statement": "The pipeline's information-losing typing operations are instances of the echo-types fiber Echo f y := Sigma A (lambda x -> f x === y): affine weakening (AffineScript linear is below affine) collapses a distinction, has no section, and refinement erasure is non-injective.",
-      "grade": "3",
-      "grade_basis": "mathesis §5 Grade 3: type-checks in Agda, has not been translated to an independent foundational system. The Rocq and Lean recheck legs required by PROOF-POLICY §2 are recorded here as open.",
+      "grade": "2i",
+      "grade_basis": "mathesis §5 Grade 2i: Agda source leg (`--safe --without-K --cubical-compatible`) PLUS both PROOF-POLICY §2 recheck legs (`rocq` in verification/proofs/coq/EchoTyping.v and `lean4` in verification/proofs/lean4/EchoTyping.lean, core Lean 4 with zero Mathlib) independently proven with zero axioms (`Closed under the global context` / `'does not depend on any axioms'`). Because Agda, Rocq and Lean all belong to the DTT/CIC family, Grade 2ii remains unreached until a non-DTT leg (e.g. Isabelle/HOL) is added.",
       "reconciliation": {
         "vocabulary": "mathesis docs/status/CROSS-PROVER-RECONCILIATION.adoc",
         "agda": "AGDA-VERIFIED",
-        "rocq": "NOT-INVENTORIED",
-        "lean4": "NOT-INVENTORIED",
-        "bridge": "BRIDGE-PENDING",
-        "note": "Never collapse source verification, target kernel checking, and bridge correspondence: XP-1 is AGDA-VERIFIED under canonical `--safe --without-K --cubical-compatible`, while neither Rocq nor Lean has an independent target witness yet and the cross-prover bridge remains BRIDGE-PENDING."
+        "rocq": "COQ-CHECKED",
+        "lean4": "LEAN-CHECKED",
+        "bridge": "RECONCILED",
+        "note": "All four dimensions are kept distinct: Agda source verified under `--safe --without-K --cubical-compatible`; Rocq 8.18 target checked via `coqc` + `coqchk -silent -o` + `Print Assumptions` (`Closed under the global context`); core Lean 4.15.0 target checked via `lean` + `#print axioms` + `Lean.Environment.getModuleIdxFor?` (`does not depend on any axioms`); and statement correspondence justified anchor-by-anchor (`TP-ECHO-1..3`) using Type-valued `sigT`/`prod` in Rocq and `PSigma`/`PProd` + Type-valued `Path`/`Sigma`/`Prod` companions in Lean 4."
       },
       "source": {
         "prover": "agda",
@@ -215,30 +215,82 @@
         {
           "prover": "rocq",
           "family": "dtt",
-          "status": "open",
-          "route": null,
-          "artifact": null,
-          "support_files": null,
-          "declarations": null,
-          "axioms": null,
-          "statement_compared": null,
-          "evidence": null,
+          "status": "proven",
+          "route": "re-proved",
+          "reproof_reason": "No Dedukti/Lambdapi Agda->Rocq exporter is wired into the estate toolchain; re-proved directly in Coq 8.18 Init.Prelude CIC without tactics that invoke UIP/JMeq_eq.",
+          "artifact": "verification/proofs/coq/EchoTyping.v",
+          "support_files": [],
+          "declarations": [
+            {
+              "anchor": "TP-ECHO-1",
+              "name": "tp_echo_1"
+            },
+            {
+              "anchor": "TP-ECHO-2",
+              "name": "tp_echo_2"
+            },
+            {
+              "anchor": "TP-ECHO-3",
+              "name": "tp_echo_3"
+            }
+          ],
+          "axioms": [],
+          "statement_compared": "Compared anchor-by-anchor against verification/proofs/agda/EchoTyping.agda (PROOF-POLICY §2.2): Echo f y := { x : A & f x = y } (Type-valued sigT, never Prop-truncated ex, preserving projT1 witness projection); EchoR Cert y := { r : C & Cert r y }; LEcho linear/affine and weaken := collapse_to_residue match EchoLinear; tp_echo_1 proves affine_weakening echo_true = affine_weakening echo_false; tp_echo_2 proves ~ { reify : LEcho affine -> LEcho linear & forall e, reify (affine_weakening e) = e }; tp_echo_3 inhabits { s1 : SurfaceTy & { s2 : SurfaceTy & ((erase s1 = erase s2) * (s1 <> s2))%type } } over Type-valued sigT and prod. Auxiliary lemmas affine_typing_proof_irrelevant and subsume_coherent are also proven via pure CIC convoy match with zero axioms.",
+          "evidence": {
+            "kind": "ci-receipt",
+            "commit": "cbec3212286f10b053c6dd903a8b0b71d84062d6",
+            "date": "2026-11-02",
+            "run": "https://github.com/hyperpolymath/nextgen-typing/actions/runs/41365289142",
+            "assumptions_output": "coqchk -Q . \"\" -silent -o EchoTyping: Axioms: <none> (impredicative-set: no, type-in-type: no); Print Assumptions EchoTyping.tp_echo_1 / EchoTyping.tp_echo_2 / EchoTyping.tp_echo_3: Closed under the global context"
+          },
           "api_receipt": null,
-          "blocker": "no Rocq witness exists. PROOF-POLICY §2 requires one: transport the Agda term through Dedukti/Lambdapi (record the statement comparison) or re-prove the statement in Rocq by hand, map TP-ECHO-1..3 in .declarations, and record the verbatim coqchk + Print Assumptions output in .evidence.assumptions_output."
+          "blocker": null
         },
         {
           "prover": "lean4",
           "family": "dtt",
-          "status": "open",
-          "route": null,
-          "artifact": null,
-          "support_files": null,
-          "declarations": null,
-          "axioms": null,
-          "statement_compared": null,
-          "evidence": null,
+          "status": "proven",
+          "route": "re-proved",
+          "reproof_reason": "PROOF-POLICY §2 forbids Mathlib and no released Lambdapi Lean 4 exporter exists; re-proved directly in core Lean 4.15.0 (Init Prelude only).",
+          "artifact": "verification/proofs/lean4/EchoTyping.lean",
+          "support_files": [],
+          "declarations": [
+            {
+              "anchor": "TP-ECHO-1",
+              "name": "EchoTyping.tp_echo_1"
+            },
+            {
+              "anchor": "TP-ECHO-2",
+              "name": "EchoTyping.tp_echo_2"
+            },
+            {
+              "anchor": "TP-ECHO-3",
+              "name": "EchoTyping.tp_echo_3"
+            },
+            {
+              "anchor": "TP-ECHO-1",
+              "name": "EchoTyping.tp_echo_1_path"
+            },
+            {
+              "anchor": "TP-ECHO-2",
+              "name": "EchoTyping.tp_echo_2_path"
+            },
+            {
+              "anchor": "TP-ECHO-3",
+              "name": "EchoTyping.tp_echo_3_path"
+            }
+          ],
+          "axioms": [],
+          "statement_compared": "Compared anchor-by-anchor against verification/proofs/agda/EchoTyping.agda (PROOF-POLICY §2.2): EchoTyping.tp_echo_1, EchoTyping.tp_echo_2, and EchoTyping.tp_echo_3 use Type-valued PSigma and PProd (never Prop-truncated Exists/And) over core Lean Eq; because Lean's Prop Eq has definitional proof irrelevance whereas Agda's --without-K _≡_ is proof-relevant in Set, EchoTyping.lean §4 also proves EchoTyping.tp_echo_1_path, EchoTyping.tp_echo_2_path, and EchoTyping.tp_echo_3_path over a Type-valued Martin-Löf identity type Path with Sigma, Prod, and Empty, confirming zero reliance on UIP/K, propext, Quot.sound, or Classical.choice.",
+          "evidence": {
+            "kind": "ci-receipt",
+            "commit": "cbec3212286f10b053c6dd903a8b0b71d84062d6",
+            "date": "2026-11-02",
+            "run": "https://github.com/hyperpolymath/nextgen-typing/actions/runs/41365289142",
+            "assumptions_output": "'EchoTyping.tp_echo_1' does not depend on any axioms; 'EchoTyping.tp_echo_2' does not depend on any axioms; 'EchoTyping.tp_echo_3' does not depend on any axioms; 'EchoTyping.tp_echo_1_path' does not depend on any axioms; 'EchoTyping.tp_echo_2_path' does not depend on any axioms; 'EchoTyping.tp_echo_3_path' does not depend on any axioms"
+          },
           "api_receipt": null,
-          "blocker": "no Lean 4 witness exists. PROOF-POLICY §2 requires one and forbids Mathlib; until a released Lambdapi Lean exporter exists the lean leg is re-proved by hand in core Lean, with TP-ECHO-1..3 mapped in .declarations and verbatim #print axioms output recorded in .evidence.assumptions_output."
+          "blocker": null
         }
       ],
       "statement_anchor": [
@@ -276,12 +328,36 @@
           "to": "proven",
           "evidence": "re-baselined under PROOF-POLICY §2.1: run 41314454646 (3cd1859) invoked the canonical `agda --safe --without-K --cubical-compatible`; created by scripts/check-proof-ledger.sh, which refuses a recorded invocation that is not the canonical one",
           "reason": "the earlier receipt (41299544043) predates §2.1 and is retained as historical evidence only"
+        },
+        {
+          "date": "2026-11-02",
+          "target": "rocq",
+          "from": "open",
+          "to": "proven",
+          "evidence": "verification/proofs/coq/EchoTyping.v compiled by coqc 8.18.0 and verified axiom-free (`Closed under the global context`) by `coqchk -Q . \"\" -silent -o EchoTyping` + `Print Assumptions` for `tp_echo_1`, `tp_echo_2`, `tp_echo_3` via `just proof-witness-check`",
+          "reason": "discharges XP-1's PROOF-POLICY §2 Rocq recheck obligation"
+        },
+        {
+          "date": "2026-11-02",
+          "target": "lean4",
+          "from": "open",
+          "to": "proven",
+          "evidence": "verification/proofs/lean4/EchoTyping.lean compiled by core Lean 4.15.0 (no Mathlib) and verified axiom-free (`does not depend on any axioms`) + module-owned by `#print axioms` and `Lean.Environment.getModuleIdxFor?` for `EchoTyping.tp_echo_1..3` and `EchoTyping.tp_echo_1_path..3_path` via `just proof-witness-check`",
+          "reason": "discharges XP-1's PROOF-POLICY §2 Lean 4 recheck obligation"
+        },
+        {
+          "date": "2026-11-02",
+          "target": "grade",
+          "from": "3",
+          "to": "2i",
+          "evidence": "both PROOF-POLICY §2 DTT recheck legs (`rocq` EchoTyping.v and `lean4` EchoTyping.lean) proven with zero axioms alongside Agda source leg (`3cd1859`)",
+          "reason": "promoted from Grade 3 to Grade 2i per mathesis §5 (independent DTT recheck legs proven; Grade 2ii still requires a non-DTT leg such as Isabelle/HOL)"
         }
       ],
       "caveats": [
         "echo-types: its own identity claim is OPEN by design (README at b0982c4: 'Positive identity is open ... Criterion 2 is open'). XP-1 relates the pipeline's loss operations to that construction; it discharges nothing of echo-types' claim about itself, and must not be cited as if it did.",
         "absolute-zero: a proof-bearing CONSUMER with 61 undischarged axioms and OND-6 open by design — not axiom-free ground truth. None of those axioms is in this proof's import cone (see source.import_cone), but this record must not be read as saying absolute-zero is axiom-free.",
-        "scope: the Rocq and Lean recheck legs are unbuilt, so the theorem is Grade 3. Nothing here says a second kernel checked the statement, and no waiver is claimed — PROOF-POLICY §4 waives a leg only when the statement cannot be expressed in the mapped prover, not when the estate has archived a tool.",
+        "scope: XP-1 is Grade 2i — checked across Agda (`--safe --without-K --cubical-compatible`), Rocq 8.18 (`EchoTyping.v`, `Closed under the global context`), and core Lean 4.15.0 (`EchoTyping.lean`, zero axioms, no Mathlib), satisfying PROOF-POLICY §1-§2. All three belong to the DTT/CIC family, so Grade 2ii (which requires a second foundational architecture such as Isabelle/HOL) and Grade 1 (verified external checker API receipt) are NOT claimed.",
         "epistemic-types: a SIBLING formalisation, not a consumed one. Its `Echo` is a certified residue over a `Retention` record; the `Echo` XP-1 uses is echo-types' fibre `Σ A (λ x → f x ≡ y)`. Neither imports the other, so nothing here supports its warrant-transport results (`checkerSound`, `proofCannotSupportFalse`, `opaqueNotCertifying`, `verifyReceiptIsGap`) or its `ForgedResidue` rejection — and reading XP-1 as covering them would be a category error, not an overstatement."
       ],
       "local_evidence": [

@@ -32,9 +32,11 @@ proofs/
 │   ├── Verification.agda        # aggregator: checks the set
 │   ├── nextgen-typing.agda-lib  # depends on: standard-library, echo-types
 │   └── MANIFEST
-├── coq/                         # recheck leg (§2) — currently OPEN, no witness
+├── coq/                         # Rocq recheck leg (§2) — gated, proven (axioms: [])
+│   ├── EchoTyping.v             # Type-valued sigT/prod + CIC convoy re-proof
 │   └── MANIFEST
-└── lean4/                       # recheck leg (§2) — currently OPEN, no witness
+└── lean4/                       # Lean 4 recheck leg (§2, no Mathlib) — gated, proven
+    ├── EchoTyping.lean          # PSigma/PProd + Type-valued Path companions
     └── MANIFEST
 ----
 
@@ -130,14 +132,17 @@ failure: consumed dependencies belong in `assumptions`.
 
 == Current state
 
-`XP-1` is *Grade 3*: Agda only, not translated. It proves a statement about
+`XP-1` is *Grade 2i*: verified in Agda (`--safe --without-K --cubical-compatible`),
+Rocq 8.18 (`verification/proofs/coq/EchoTyping.v`, `Closed under the global
+context`), and core Lean 4.15.0 (`verification/proofs/lean4/EchoTyping.lean`,
+zero axioms, no Mathlib), satisfying `PROOF-POLICY` §1–§2 (`AGDA-VERIFIED`,
+`COQ-CHECKED`, `LEAN-CHECKED`, `RECONCILED`). It proves a statement about
 *this pipeline* — that its loss operations are instances of echo-types' `Echo`
 construction. It does not, and cannot, prove echo-types' own identity claim,
 which is open there (criterion 2); see the caveats in the ledger and in the
-module's header. The Rocq and Lean 4 recheck legs
-are `open` — the estate policy's §2 obligation is *unmet*, and the ledger says so
-with the blocker that stops each leg rather than leaving a blank. Both legs are
-reported as `POLICY GAP` on every run; neither is counted as verification.
+module's header. Because Agda, Rocq and Lean all belong to the DTT/CIC family,
+Grade `2ii` (which requires a second foundational architecture such as
+Isabelle/HOL) is not claimed.
 
 Grade 3 is the lowest rung, so it is the one that has to name its evidence. The
 ledger records four things for it, and the gate re-reads the tree for each:

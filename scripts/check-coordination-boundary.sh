@@ -33,6 +33,8 @@ ALLOWED_PROOFS=(
   "verification/proofs/agda/EchoTyping.agda"
   "verification/proofs/agda/Verification.agda"
   "verification/proofs/agda/nextgen-typing.agda-lib"
+  "verification/proofs/coq/EchoTyping.v"
+  "verification/proofs/lean4/EchoTyping.lean"
 )
 is_allowed_proof() {
   local f="$1" a

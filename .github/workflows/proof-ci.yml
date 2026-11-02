@@ -15,11 +15,11 @@
 #     under `agda --safe --without-K --cubical-compatible`.
 #   * §2: that statement must be rechecked in Rocq AND Lean — transported
 #     through Dedukti/Lambdapi or re-proved by hand, with the statement
-#     comparison recorded and no Mathlib. Those are the legs this lane
-#     examines (`coqchk -silent -o` + `Print Assumptions` for Rocq; `#print axioms`
-#     for Lean). BOTH ARE CURRENTLY OPEN: no witness exists, so the lane
-#     compiles zero recheck modules and the gate prints the gap as a
-#     `POLICY GAP` line on every run.
+#     comparison recorded and no Mathlib. Both XP-1 recheck legs
+#     (`verification/proofs/coq/EchoTyping.v` and
+#     `verification/proofs/lean4/EchoTyping.lean`) are gated and checked here via
+#     `coqchk -silent -o` + `Print Assumptions` (Rocq) and `#print axioms` +
+#     `Lean.Environment.getModuleIdxFor?` module-origin verification (Lean 4).
 #   * §5/§6: status is the closed vocabulary (open | argued | tested-only |
 #     proven-with-postulates | proven); a grade must be supported by the legs
 #     behind it; axioms are tracked (`Print Assumptions`, `#print axioms`), not
@@ -370,6 +370,7 @@ jobs:
           set -euo pipefail
           LEDGER=verification/proofs/LEDGER.json
           bad=0
+          checked_legs=0
           while IFS= read -r leg; do
             [ -z "$leg" ] && continue
             case "$leg" in
@@ -377,7 +378,8 @@ jobs:
               lean4|lean) dir=lean4; prover="Lean 4" ;;
               *) continue ;;
             esac
-            gated="$(awk -F'|' '/^[[:space:]]*#/ || NF < 3 { next } $3 == "gated" { c++ } END { print c+0 }'               "verification/proofs/$dir/MANIFEST")"
+            checked_legs=$((checked_legs + 1))
+            gated="$(awk -F'|' '/^[[:space:]]*#/ || NF < 3 { next } $3 == "gated" { c++ } END { print c+0 }' "verification/proofs/$dir/MANIFEST")"
             echo "$prover: ledger records a proven leg; $dir/MANIFEST lists $gated gated module(s)"
             if [ "$gated" -lt 1 ]; then
               echo "::error::zero-work: the ledger records a proven $prover leg but verification/proofs/$dir/MANIFEST lists no gated module"
@@ -385,7 +387,11 @@ jobs:
             fi
           done < <(jq -r '.theorems[].legs[]? | select(.status == "proven" or .status == "proven-with-postulates") | .prover' "$LEDGER" | sort -u)
           if [ "$bad" -ne 0 ]; then exit 1; fi
-          echo "no recheck leg is recorded proven, so zero compiled recheck modules is the honest count — not a pass"
+          if [ "$checked_legs" -eq 0 ]; then
+            echo "no recheck leg is recorded proven, so zero compiled recheck modules is the honest count — not a pass"
+          else
+            echo "all $checked_legs proven recheck leg(s) carry gated MANIFEST entries"
+          fi
 
       # The Agda SOURCE leg. PROOF-POLICY §1 makes Agda the source of truth; the
       # ledger records it at a pinned commit and the audit checks that record.
@@ -443,6 +449,15 @@ jobs:
 
       - name: Note receipts
         run: |
+          if [ -f "$RUNNER_TEMP/lean-dl/archive.txt" ]; then
+            echo "::notice::lean-archive: $(cat "$RUNNER_TEMP/lean-dl/archive.txt")"
+          fi
+          for wf in "$PROOF_RECEIPT_DIR/witness-coq.txt" "$PROOF_RECEIPT_DIR/witness-lean4.txt"; do
+            if [ -f "$wf" ]; then
+              wpayload="$(grep -vE '^[[:space:]]*$' "$wf" | tail -n 35 | tail -c 3000 | sed ':a;N;$!ba;s/\n/%0A/g')"
+              echo "::notice::$(basename "$wf"):%0A${wpayload}"
+            fi
+          done
           echo "## Proof CI receipts" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           for f in "$PROOF_RECEIPT_DIR"/*.txt; do

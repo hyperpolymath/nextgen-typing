@@ -125,7 +125,9 @@ else
 fi
 
 # --- grades and evidence ----------------------------------------------------
-jq '(.theorems[0].grade) = "2i"' "$LEDGER" > "$WORK/grade-2i.json"
+jq '(.theorems[0].grade) = "2i"
+    | (.theorems[0].legs[0].status) = "open"
+    | (.theorems[0].legs[1].status) = "open"' "$LEDGER" > "$WORK/grade-2i.json"
 expect_refusal "5. a grade 2i claim with no proven leg" \
   "grade 2i requires at least one independent proven recheck leg" "$WORK/grade-2i.json"
 
@@ -134,15 +136,35 @@ jq '(.theorems[0].history) = [{"date":"2026-11-01","target":"grade","from":"3","
 expect_refusal "6. a history whose last grade contradicts the ledger" \
   "history's last recorded grade is '2ii'" "$WORK/grade-history.json"
 
-jq '(.theorems[0].history) = [{"date":"2026-11-01","target":"grade","from":"2i","to":"3","evidence":"re-audit; the leg never existed","reason":"the earlier grade counted a leg with no witness"}]' \
-  "$LEDGER" > "$WORK/grade-regressed.json"
-if bash "$GATE" --ledger "$WORK/grade-regressed.json" >/dev/null 2>&1; then
+sandbox_reg="$WORK/repo-regressed"
+mkdir -p "$sandbox_reg"
+tar --exclude=.git --exclude=target -cf - . 2>/dev/null | ( cd "$sandbox_reg" && tar -xf - )
+rm -f "$sandbox_reg/verification/proofs/coq/EchoTyping.v" \
+      "$sandbox_reg/verification/proofs/lean4/EchoTyping.lean"
+printf '# SPDX-License-Identifier: MPL-2.0\n' > "$sandbox_reg/verification/proofs/coq/MANIFEST"
+printf '# SPDX-License-Identifier: MPL-2.0\n' > "$sandbox_reg/verification/proofs/lean4/MANIFEST"
+sed -i '/EchoTyping\.v/d; /EchoTyping\.lean/d' \
+  "$sandbox_reg/.machine_readable/bot_directives/placement.a2ml" \
+  "$sandbox_reg/scripts/check-coordination-boundary.sh"
+sed -i 's/^|XP-1 |theory |\*2i\*/|XP-1 |theory |*3*/; s/[Gg]rade[[:space:]]\+\(2i\|2ii\|2\|1\)/rung-\1/g' "$sandbox_reg/PROOF-STATUS.adoc"
+jq '(.theorems[0].grade) = "3"
+    | (.theorems[0].reconciliation) |= (.rocq = "NOT-INVENTORIED" | .lean4 = "NOT-INVENTORIED" | .bridge = "BRIDGE-PENDING")
+    | (.theorems[0].legs[0]) = {"prover":"rocq","family":"dtt","status":"open","route":null,"artifact":null,"support_files":null,"declarations":null,"axioms":null,"statement_compared":null,"evidence":null,"api_receipt":null,"blocker":"regressed in control"}
+    | (.theorems[0].legs[1]) = {"prover":"lean4","family":"dtt","status":"open","route":null,"artifact":null,"support_files":null,"declarations":null,"axioms":null,"statement_compared":null,"evidence":null,"api_receipt":null,"blocker":"regressed in control"}
+    | (.theorems[0].history) = [{"date":"2026-11-01","target":"grade","from":"2i","to":"3","evidence":"re-audit; the leg regressed","reason":"the earlier grade lost its target witnesses"}]' \
+  "$sandbox_reg/verification/proofs/LEDGER.json" > "$sandbox_reg/verification/proofs/LEDGER.tmp"
+mv "$sandbox_reg/verification/proofs/LEDGER.tmp" "$sandbox_reg/verification/proofs/LEDGER.json"
+if ( cd "$sandbox_reg" && bash scripts/check-proof-ledger.sh ) >"$WORK/grade-regressed.log" 2>&1; then
   ok "7. an honest, evidenced regression is accepted (the rules cut both ways)"
 else
   viol "7. an honest, evidenced regression was refused — the history rule is too strict"
+  sed 's/^/      /' "$WORK/grade-regressed.log" | tail -5
 fi
 
-jq '(.theorems[0].history) = [{"date":"2026-11-01","target":"grade","from":"2i","to":"3","evidence":"planted"}]' \
+jq '(.theorems[0].grade) = "3"
+    | (.theorems[0].legs[0].status) = "open"
+    | (.theorems[0].legs[1].status) = "open"
+    | (.theorems[0].history) = [{"date":"2026-11-01","target":"grade","from":"2i","to":"3","evidence":"planted"}]' \
   "$LEDGER" > "$WORK/grade-no-reason.json"
 expect_refusal "8. a regression with no recorded reason" \
   "regressed from '2i' to '3' with no .reason" "$WORK/grade-no-reason.json"
@@ -188,7 +210,10 @@ jq '(.theorems[0].source.assumptions[] | select(.name == "echo-types")) |= del(.
 expect_refusal "17. a claim about another repository with no evidence of where it was read" \
   "records no evidence" "$WORK/no-evidence-ext.json"
 
-jq '(.theorems[0].caveats) = []' "$LEDGER" > "$WORK/no-caveats.json"
+jq '(.theorems[0].legs[0].status) = "open"
+    | (.theorems[0].reconciliation.rocq) = "NOT-INVENTORIED"
+    | (.theorems[0].reconciliation.bridge) = "BRIDGE-PENDING"
+    | (.theorems[0].caveats) = []' "$LEDGER" > "$WORK/no-caveats.json"
 expect_refusal "18. open legs with no caveat at all (a claim by omission)" \
   "say in the record that the theorem is not fully rechecked" "$WORK/no-caveats.json"
 
@@ -216,7 +241,7 @@ expect_refusal "23. a waiver that gives no reason and no exception record" \
 # setting the route alone would leave the rule nothing to complain about (and an
 # earlier version of this control passed only because a field-shift bug made the
 # gate read the wrong column).
-jq '(.theorems[0].legs[0]) |= (.route = "unavailable" | del(.blocker))' \
+jq '(.theorems[0].legs[0]) |= (.status = "open" | .route = "unavailable" | del(.blocker))' \
   "$LEDGER" > "$WORK/unavailable-silent.json"
 expect_refusal "24. a route declared 'unavailable' with nothing said about what is missing" \
   "with no blocker recorded" "$WORK/unavailable-silent.json"
@@ -240,12 +265,23 @@ expect_refusal "36. a proven leg for a prover the lane has no recipe for" \
   "for a prover the lane cannot compile" "$WORK/unwired-prover.json"
 
 # A CONFORMING waiver must be accepted, and must be visible in the verdict.
-jq '(.theorems[0].legs[0]) |= (del(.status, .route, .artifact)
-     | .waiver = {"obligation":"rocq leg","tool":"rocq",
-                   "reason":"statement uses --cubical-compatible universes with no Rocq counterpart",
-                   "record":"PROOF-STATUS.adoc#waivers"})' \
-  "$LEDGER" > "$WORK/waiver-ok.json"
-if bash scripts/check-proof-ledger.sh --ledger "$WORK/waiver-ok.json" >"$WORK/waiver-ok.log" 2>&1 \
+sandbox_waiver="$WORK/repo-waiver"
+mkdir -p "$sandbox_waiver"
+tar --exclude=.git --exclude=target -cf - . 2>/dev/null | ( cd "$sandbox_waiver" && tar -xf - )
+rm -f "$sandbox_waiver/verification/proofs/coq/EchoTyping.v"
+printf '# SPDX-License-Identifier: MPL-2.0\n' > "$sandbox_waiver/verification/proofs/coq/MANIFEST"
+sed -i '/EchoTyping\.v/d' \
+  "$sandbox_waiver/.machine_readable/bot_directives/placement.a2ml" \
+  "$sandbox_waiver/scripts/check-coordination-boundary.sh"
+jq '(.theorems[0].reconciliation) |= (.rocq = "NOT-INVENTORIED" | .bridge = "BRIDGE-PENDING")
+    | (.theorems[0].history) |= map(select(.target != "rocq"))
+    | (.theorems[0].legs[0]) |= (del(.status, .route, .artifact, .support_files, .declarations, .axioms, .statement_compared, .evidence)
+        | .waiver = {"obligation":"rocq leg","tool":"rocq",
+                     "reason":"statement uses --cubical-compatible universes with no Rocq counterpart",
+                     "record":"PROOF-STATUS.adoc#waivers"})' \
+  "$sandbox_waiver/verification/proofs/LEDGER.json" > "$sandbox_waiver/verification/proofs/LEDGER.tmp"
+mv "$sandbox_waiver/verification/proofs/LEDGER.tmp" "$sandbox_waiver/verification/proofs/LEDGER.json"
+if ( cd "$sandbox_waiver" && bash scripts/check-proof-ledger.sh ) >"$WORK/waiver-ok.log" 2>&1 \
    && grep -qF "waived legs" "$WORK/waiver-ok.log"; then
   ok "26. a conforming waiver is accepted AND printed in the verdict, not buried"
 else
@@ -371,10 +407,10 @@ expect_refusal "40. a dependency-pin assumption that pins no version and no comm
 sandbox3="$WORK/repo-docgrade"
 mkdir -p "$sandbox3"
 tar --exclude=.git --exclude=target -cf - . 2>/dev/null | ( cd "$sandbox3" && tar -xf - )
-sed -i 's/^|XP-1 |theory |\*3\*/|XP-1 |theory |*2i*/' "$sandbox3/PROOF-STATUS.adoc"
+sed -i 's/^|XP-1 |theory |\*2i\*/|XP-1 |theory |*2ii*/' "$sandbox3/PROOF-STATUS.adoc"
 if ( cd "$sandbox3" && bash scripts/check-proof-ledger.sh ) >"$WORK/docgrade.log" 2>&1; then
-  viol "39. the gate ACCEPTED a page claiming Grade 2i for a theorem the ledger records at Grade 3"
-elif grep -qF "but the ledger says Grade 3" "$WORK/docgrade.log"; then
+  viol "39. the gate ACCEPTED a page claiming Grade 2ii for a theorem the ledger records at Grade 2i"
+elif grep -qF "but the ledger says Grade 2i" "$WORK/docgrade.log"; then
   ok "39. a documented grade above the ledger's own is refused, per theorem"
 else
   viol "39. the documented-grade control failed for the wrong reason"
@@ -430,6 +466,8 @@ expect_refusal "46. statement_compared set to boolean false on a proven leg" \
 
 # 47. duplicating the source prover (agda) as a leg cannot promote Grade 3 to 2i.
 jq '(.theorems[0].grade) = "2i"
+    | (.theorems[0].legs[0].status) = "open"
+    | (.theorems[0].legs[1].status) = "open"
     | (.theorems[0].legs) += [{"prover":"agda","family":"dtt","status":"proven","route":"transported","artifact":"verification/proofs/agda/EchoTyping.agda","axioms":[],"statement_compared":"self"}]' \
   "$LEDGER" > "$WORK/dup-source-prover.json"
 expect_refusal "47. duplicating the source prover as a recheck leg to claim Grade 2i" \
@@ -444,7 +482,7 @@ printf '(* INSTRUMENT CONTROL *)\nTheorem tp1 : True. Proof. exact I. Qed.\n' \
 printf 'verification/proofs/coq|ValidWitness.v|gated|control\n' \
   >> "$sandbox5/verification/proofs/coq/MANIFEST"
 jq '(.theorems[0].grade) = "2i"
-    | (.theorems[0].legs[0]) |= (.status = "proven" | .route = "re-proved"
+    | (.theorems[0].legs[0]) |= (del(.declarations) | .status = "proven" | .route = "re-proved"
         | .reproof_reason = "control"
         | .artifact = "verification/proofs/coq/ValidWitness.v"
         | .axioms = [] | .statement_compared = "compared against EchoTyping.agda"
@@ -461,7 +499,8 @@ else
 fi
 
 # 49. mathesis CROSS-PROVER-RECONCILIATION: bridge cannot claim RECONCILED while legs are open.
-jq '(.theorems[0].reconciliation.bridge) = "RECONCILED"' "$LEDGER" > "$WORK/premature-reconciled.json"
+jq '(.theorems[0].legs[0].status) = "open"
+    | (.theorems[0].reconciliation.bridge) = "RECONCILED"' "$LEDGER" > "$WORK/premature-reconciled.json"
 expect_refusal "49. claiming bridge RECONCILED while target recheck legs remain open" \
   "requires independently verified Rocq and Lean targets" "$WORK/premature-reconciled.json"
 
@@ -530,6 +569,77 @@ elif grep -qF "must appear BEFORE" "$WORK/manifest-order.log"; then
 else
   viol "55. the MANIFEST dependency-order control failed for the wrong reason"
   sed 's/^/      /' "$WORK/manifest-order.log" | tail -5
+fi
+
+# 56. Missing or blank theorem .id is refused instead of silently skipping per-theorem loops.
+jq '(.theorems[0].id) = ""' "$LEDGER" > "$WORK/blank-tid.json"
+expect_refusal "56. a theorem entry with a blank .id" \
+  "must carry a non-empty, whitespace-free string .id" "$WORK/blank-tid.json"
+
+# 57. Empty .history array is refused (mathesis §6).
+jq '(.theorems[0].history) = []' "$LEDGER" > "$WORK/empty-history.json"
+expect_refusal "57. a theorem entry with an empty .history array" \
+  ".history must record at least one baseline or transition entry" "$WORK/empty-history.json"
+
+# 58. Malformed JSON shape on .source / .statement_anchor is diagnosed cleanly rather than crashing jq.
+jq '(.theorems[0].statement_anchor) = "TP-ECHO-1"' "$LEDGER" > "$WORK/bad-shape.json"
+expect_refusal "58. a non-array .statement_anchor shape violation" \
+  ".statement_anchor must be an array" "$WORK/bad-shape.json"
+
+# 59. Unsupported .source.prover on an engineering theorem is refused rather than bypassing MANIFEST gating.
+jq '(.theorems[0].kind) = "engineering"
+    | (.theorems[0].source.prover) = "isabelle"' "$LEDGER" > "$WORK/bad-src-prover.json"
+expect_refusal "59. an unsupported .source.prover bypassing MANIFEST gating" \
+  "unsupported .source.prover 'isabelle'" "$WORK/bad-src-prover.json"
+
+# 60. .waiver.tool mismatched against the waived leg's .prover is refused.
+jq '(.theorems[0].legs[0]) |= (del(.status, .route, .artifact)
+     | .waiver = {"obligation":"rocq leg","tool":"lean4",
+                  "reason":"mismatched tool control",
+                  "record":"PROOF-STATUS.adoc#waivers"})' \
+  "$LEDGER" > "$WORK/waiver-tool-mismatch.json"
+expect_refusal "60. a waiver whose .tool names a different prover than the waived leg" \
+  "does not match leg prover 'rocq'" "$WORK/waiver-tool-mismatch.json"
+
+# 61. Nested block comments (`{- outer {- inner -} postulate bad : False -}`) do not hide escape hatches.
+nested_agda="$WORK/NestedComment.agda"
+cat > "$nested_agda" <<'EOF'
+{- outer {- inner -} closed outer -}
+postulate planted_after_nested : Set
+EOF
+bash "$GATE" --scan-file "$nested_agda" >"$WORK/nested-scan.log" 2>&1
+nested_rc=$?
+if [ "$nested_rc" -eq 1 ] && grep -qF "FAIL" "$WORK/nested-scan.log"; then
+  ok "61. nested block comments close at matching depth and still catch code after the outer comment"
+else
+  viol "61. nested block comment scanner test failed (rc=$nested_rc)"
+  sed 's/^/      /' "$WORK/nested-scan.log" | tail -5
+fi
+
+# 62. Commented-out Agda signature cannot satisfy .statement_formal.declarations.
+sandbox7="$WORK/repo-commented-sig"
+mkdir -p "$sandbox7"
+tar --exclude=.git --exclude=target -cf - . 2>/dev/null | ( cd "$sandbox7" && tar -xf - )
+sed -i 's/^TP-ECHO-1 :/-- TP-ECHO-1 :/' "$sandbox7/verification/proofs/agda/EchoTyping.agda"
+if ( cd "$sandbox7" && bash scripts/check-proof-ledger.sh ) >"$WORK/commented-sig.log" 2>&1; then
+  viol "62. the gate ACCEPTED a commented-out Agda statement_anchor / statement_formal declaration"
+elif grep -qF "statement anchor 'TP-ECHO-1' is not declared" "$WORK/commented-sig.log"; then
+  ok "62. commenting out an Agda anchor is caught by comment-stripped source verification"
+else
+  viol "62. the commented-out Agda anchor control failed for the wrong reason"
+  sed 's/^/      /' "$WORK/commented-sig.log" | tail -5
+fi
+
+# 63. check-proof-enrolment.sh fails closed when --receipt points to an unwritable path.
+unwritable_parent="$WORK/not-a-directory"
+printf 'file\n' > "$unwritable_parent"
+if bash scripts/check-proof-enrolment.sh --static-only --receipt "$unwritable_parent/sub/enrol.txt" >"$WORK/enrol-rec.log" 2>&1; then
+  viol "63. check-proof-enrolment.sh exited 0 despite failing to write --receipt"
+elif grep -qF "FAIL: cannot create receipt directory" "$WORK/enrol-rec.log"; then
+  ok "63. check-proof-enrolment.sh fails closed (exit 1) when --receipt cannot be written"
+else
+  viol "63. check-proof-enrolment.sh failed for the wrong reason on unwritable --receipt"
+  sed 's/^/      /' "$WORK/enrol-rec.log" | tail -5
 fi
 
 echo ""

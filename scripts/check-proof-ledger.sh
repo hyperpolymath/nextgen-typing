@@ -97,12 +97,19 @@ scan_escape_hatches() {
 
 # Declared axioms are different from escape hatches: PROOF-POLICY §5 allows
 # `proven-with-postulates` when the axioms are named and allowed by
-# TRUSTED-BASE-REDUCTION-POLICY. Collect them so the ledger can be cross-checked.
+# TRUSTED-BASE-REDUCTION-POLICY. Strip comments first so prose in comments
+# (e.g. `(* Axiom fake : False. *)`) can never impersonate a declared axiom.
 scan_declared_axioms() {
   local file="$1"
   case "$file" in
-    *.v) grep -nE '^[[:space:]]*(Axiom|Parameter|Conjecture)[[:space:]]' "$file" || true ;;
-    *.lean) grep -nE '^[[:space:]]*axiom[[:space:]]' "$file" || true ;;
+    *.v)
+      bash "$ROOT/scripts/proof-scan-dangerous.sh" --strip-comments "$file" \
+        | grep -nE '^[[:space:]]*(Axiom|Parameter|Conjecture)[[:space:]]' || true
+      ;;
+    *.lean)
+      bash "$ROOT/scripts/proof-scan-dangerous.sh" --strip-comments "$file" \
+        | grep -nE '^[[:space:]]*axiom[[:space:]]' || true
+      ;;
     *) true ;;
   esac
 }
@@ -236,6 +243,28 @@ while IFS= read -r bad; do
   [ -n "$bad" ] && fail "theorem kind must be 'theory' or 'engineering' (PROOF-POLICY §1): '${bad}'"
 done < <(jq -r '[.theorems[].kind // "<missing>"][] | select(. != "theory" and . != "engineering")' "$LEDGER" | sort -u)
 
+if jq -e '.theorems[] | select((.id | type) != "string" or ((.id | gsub("^[[:space:]]+|[[:space:]]+$"; "")) == "") or (.id | test("[[:space:]]")))' "$LEDGER" >/dev/null 2>&1; then
+  fail "theorem id: every theorem in .theorems[] must carry a non-empty, whitespace-free string .id"
+fi
+
+while IFS= read -r shape_err; do
+  [ -n "$shape_err" ] && fail "malformed theorem entry: $shape_err"
+done < <(jq -r '
+  .theorems[] | (if (.id | type) == "string" and (.id | length) > 0 then .id else "<unnamed>" end) as $id |
+  [
+    (if (.source | type) != "object" then "\($id): .source must be an object" else empty end),
+    (if ((.source | type) == "object" and (.source.files != null) and ((.source.files | type) != "array")) then "\($id): .source.files must be an array" else empty end),
+    (if ((.source | type) == "object" and (.source.safety_flags != null) and ((.source.safety_flags | type) != "array")) then "\($id): .source.safety_flags must be an array" else empty end),
+    (if ((.source | type) == "object" and (.source.flags_provenance != null) and ((.source.flags_provenance | type) != "object")) then "\($id): .source.flags_provenance must be an object" else empty end),
+    (if (.statement_anchor != null and (.statement_anchor | type) != "array") then "\($id): .statement_anchor must be an array" else empty end),
+    (if (.statement_formal != null and (.statement_formal | type) != "object") then "\($id): .statement_formal must be an object" else empty end),
+    (if (.legs != null and (.legs | type) != "array") then "\($id): .legs must be an array" else empty end),
+    (if (.history | type) != "array" then "\($id): .history must be an array (mathesis §6)"
+     elif (.history | length) == 0 then "\($id): .history must record at least one baseline or transition entry (mathesis §6)"
+     else empty end),
+    (if (.caveats != null and (.caveats | type) != "array") then "\($id): .caveats must be an array" else empty end)
+  ][]' "$LEDGER")
+
 while IFS= read -r dup; do
   [ -n "$dup" ] && fail "duplicate theorem id in ledger: '${dup}'"
 done < <(jq -r '[.theorems[].id] | group_by(.)[] | select(length > 1) | .[0]' "$LEDGER")
@@ -250,18 +279,20 @@ done < <(jq -r '[.theorems[].grade // "<missing>" | tostring][] | select(. != "3
 # cannot inflate Grade 3 to Grade 2i.
 ROWS_TSV="$(mktemp)" || { echo "BLOCKED: cannot create a temporary file" >&2; exit 2; }
 trap 'rm -f "$ROWS_TSV"' EXIT
-jq -r '
+if ! jq -r '
   .theorems[] as $t |
-  ($t.source.prover // "") as $src |
-  [ $t.id,
-    $t.kind,
+  (if ($t.source | type) == "object" then ($t.source.prover // "") else "" end) as $src |
+  [ ($t.id | tostring),
+    ($t.kind // ""),
     ($t.grade | tostring),
-    ([$t.legs[]?.prover] | join(",")),
-    ([$t.legs[]? | select(.waiver == null) | select(.status != "open")] | length),
-    ([$t.legs[]? | select(.waiver == null)
+    ([ (if ($t.legs | type) == "array" then $t.legs[] else empty end) | .prover // "" ] | join(",")),
+    ([ (if ($t.legs | type) == "array" then $t.legs[] else empty end) | select(.waiver == null) | select(.status != "open") ] | length),
+    ([ (if ($t.legs | type) == "array" then $t.legs[] else empty end) | select(.waiver == null)
        | select((.prover // "") != $src)
-       | select(.status == "proven" or .status == "proven-with-postulates")] | length)
-  ] | map(tostring) | join("\u001f")' "$LEDGER" > "$ROWS_TSV"
+       | select(.status == "proven" or .status == "proven-with-postulates") ] | length)
+  ] | map(tostring) | join("\u001f")' "$LEDGER" > "$ROWS_TSV" 2>/dev/null; then
+  fail "ledger shape error: unable to extract per-theorem rows via jq"
+fi
 
 declare -A THEOREM_PROVEN=()
 while IFS=$'\x1f' read -r tid kind grade provers claimed proven; do
@@ -324,7 +355,7 @@ while IFS=$'\x1f' read -r tid kind grade provers claimed proven; do
   esac
 
   if [[ "$claimed" -gt 0 ]]; then
-    GAPS+=("$tid: $claimed leg(s) carry a non-open status and MUST compile in this lane")
+    NOTES+=("$tid: $claimed non-open recheck leg(s) recorded — compiled and kernel-queried by scripts/check-proofs.sh")
   fi
 done < "$ROWS_TSV"
 
@@ -442,63 +473,85 @@ while IFS=$'\x1f' read -r tid sprover sstatus rec_file_opts rec_cli rec_effectiv
     rocq|coq) src_mdir="$PROOFS_DIR/coq" ;;
     lean4|lean) src_mdir="$PROOFS_DIR/lean4" ;;
     idris2) src_mdir="$PROOFS_DIR/idris2" ;;
+    *)
+      fail "$tid: unsupported .source.prover '${sprover:-<missing>}' — must be one of agda, idris2, rocq, lean4 (PROOF-POLICY §1)"
+      continue
+      ;;
   esac
   IFS=',' read -r -a src_files <<< "$files_csv"
   for f in "${src_files[@]}"; do
     [[ -z "$f" ]] && continue
     if [[ ! -f "$f" ]]; then
       fail "$tid: source file recorded but missing on disk: $f"
-    elif [[ ( "$sstatus" == "proven" || "$sstatus" == "proven-with-postulates" ) && -n "$src_mdir" ]]; then
+    elif [[ "$sstatus" == "proven" || "$sstatus" == "proven-with-postulates" ]]; then
       if ! manifest_is_gated "$src_mdir/MANIFEST" "$f"; then
         fail "$tid: proven source file '$f' is not listed as 'gated' in $src_mdir/MANIFEST"
       fi
     fi
   done
 
-  # (c) flags: what the instrument passes, what the files declare, and the
-  # union the ledger claims must agree. Drift here silently changes what a
-  # Grade 3 claim means.
-  actual_file_opts="$(file_agda_options "${src_files[@]}")"
-  if [ "$rec_cli" != "$AGDA_CLI_FLAGS" ]; then
-    fail "$tid: flags drift — scripts/check-proofs.sh invokes 'agda ${AGDA_CLI_FLAGS}' but the ledger records CLI '${rec_cli:-<missing>}'"
-  fi
-  if [ "$rec_file_opts" != "$actual_file_opts" ]; then
-    fail "$tid: flags drift — the proof files declare '${actual_file_opts:-<none>}' in {-# OPTIONS #-} but the ledger records '${rec_file_opts:-<missing>}'"
-  fi
-  effective_expected="$(printf '%s %s\n' "$actual_file_opts" "$AGDA_CLI_FLAGS" | tr ' ' '\n' | grep -v '^$' | sort -u | tr '\n' ' ' | sed 's/ *$//')"
-  if [ "$rec_effective" != "$effective_expected" ]; then
-    fail "$tid: effective safety flags recorded as '${rec_effective:-<missing>}' but the files+instrument actually apply '${effective_expected:-<none>}'"
-  fi
-  case " $rec_effective " in
-    *" --safe "*) ;;
-    *) fail "$tid: '--safe' is not in the effective flags — postulates and other escape hatches are not ruled out, so the grade is unsupported (mathesis §5)" ;;
-  esac
-
-  # (d) mathesis §5 names the Grade 3 configurations parenthetically
-  # (--safe --erasure, or Full --cubical). If the flags in force are neither,
-  # the deviation must be recorded rather than glossed over.
-  grade3_named=0
-  case " $rec_effective " in *" --erasure "*) grade3_named=1 ;; esac
-  case " $rec_effective " in
-    *" --cubical "*)
-      case " $rec_effective " in
-        *" --cubical-compatible "*) ;;
-        *) grade3_named=1 ;;
-      esac
-      ;;
-  esac
-  if [ "$grade3_named" -eq 0 ]; then
-    deviation="$(
-      jq -r --arg id "$tid" '.theorems[] | select(.id == $id) | .grade_deviation // ""' "$LEDGER"
-    )"
-    if [ -z "${deviation// }" ]; then
-      fail "$tid: the flags in force ('$rec_effective') are neither of the configurations mathesis §5 names for grade 3 (--safe --erasure, or Full --cubical) — record the deviation in .grade_deviation instead of paraphrasing the policy"
+  # (c) flags: for Agda source legs, what the instrument passes, what the files
+  # declare, and the union the ledger claims must agree. For Idris2 engineering
+  # source legs (PROOF-POLICY §1), `%default total` must be active outside comments.
+  if [ "$sprover" = "agda" ]; then
+    actual_file_opts="$(file_agda_options "${src_files[@]}")"
+    if [ "$rec_cli" != "$AGDA_CLI_FLAGS" ]; then
+      fail "$tid: flags drift — scripts/check-proofs.sh invokes 'agda ${AGDA_CLI_FLAGS}' but the ledger records CLI '${rec_cli:-<missing>}'"
     fi
+    if [ "$rec_file_opts" != "$actual_file_opts" ]; then
+      fail "$tid: flags drift — the proof files declare '${actual_file_opts:-<none>}' in {-# OPTIONS #-} but the ledger records '${rec_file_opts:-<missing>}'"
+    fi
+    effective_expected="$(printf '%s %s\n' "$actual_file_opts" "$AGDA_CLI_FLAGS" | tr ' ' '\n' | grep -v '^$' | sort -u | tr '\n' ' ' | sed 's/ *$//')"
+    if [ "$rec_effective" != "$effective_expected" ]; then
+      fail "$tid: effective safety flags recorded as '${rec_effective:-<missing>}' but the files+instrument actually apply '${effective_expected:-<none>}'"
+    fi
+    case " $rec_effective " in
+      *" --safe "*) ;;
+      *) fail "$tid: '--safe' is not in the effective flags — postulates and other escape hatches are not ruled out, so the grade is unsupported (mathesis §5)" ;;
+    esac
+
+    # (d) mathesis §5 names the Agda Grade 3 configurations parenthetically
+    # (--safe --erasure, or Full --cubical). If the flags in force are neither,
+    # the deviation must be recorded rather than glossed over.
+    grade3_named=0
+    case " $rec_effective " in *" --erasure "*) grade3_named=1 ;; esac
+    case " $rec_effective " in
+      *" --cubical "*)
+        case " $rec_effective " in
+          *" --cubical-compatible "*) ;;
+          *) grade3_named=1 ;;
+        esac
+        ;;
+    esac
+    if [ "$grade3_named" -eq 0 ]; then
+      deviation="$(
+        jq -r --arg id "$tid" '.theorems[] | select(.id == $id) | .grade_deviation // ""' "$LEDGER"
+      )"
+      if [ -z "${deviation// }" ]; then
+        fail "$tid: the flags in force ('$rec_effective') are neither of the configurations mathesis §5 names for grade 3 (--safe --erasure, or Full --cubical) — record the deviation in .grade_deviation instead of paraphrasing the policy"
+      fi
+    fi
+  elif [ "$sprover" = "idris2" ]; then
+    for f in "${src_files[@]}"; do
+      [[ -f "$f" ]] || continue
+      if ! bash "$ROOT/scripts/proof-scan-dangerous.sh" --strip-comments "$f" | grep -qE '^[[:space:]]*%default[[:space:]]+total\b'; then
+        fail "$tid: Idris2 source file '$f' must declare '%default total' outside comments (PROOF-POLICY §1)"
+      fi
+    done
   fi
 
-  # (e) the statement must rest on named declarations that exist. A grade
-  # anchored to a file rather than a theorem is the "proof inflation" mathesis
-  # §11 rejects.
+  # (e) the statement must rest on named declarations that exist outside
+  # comments. A grade anchored to a file or commented-out text is the "proof
+  # inflation" mathesis §11 rejects.
+  # Cache comment-stripped source once per recorded source file so both anchor
+  # and formal-type checks inspect non-comment declarations without spawning
+  # redundant subshells across large control suites.
+  declare -A stripped_src_cache=()
+  for f in "${src_files[@]}"; do
+    [[ -f "$f" ]] || continue
+    stripped_src_cache["$f"]="$(bash "$ROOT/scripts/proof-scan-dangerous.sh" --strip-comments "$f")"
+  done
+
   if [ -z "${anchor_ids// }" ]; then
     fail "$tid: no .statement_anchor — a grade must point at the named declarations that carry the statement, not at a file"
   else
@@ -508,7 +561,8 @@ while IFS=$'\x1f' read -r tid sprover sstatus rec_file_opts rec_cli rec_effectiv
       hit=0
       for f in "${src_files[@]}"; do
         [ -f "$f" ] || continue
-        grep -qE "^[[:space:]]*${a//./\\.}[[:space:]]*:" "$f" && hit=1
+        printf '%s\n' "${stripped_src_cache[$f]}" \
+          | grep -qE "^[[:space:]]*${a//./\\.}[[:space:]]*:" && hit=1
       done
       [ "$hit" -eq 1 ] || fail "$tid: statement anchor '$a' is not declared in any recorded source file (looked in: $files_csv)"
     done
@@ -518,7 +572,7 @@ while IFS=$'\x1f' read -r tid sprover sstatus rec_file_opts rec_cli rec_effectiv
   # and any recheck leg, and check-proofs.sh queries Print Assumptions / #print
   # axioms against .statement_formal.declarations. Require a non-empty array
   # covering every .statement_anchor, and verify each recorded declaration's
-  # TYPE is still present in the source file, whitespace-normalised.
+  # TYPE is still present outside comments in the source file, whitespace-normalised.
   formal_decl_count="$(jq -r --arg id "$tid" '
     .theorems[] | select(.id == $id)
     | if (.statement_formal.declarations | type) == "array" then (.statement_formal.declarations | length) else -1 end' "$LEDGER")"
@@ -543,7 +597,7 @@ while IFS=$'\x1f' read -r tid sprover sstatus rec_file_opts rec_cli rec_effectiv
     found=0
     for f in "${src_files[@]}"; do
       [[ -f "$f" ]] || continue
-      norm_file=" $(tr -s '[:space:]' ' ' < "$f") "
+      norm_file=" $(printf '%s\n' "${stripped_src_cache[$f]}" | tr -s '[:space:]' ' ') "
       case "$norm_file" in
         *" ${decl_name} : ${norm_type} "*) found=1 ;;
       esac
@@ -831,6 +885,17 @@ while IFS=$'\x1f' read -r tid prover wstatus wobligation wtool wreason wrecord; 
       fail "$tid/$prover: waiver without '${pair%%:*}' — §4 requires the obligation, the tool, the reason and the exception record"
     fi
   done
+  if [ -n "$wtool" ] && [ "$wtool" != "null" ]; then
+    tool_matches_leg=0
+    case "$prover:$wtool" in
+      rocq:rocq|rocq:coq|coq:rocq|coq:coq) tool_matches_leg=1 ;;
+      lean4:lean4|lean4:lean|lean:lean4|lean:lean) tool_matches_leg=1 ;;
+      *) [ "$wtool" = "$prover" ] && tool_matches_leg=1 ;;
+    esac
+    if [ "$tool_matches_leg" -eq 0 ]; then
+      fail "$tid/$prover: .waiver.tool '$wtool' does not match leg prover '$prover' — a waiver must bind to the waived leg's own prover (§4)"
+    fi
+  fi
   # The record must RESOLVE, not merely be non-empty. Accepting any string let a
   # required leg carry `record: does-not-exist` and still pass: the presence
   # check was satisfied, and the waiver then removed that leg from the status

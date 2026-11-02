@@ -301,7 +301,10 @@ status="PASS"
 [ "$status" = "PASS" ] && [ "${#BLOCKED[@]}" -gt 0 ] && status="BLOCKED"
 
 if [ -n "$RECEIPT" ]; then
-  mkdir -p "$(dirname "$RECEIPT")" 2>/dev/null || true
+  if ! mkdir -p "$(dirname "$RECEIPT")" 2>/dev/null; then
+    echo "FAIL: cannot create receipt directory for $RECEIPT" >&2
+    exit 1
+  fi
   {
     echo "proof-enrolment receipt"
     echo "generated: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -323,7 +326,10 @@ if [ -n "$RECEIPT" ]; then
       echo "blocked:"
       printf '  - %s\n' "${BLOCKED[@]}"
     fi
-  } >"$RECEIPT"
+  } >"$RECEIPT" || {
+    echo "FAIL: cannot write receipt $RECEIPT" >&2
+    exit 1
+  }
   echo "receipt written: $RECEIPT"
   if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
     {
