@@ -183,13 +183,13 @@ inductive Path {α : Type} : α → α → Type where
   | refl (a : α) : Path a a
 
 def path_sym {α : Type} : ∀ {x y : α}, Path x y → Path y x
-  | _, _, Path.refl a => Path.refl a
+  | a, _, Path.refl _ => Path.refl a
 
 def path_trans {α : Type} : ∀ {x y z : α}, Path x y → Path y z → Path x z
   | _, _, _, Path.refl _, q => q
 
 def path_cong {α β : Type} (f : α → β) : ∀ {x y : α}, Path x y → Path (f x) (f y)
-  | _, _, Path.refl a => Path.refl (f a)
+  | a, _, Path.refl _ => Path.refl (f a)
 
 def path_subst {α : Type} (P : α → Type) : ∀ {x y : α}, Path x y → P x → P y
   | _, _, Path.refl _, px => px
