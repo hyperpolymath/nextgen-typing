@@ -448,6 +448,7 @@ jobs:
           fi
 
       - name: Note receipts
+        if: always()
         run: |
           if [ -f "$RUNNER_TEMP/lean-dl/archive.txt" ]; then
             echo "::notice::lean-archive: $(cat "$RUNNER_TEMP/lean-dl/archive.txt")"

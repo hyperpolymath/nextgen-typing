@@ -25,9 +25,6 @@
  * to discharge `echo-types`' own open Criterion 2 identity thesis.
  *)
 
-Set Implicit Arguments.
-Unset Strict Implicit.
-
 (* ===================================================================== *)
 (* § 0. Minimal Echo / EchoCharacteristic / EchoResidue / EchoLinear core *)
 (* ===================================================================== *)
@@ -68,8 +65,8 @@ Definition TrivialCert (_ _ : unit) : Type := unit.
 Definition collapse_kappa (_ : bool) : unit := tt.
 Definition collapse_sound (b : bool) : TrivialCert (collapse_kappa b) (collapse b) := tt.
 
-Definition collapse_to_residue : Echo collapse tt -> EchoR TrivialCert tt :=
-  echo_to_residue collapse collapse_kappa TrivialCert collapse_sound.
+Definition collapse_to_residue (e : Echo collapse tt) : EchoR TrivialCert tt :=
+  echo_to_residue collapse collapse_kappa TrivialCert collapse_sound e.
 
 Inductive Mode : Set :=
   | linear : Mode
@@ -202,7 +199,14 @@ Qed.
 Definition erasure_non_injective :
   { s1 : SurfaceTy &
     { s2 : SurfaceTy & ((erase s1 = erase s2) * (s1 <> s2))%type } } :=
-  existT _ pos (existT _ even (pair eq_refl surface_distinct)).
+  existT
+    (fun s1 : SurfaceTy =>
+      { s2 : SurfaceTy & ((erase s1 = erase s2) * (s1 <> s2))%type })
+    pos
+    (existT
+      (fun s2 : SurfaceTy => ((erase pos = erase s2) * (pos <> s2))%type)
+      even
+      (pair eq_refl surface_distinct)).
 
 (* ===================================================================== *)
 (* § 3. Headline pins mapped from EchoTyping.agda TP-ECHO-1..3           *)
