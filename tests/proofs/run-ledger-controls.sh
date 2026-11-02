@@ -586,11 +586,11 @@ jq '(.theorems[0].statement_anchor) = "TP-ECHO-1"' "$LEDGER" > "$WORK/bad-shape.
 expect_refusal "58. a non-array .statement_anchor shape violation" \
   ".statement_anchor must be an array" "$WORK/bad-shape.json"
 
-# 59. Unsupported .source.prover on an engineering theorem is refused rather than bypassing MANIFEST gating.
+# 59. Engineering theorem with a non-Idris2 .source.prover (even a known prover like rocq, or an unknown one like isabelle) is refused per PROOF-POLICY §1.
 jq '(.theorems[0].kind) = "engineering"
-    | (.theorems[0].source.prover) = "isabelle"' "$LEDGER" > "$WORK/bad-src-prover.json"
-expect_refusal "59. an unsupported .source.prover bypassing MANIFEST gating" \
-  "unsupported .source.prover 'isabelle'" "$WORK/bad-src-prover.json"
+    | (.theorems[0].source.prover) = "rocq"' "$LEDGER" > "$WORK/bad-eng-prover.json"
+expect_refusal "59. an engineering theorem whose .source.prover is not idris2" \
+  "an engineering theorem's source leg must be Idris2" "$WORK/bad-eng-prover.json"
 
 # 60. .waiver.tool mismatched against the waived leg's .prover is refused.
 jq '(.theorems[0].legs[0]) |= (del(.status, .route, .artifact)

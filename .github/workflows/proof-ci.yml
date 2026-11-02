@@ -58,15 +58,16 @@
 # There is no `continue-on-error` in this workflow, and no step is skipped when
 # a tool is missing: a missing toolchain makes the run red, which is the point.
 #
-# A green run does NOT mean XP-1 is verified in an independent kernel. It means
-# the ledger is honest about what has and has not been proven. Today it records
-# Grade 3 (Agda only) with both recheck legs open.
+# Today `just proof-check-all` runs the full suite: XP-1's Agda source leg and
+# both PROOF-POLICY §2 recheck legs (`EchoTyping.v` in Rocq 8.18 and
+# `EchoTyping.lean` in core Lean 4.15.0, Grade 2i), plus `proof-check-idris2`,
+# the ledger gate, and the comment-aware escape-hatch scan.
 #
 # Toolchains are pinned so the lane cannot float:
 #   * Agda 2.8.0 — official release binary, sha256-verified before extraction
 #   * just 1.59.0 — exact version, installed from crates.io with --locked
 #   * Rocq/Coq 8.18 — Ubuntu 24.04's package, version asserted after install
-#   * Lean 4 — official release archive, exact version asserted
+#   * Lean 4.15.0 — official release archive, sha256-verified + version asserted
 #   * libraries — agda-stdlib v2.4 (tag + commit asserted), echo-types and
 #     absolute-zero pinned by commit, each re-verified after checkout
 #
@@ -351,15 +352,15 @@ jobs:
           mkdir -p "$PROOF_RECEIPT_DIR"
           bash tests/proofs/run-controls.sh 2>&1 | tee "$RUNNER_TEMP/proof-controls.log" "$PROOF_RECEIPT_DIR/controls.txt"
 
-      # The CI target: audit the ledger, then compile every recheck leg the
-      # ledger declares. XP-1 declares Rocq and Lean 4, both `open`, so these
-      # compile zero modules — and the ledger gate refuses any claim that they
-      # compiled. The gate's receipt (census + POLICY GAP lines) is written to
-      # $PROOF_RECEIPT_DIR/ledger.txt by `just proof-ledger-check`.
-      - name: Ledger audit + declared recheck legs (Rocq, Lean 4)
+      # Full CI sweep (`just proof-check-all`, issue #57): runs enrolment,
+      # ledger audit, Idris2 engineering check, Lean 4 recheck witnesses +
+      # kernel #print axioms/origin queries, Agda source leg under
+      # `--safe --without-K --cubical-compatible`, Rocq recheck witnesses +
+      # coqchk/Print Assumptions queries, and the comment-aware escape-hatch scan.
+      - name: Full proof sweep — just proof-check-all (Agda, Rocq, Lean 4, Idris2, ledger & scans)
         run: |
           set -o pipefail
-          just proof-witness-check 2>&1 | tee "$RUNNER_TEMP/proof-witness-check.log"
+          just proof-check-all 2>&1 | tee "$RUNNER_TEMP/proof-witness-check.log" "$RUNNER_TEMP/proof-agda.log"
 
       # "PASS" from a per-prover step must never be reachable with nothing
       # compiled. scripts/check-proofs.sh is the estate instrument and is used
@@ -395,17 +396,8 @@ jobs:
             echo "all $checked_legs proven recheck leg(s) carry gated MANIFEST entries"
           fi
 
-      # The Agda SOURCE leg. PROOF-POLICY §1 makes Agda the source of truth; the
-      # ledger records it at a pinned commit and the audit checks that record.
-      # Typechecking it here keeps the recorded status true rather than assumed.
-      - name: Agda source leg (recorded in the ledger, re-typechecked here)
-        run: |
-          set -o pipefail
-          just proof-check-agda 2>&1 | tee "$RUNNER_TEMP/proof-agda.log"
-
-      # A green run means "the ledger is honest", NOT "the theorem is verified in
-      # an independent kernel". Say so on the check run itself, where it cannot
-      # be missed by someone who only reads the badge.
+      # Announce any open-leg policy gaps on the check run itself so an open
+      # obligation can never be mistaken for independent kernel verification.
       - name: Announce policy gaps (recorded, not verified)
         run: |
           set -uo pipefail
@@ -415,7 +407,7 @@ jobs:
             exit 1
           fi
           GAPS="$(awk '/^gaps:/{f=1;next} /^[a-z-]+:/{f=0} f' "$RECEIPT" | sed 's/^  - //')"
-          if [ -z "${GAPS//[[:space:]]/}" ] || [ "$GAPS" = "(none)" ]; then
+          if [ -z "${GAPS//[[:space:]]/}" ] || [ "${GAPS//[[:space:]]/}" = "(none)" ]; then
             echo "no policy gaps recorded"
             exit 0
           fi

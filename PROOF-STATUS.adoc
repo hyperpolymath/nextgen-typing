@@ -133,30 +133,32 @@ governs.
 `+EchoTyping.agda+` and `+Verification.agda+`, receipt run 41314454646 at
 `+3cd1859+`; re-typechecked on every CI run by `+just proof-check-agda+`, not
 taken from the file's existence |met
-|mathesis §5 |Grade 3: *not translated* to an independent foundational system
-|Both recheck legs are `+open+`. This is what makes the rung 3 rather than 2i —
-and it is simultaneously the gap PROOF-POLICY §2 makes an obligation |met, and
-reported every run
-|mathesis §5 |Grade 3 relies on strict solver flags (parenthetically
-`+--safe --erasure+`, or Full `+--cubical+`) |In force: `+--safe --without-K
---cubical-compatible+`. Neither named configuration exactly; the difference is
-recorded in `+grade_deviation+`, and PROOF-POLICY §2.1 (later, normative) fixes
-this combined invocation as canonical |deviation, recorded
+|mathesis §5 |Grade 2i: the proof type-checks in Agda and in at least one
+independent DTT prover |Both `+PROOF-POLICY+` §2 recheck legs are `+proven+`
+(`+EchoTyping.v+` in Rocq 8.18 and `+EchoTyping.lean+` in core Lean 4.15.0,
+zero Mathlib), verified at `+8bdfd5a6+` (run 41539844452) and re-checked on
+every CI run via `+just proof-check-all+` |met
+|mathesis §5 |Strict Agda baseline solver flags (parenthetically
+`+--safe --erasure+`, or Full `+--cubical+`) |In force on the Agda source leg:
+`+--safe --without-K --cubical-compatible+`. Neither named configuration
+exactly; the difference is recorded in `+grade_deviation+`, and PROOF-POLICY
+§2.1 (later, normative) fixes this combined invocation as canonical |deviation,
+recorded
 |mathesis §5 (family note) |The dual-translation rung (`+2ii+`) needs a *non-DTT*
 second architecture
 |The gate's `+FAMILIES+` map records agda/rocq/lean4 as `+dtt+`, isabelle as
-`+hol+`. Unreachable while both legs are DTT, so it is not claimed |recorded
+`+hol+`. Unreachable while all proven legs are DTT, so `+2ii+` is not claimed |recorded
 |mathesis §6 |Do not flatten confidence into a percentage |Tokens only; nothing
 in this file or the gate averages anything, and `+just proof-grade+` prints
 "recorded, not estimated" |met
 |mathesis §6 |Axiom tracking: postulates, `+#print axioms+`, `+Print Assumptions+`,
 pinned library versions |Source leg: zero postulates under `+--safe+`, with
-pinned Agda, stdlib, echo-types and absolute-zero. Recheck legs: no axiom list,
-because no witness exists — recording one would be fabrication |met, and the gap
-stated
+pinned Agda, stdlib, echo-types and absolute-zero. Recheck legs: `+axioms: []+`
+verified per run by `+coqchk -silent -o+` + `+Print Assumptions+` (Rocq) and
+`+#print axioms+` + module-origin query (Lean 4) |met
 |mathesis §6 |Track the exact Git commit of the verification receipt |`+3cd1859…+`
-in the ledger; the gate refuses a receipt that is not a full 40-character SHA
-|met
+(Agda source leg) and `+8bdfd5a…+` (Rocq and Lean 4 recheck legs) in the ledger;
+the gate refuses a receipt that is not a full 40-character SHA |met
 |mathesis §6 |`+Superseded+` and `+Regressed+` are first-class states |Every
 historical receipt carries `+state+` (`+superseded+` for the pre-§2.1 one) and a
 reason; the gate refuses an unmarked archived receipt or a state outside the pair
@@ -168,21 +170,22 @@ copied, unclaimed witnesses are refused in both directions, and the policy gaps
 print on every run |met
 |===
 
-=== What the Grade 3 claim rests on
+=== What the Agda baseline and Grade 2i claim rest on
 
-Grade 3 is the lowest rung, so it is the one that most needs its evidence named
-rather than implied. Four things carry the claim, and the gate checks each of
-them against the tree on every run — if any of them drifts, the run goes red:
+Every rung rests on the Agda source baseline plus its recheck witnesses, and the
+gate checks each piece against the tree on every run — if any of them drifts,
+the run goes red:
 
 [cols="22%,78%",options="header",]
 |===
 |What |The evidence, and how it is checked
 |Named declarations |`+TP-ECHO-1+`, `+TP-ECHO-2+`, `+TP-ECHO-3+` in
-`+verification/proofs/agda/EchoTyping.agda+`. The ledger records each one's
-*type*, and the gate re-reads the file (whitespace-normalised) to confirm the
-recorded statement is still there. A grade anchored to a file rather than to a
-named theorem is the proof inflation mathesis §11 rejects, so an anchor that is
-not declared in the file is a failure.
+`+verification/proofs/agda/EchoTyping.agda+`, mapped to `+tp_echo_1..3+` in
+`+verification/proofs/coq/EchoTyping.v+` and `+EchoTyping.tp_echo_1..3+` (plus
+`+EchoTyping.tp_echo_1_path..3_path+`) in `+verification/proofs/lean4/EchoTyping.lean+`.
+The ledger records each Agda anchor's *type*, and the gate re-reads the
+comment-stripped source file (whitespace-normalised) to confirm the recorded
+statement is still there.
 
 |Flags in force |`+--safe --without-K --cubical-compatible+`. The gate does not
 take this on trust: it reads the `+{-# OPTIONS #-}+` pragmas out of the proof
@@ -190,20 +193,18 @@ files, reads the CLI flags out of `+scripts/check-proofs.sh+` (the instrument
 `+just proof-check-agda+` calls), and requires the ledger's record to equal the
 union. Drift in either direction fails.
 
-|The §5 parenthetical |mathesis §5 names the grade 3 configurations as
-`+--safe --erasure+`, or Full `+--cubical+`. What runs here is neither: there is
-no `+--erasure+` and no full `+--cubical+`. The grade is still recorded as 3 —
-the result is carried by Agda alone under `+--safe+`, with no postulates and no
-translation to an independent system — but the difference is recorded in the
-ledger's `+grade_deviation+` field instead of being paraphrased away, and the
-gate *requires* that field whenever the flags are not one of the named
-configurations.
+|The §5 parenthetical |mathesis §5 names the Agda baseline solver configurations
+as `+--safe --erasure+`, or Full `+--cubical+`. What runs on the Agda source leg
+here is `+--safe --without-K --cubical-compatible+` (canonical per PROOF-POLICY
+§2.1), with `+--erasure+` off and full `+--cubical+` unused; that flag
+difference is recorded in `+grade_deviation+` while XP-1 holds Grade `+2i+` via
+its proven Rocq and Lean 4 recheck legs.
 
-|"No postulates" |`+--safe+` makes the compiler refuse postulates and the other
-unsafe pragmas; `+scripts/proof-scan-dangerous.sh+` and the ledger gate's
-comment-aware escape-hatch scan run over the same files in the same lane. The
-mechanism is recorded in `+escape_hatch_evidence+`; asserting the absence of
-escape hatches without naming a mechanism is a failure.
+|"No postulates / zero axioms" |`+--safe+` makes Agda refuse postulates and
+unsafe pragmas; `+coqchk -silent -o+` + `+Print Assumptions+` and `+#print axioms+`
++ module-origin verification enforce `+axioms: []+` on the Rocq and Lean 4
+recheck witnesses; and `+scripts/proof-scan-dangerous.sh+` scans all four proof
+sources (nested-comment-aware) on every run.
 |===
 
 The receipt behind all four is CI run **41314454646** at
@@ -313,12 +314,11 @@ module-origin verification.
 [[waivers]]
 === Waivers
 
-**No waiver is claimed for XP-1, and none is recorded in the ledger.** §4 of
-`+3-practice/PROOF-POLICY.adoc+` waives a leg when the mapped prover cannot
-*express* the statement — not when the estate has simply not built the witness
-yet. The Rocq and Lean legs are absent for the second reason, so they are open
-obligations, not waivers, and a waiver would be the wrong instrument even if it
-were convenient.
+**No waiver is claimed for XP-1, and none is recorded in the ledger.** Both
+`+rocq+` (`+EchoTyping.v+`) and `+lean4+` (`+EchoTyping.lean+`) recheck legs are
+proven directly with zero axioms. Under §4 of `+3-practice/PROOF-POLICY.adoc+`,
+a waiver is reserved strictly for a statement the mapped prover (`+rocq+`,
+`+lean4+`, `+agda+`, `+idris2+`) cannot *express* — never for an unbuilt witness.
 
 The ledger half of the rule is mechanical, and it is deliberately hard to
 satisfy with a citation that does not exist. A waiver must carry an
@@ -342,8 +342,9 @@ mathesis §6 requires the axioms behind a proof to be tracked, not assumed away:
 `+#print axioms+` in Lean, `+Print Assumptions+` in Rocq. Those are kernel
 queries, and they are the only accepted evidence that a compiled witness is
 closed — compiling is not: Rocq accepts `+Admitted+` and Lean accepts `+sorry+`
-with exit status 0. Since no witness exists on either leg there is no axiom
-list for them yet; recording one would be fabrication.
+with exit status 0. Both `+EchoTyping.v+` (`+rocq+`) and `+EchoTyping.lean+`
+(`+lean4+`) record `+axioms: []+` in `+LEDGER.json+`, verified against live
+kernel queries on every CI run.
 
 **Enforced per compiled witness (issue #131 closed):** `+scripts/check-proofs.sh+`
 does not stop at compiler exit status 0. Every `+gated+` Rocq or Lean module in
@@ -431,20 +432,22 @@ disk that neither the ledger nor a MANIFEST claims; and this page claiming a
 grade the ledger does not record. Open legs are printed as `+POLICY GAP+`, and
 are never counted as verification.
 
-|`+just proof-witness-check+`
-|The CI target: the enrolment and banned-pattern gates, the ledger audit, and
-*every recheck leg the ledger declares* (`+proof-check-coq+`, `+proof-check-lean4+`). Today both legs are declared open,
-so the manifests compile nothing and the gate says so — the lane is green on
-"the ledger is honest", never on "the theorem is verified".
+|`+just proof-check-all+` / `+just proof-witness-check+`
+|`.github/workflows/proof-ci.yml` executes `+just proof-check-all+` (issue #57):
+the enrolment gate, the ledger audit, `+proof-check-idris2+`, `+proof-check-lean4+`
+(`+EchoTyping.lean+`), `+proof-check-agda+` (`+EchoTyping.agda+`,
+`+Verification.agda+`), `+proof-check-coq+` (`+EchoTyping.v+`), and the
+comment-aware banned-pattern scan. `+just proof-witness-check+` runs the
+recheck-leg subset without requiring local Agda library registration.
 
 |`+tests/proofs/run-controls.sh+`
 |PROOF-POLICY §7 requires a gate to be verified *both ways*, and this is where
-that is done — in two halves. `+run-ledger-controls.sh+` (55 controls, no prover
+that is done — in two halves. `+run-ledger-controls.sh+` (63 controls, no prover
 needed) exercises grades, history, flags, formal declaration-to-type binding,
 quarantined and out-of-order MANIFEST bypasses, `+sorryAx+` bans, reconciliation
 status rules, external import-cone checks, waivers, debt-register presence, and
-per-language comment-aware lexical scanning.
-The kernel & witness half (`+K1+`–`+K17+`) checks `+coqc+`/`+coqchk+`/`+coqtop+`
+per-language nested-comment-aware lexical scanning.
+The kernel & witness half (`+K1+`–`+K18+`) checks `+coqc+`/`+coqchk+`/`+coqtop+`
 and `+lean+` both directly and end-to-end through `+scripts/check-proofs.sh+`:
 clean witnesses must pass and write verbatim `+CONTEXT SUMMARY+`,
 `+Closed under the global context+`, and `+does not depend on any axioms+`
@@ -452,8 +455,9 @@ receipts; witnesses importing `+Coq.Logic.Classical_Prop.classic+` or
 `+Classical.em+` (clean to lexical scan) must fail under `+axioms: []+` and pass
 under `+proven-with-postulates+` naming the exact axioms; cross-module helper
 axioms, cross-module `+sorryAx+`, `+Admitted+` theorems listed in `+.axioms+`,
-out-of-order multi-file `+MANIFEST+` entries, missing declarations, and stale
-`+axioms+` entries must all be refused. Where `+coqc+`, `+coqchk+`, `+coqtop+`, or `+lean+`
+external `+Init+` declaration smuggling (`+Nat.zero+`), out-of-order multi-file
+`+MANIFEST+` entries, missing declarations, and stale `+axioms+` entries must
+all be refused. Where `+coqc+`, `+coqchk+`, `+coqtop+`, or `+lean+`
 is absent the kernel half reports **BLOCKED**, never a pass.
 
 |`+just proof-grade+`
@@ -521,6 +525,15 @@ bash scripts/check-proof-enrolment.sh --static-only
 [cols="16%,20%,64%",options="header",]
 |===
 |Date |Receipt |Result
+|2026-11-02 |proof-ci run 41539844452 (sha `+8bdfd5a+`) |**PASS** for XP-1
+Grade *2i* across all three DTT kernels (`+EchoTyping.agda+` + `+Verification.agda+`
+under Agda 2.8.0 `+--safe --without-K --cubical-compatible+`; `+EchoTyping.v+`
+under Coq 8.18.0 + `+coqchk -silent -o+` + `+Print Assumptions+`,
+`+Closed under the global context+`; `+EchoTyping.lean+` under sha256-verified
+core Lean 4.15.0 + `+#print axioms+` + `+getModuleIdxFor?+`,
+`+does not depend on any axioms+`), plus 63 ledger controls and 18 kernel
+controls with 0 violations and 0 policy gaps.
+
 |2026-11-01 |proof-ci run 41314202374 (sha `+112a7bf+`) |**PASS** with the
 grade-3 substantiation and the split controls in place. Annotations:
 `+proof ledger controls: 15 expectation(s), 0 violations+` (grades, statements,

@@ -448,10 +448,13 @@ while IFS=$'\x1f' read -r tid sprover sstatus rec_file_opts rec_cli rec_effectiv
     jq -r --arg id "$tid" '.theorems[] | select(.id == $id) | .kind' "$LEDGER"
   )"
 
-  # (a) PROOF-POLICY §1: a theory theorem's source of truth is Agda, and it
-  # must actually be proven — a grade resting on an open source leg is a guess.
+  # (a) PROOF-POLICY §1: a theory theorem's source of truth is Agda and an
+  # engineering theorem's source of truth is Idris2, and the source leg must
+  # actually be proven — a grade resting on an open source leg is a guess.
   if [ "$kind_of" = "theory" ] && [ "$sprover" != "agda" ]; then
     fail "$tid: a theory theorem's source leg must be Agda (PROOF-POLICY §1); ledger records '${sprover:-<missing>}'"
+  elif [ "$kind_of" = "engineering" ] && [ "$sprover" != "idris2" ]; then
+    fail "$tid: an engineering theorem's source leg must be Idris2 (PROOF-POLICY §1); ledger records '${sprover:-<missing>}'"
   fi
   case "$sstatus" in
     proven|proven-with-postulates) ;;

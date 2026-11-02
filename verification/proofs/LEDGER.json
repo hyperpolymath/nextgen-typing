@@ -238,10 +238,10 @@
           "statement_compared": "Compared anchor-by-anchor against verification/proofs/agda/EchoTyping.agda (PROOF-POLICY §2.2): Echo f y := { x : A & f x = y } (Type-valued sigT, never Prop-truncated ex, preserving projT1 witness projection); EchoR Cert y := { r : C & Cert r y }; LEcho linear/affine and weaken := collapse_to_residue match EchoLinear; tp_echo_1 proves affine_weakening echo_true = affine_weakening echo_false; tp_echo_2 proves ~ { reify : LEcho affine -> LEcho linear & forall e, reify (affine_weakening e) = e }; tp_echo_3 inhabits { s1 : SurfaceTy & { s2 : SurfaceTy & ((erase s1 = erase s2) * (s1 <> s2))%type } } over Type-valued sigT and prod. Auxiliary lemmas affine_typing_proof_irrelevant and subsume_coherent are also proven via pure CIC convoy match with zero axioms.",
           "evidence": {
             "kind": "ci-receipt",
-            "commit": "cbec3212286f10b053c6dd903a8b0b71d84062d6",
+            "commit": "8bdfd5a69a6bc34dcf1faa19ad617aaea0edd158",
             "date": "2026-11-02",
-            "run": "https://github.com/hyperpolymath/nextgen-typing/actions/runs/41365289142",
-            "assumptions_output": "coqchk -Q . \"\" -silent -o EchoTyping: Axioms: <none> (impredicative-set: no, type-in-type: no); Print Assumptions EchoTyping.tp_echo_1 / EchoTyping.tp_echo_2 / EchoTyping.tp_echo_3: Closed under the global context"
+            "run": "https://github.com/hyperpolymath/nextgen-typing/actions/runs/41539844452",
+            "assumptions_output": "$ coqchk -Q . \"\" -silent -o EchoTyping\nCONTEXT SUMMARY\n===============\n* Theory: Set is predicative\n* Axioms: <none>\n* Constants/Inductives relying on type-in-type: <none>\n* Constants/Inductives relying on unsafe (co)fixpoints: <none>\n* Inductives whose positivity is assumed: <none>\n$ Print Assumptions EchoTyping.tp_echo_1.\nClosed under the global context\n$ Print Assumptions EchoTyping.tp_echo_2.\nClosed under the global context\n$ Print Assumptions EchoTyping.tp_echo_3.\nClosed under the global context"
           },
           "api_receipt": null,
           "blocker": null
@@ -284,10 +284,10 @@
           "statement_compared": "Compared anchor-by-anchor against verification/proofs/agda/EchoTyping.agda (PROOF-POLICY §2.2): EchoTyping.tp_echo_1, EchoTyping.tp_echo_2, and EchoTyping.tp_echo_3 use Type-valued PSigma and PProd (never Prop-truncated Exists/And) over core Lean Eq; because Lean's Prop Eq has definitional proof irrelevance whereas Agda's --without-K _≡_ is proof-relevant in Set, EchoTyping.lean §4 also proves EchoTyping.tp_echo_1_path, EchoTyping.tp_echo_2_path, and EchoTyping.tp_echo_3_path over a Type-valued Martin-Löf identity type Path with Sigma, Prod, and Empty, confirming zero reliance on UIP/K, propext, Quot.sound, or Classical.choice.",
           "evidence": {
             "kind": "ci-receipt",
-            "commit": "cbec3212286f10b053c6dd903a8b0b71d84062d6",
+            "commit": "8bdfd5a69a6bc34dcf1faa19ad617aaea0edd158",
             "date": "2026-11-02",
-            "run": "https://github.com/hyperpolymath/nextgen-typing/actions/runs/41365289142",
-            "assumptions_output": "'EchoTyping.tp_echo_1' does not depend on any axioms; 'EchoTyping.tp_echo_2' does not depend on any axioms; 'EchoTyping.tp_echo_3' does not depend on any axioms; 'EchoTyping.tp_echo_1_path' does not depend on any axioms; 'EchoTyping.tp_echo_2_path' does not depend on any axioms; 'EchoTyping.tp_echo_3_path' does not depend on any axioms"
+            "run": "https://github.com/hyperpolymath/nextgen-typing/actions/runs/41539844452",
+            "assumptions_output": "'EchoTyping.tp_echo_1' does not depend on any axioms\n'EchoTyping.tp_echo_2' does not depend on any axioms\n'EchoTyping.tp_echo_3' does not depend on any axioms\n'EchoTyping.tp_echo_1_path' does not depend on any axioms\n'EchoTyping.tp_echo_2_path' does not depend on any axioms\n'EchoTyping.tp_echo_3_path' does not depend on any axioms"
           },
           "api_receipt": null,
           "blocker": null
@@ -319,7 +319,7 @@
           }
         ]
       },
-      "grade_deviation": "mathesis §5 names the Grade 3 configurations parenthetically ('--safe --erasure', or 'Full --cubical'), and neither is exactly what runs here: this proof is checked under '--safe --without-K --cubical-compatible', with --erasure off and full --cubical unused. The later, normative estate policy (metadatastician/standards 3-practice/PROOF-POLICY.adoc §2.1, amended 2026-11-01) fixes that combined invocation as the canonical one, and §5 of mathesis says 'e.g.', so the example flags are illustrative rather than closed. The grade therefore stays 3 on mathesis' own operative clause — it type-checks in Agda and has not been translated to an independent foundational system — and the flag difference is recorded here instead of being paraphrased away.",
+      "grade_deviation": "mathesis §5 names the Agda baseline solver configurations parenthetically ('--safe --erasure', or 'Full --cubical'), and neither is exactly what runs on the Agda source leg here: EchoTyping.agda and Verification.agda are checked under '--safe --without-K --cubical-compatible', with --erasure off and full --cubical unused. The later, normative estate policy (metadatastician/standards 3-practice/PROOF-POLICY.adoc §2.1, amended 2026-11-01) fixes that combined invocation as the canonical Agda profile, and §5 of mathesis says 'e.g.', so the example flags are illustrative rather than closed. With both PROOF-POLICY §2 DTT recheck legs (Rocq EchoTyping.v and core Lean 4 EchoTyping.lean) independently proven with zero axioms at 8bdfd5a6 (run 41539844452), XP-1 stands at Grade 2i while recording this Agda solver-flag difference explicitly.",
       "history": [
         {
           "date": "2026-11-01",
@@ -334,7 +334,7 @@
           "target": "rocq",
           "from": "open",
           "to": "proven",
-          "evidence": "verification/proofs/coq/EchoTyping.v compiled by coqc 8.18.0 and verified axiom-free (`Closed under the global context`) by `coqchk -Q . \"\" -silent -o EchoTyping` + `Print Assumptions` for `tp_echo_1`, `tp_echo_2`, `tp_echo_3` via `just proof-witness-check`",
+          "evidence": "run 41539844452 (8bdfd5a69a6bc34dcf1faa19ad617aaea0edd158): verification/proofs/coq/EchoTyping.v compiled by coqc 8.18.0 and verified axiom-free (`Axioms: <none>`, `Closed under the global context`) by `coqchk -Q . \"\" -silent -o EchoTyping` + `Print Assumptions` for `tp_echo_1`, `tp_echo_2`, `tp_echo_3`",
           "reason": "discharges XP-1's PROOF-POLICY §2 Rocq recheck obligation"
         },
         {
@@ -342,7 +342,7 @@
           "target": "lean4",
           "from": "open",
           "to": "proven",
-          "evidence": "verification/proofs/lean4/EchoTyping.lean compiled by core Lean 4.15.0 (no Mathlib) and verified axiom-free (`does not depend on any axioms`) + module-owned by `#print axioms` and `Lean.Environment.getModuleIdxFor?` for `EchoTyping.tp_echo_1..3` and `EchoTyping.tp_echo_1_path..3_path` via `just proof-witness-check`",
+          "evidence": "run 41539844452 (8bdfd5a69a6bc34dcf1faa19ad617aaea0edd158): verification/proofs/lean4/EchoTyping.lean compiled by core Lean 4.15.0 (no Mathlib) and verified axiom-free (`does not depend on any axioms`) + module-owned by `#print axioms` and `Lean.Environment.getModuleIdxFor?` for `EchoTyping.tp_echo_1..3` and `EchoTyping.tp_echo_1_path..3_path`",
           "reason": "discharges XP-1's PROOF-POLICY §2 Lean 4 recheck obligation"
         },
         {
@@ -350,7 +350,7 @@
           "target": "grade",
           "from": "3",
           "to": "2i",
-          "evidence": "both PROOF-POLICY §2 DTT recheck legs (`rocq` EchoTyping.v and `lean4` EchoTyping.lean) proven with zero axioms alongside Agda source leg (`3cd1859`)",
+          "evidence": "run 41539844452 (8bdfd5a69a6bc34dcf1faa19ad617aaea0edd158): both PROOF-POLICY §2 DTT recheck legs (`rocq` EchoTyping.v and `lean4` EchoTyping.lean) proven with zero axioms alongside Agda source leg (`3cd1859`)",
           "reason": "promoted from Grade 3 to Grade 2i per mathesis §5 (independent DTT recheck legs proven; Grade 2ii still requires a non-DTT leg such as Isabelle/HOL)"
         }
       ],
