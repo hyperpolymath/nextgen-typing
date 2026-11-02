@@ -180,9 +180,9 @@ the file.
   queries for every gated Rocq (`coqchk -silent -o` + generated
   `Print Assumptions` probe) and Lean (`import` + `#print axioms` probe) module,
   comparing against `LEDGER.json` `legs[].axioms`, unconditionally rejecting
-  `sorryAx`, writing verbatim assumption receipts (`witness-coq.txt`,
-  `witness-lean4.txt`), and exercising both directions across `K6`–`K15` in
-  `tests/proofs/run-controls.sh`.
+  `sorryAx` and `Admitted` theorems listed in `.axioms`, writing verbatim
+  assumption receipts (`witness-coq.txt`, `witness-lean4.txt`), and exercising
+  both directions across `K6`–`K17` in `tests/proofs/run-controls.sh`.
 
 == What is still wrong, and is not this repository's to fix
 

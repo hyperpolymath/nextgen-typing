@@ -10,12 +10,14 @@
 # `estate-mathematical-architecture`:
 #
 #   * §1: a theory proof's source of truth is Agda. XP-1's Agda leg is RECORDED
-#     in verification/proofs/LEDGER.json (commit + run + assumptions pinned) and
-#     audited for form here. The lane does not re-derive it.
+#     in verification/proofs/LEDGER.json (commit + run + assumptions pinned),
+#     audited for form here, and re-typechecked on every run (`just proof-check-agda`)
+#     under `agda --safe --without-K --cubical-compatible`.
 #   * §2: that statement must be rechecked in Rocq AND Lean — transported
 #     through Dedukti/Lambdapi or re-proved by hand, with the statement
 #     comparison recorded and no Mathlib. Those are the legs this lane
-#     examines. BOTH ARE CURRENTLY OPEN: no witness exists, so the lane
+#     examines (`coqchk -silent -o` + `Print Assumptions` for Rocq; `#print axioms`
+#     for Lean). BOTH ARE CURRENTLY OPEN: no witness exists, so the lane
 #     compiles zero recheck modules and the gate prints the gap as a
 #     `POLICY GAP` line on every run.
 #   * §5/§6: status is the closed vocabulary (open | argued | tested-only |
@@ -23,15 +25,15 @@
 #     behind it; axioms are tracked (`Print Assumptions`, `#print axioms`), not
 #     assumed; receipts are pinned to a commit.
 #   * §7: a gate must be verified BOTH WAYS. tests/proofs/run-controls.sh runs
-#     two halves: run-ledger-controls.sh (15 controls, no prover needed) plants
-#     a grade with no leg behind it, contradictory history, an unjustified
+#     two halves: run-ledger-controls.sh (55 ledger controls, no prover needed)
+#     plants a grade with no leg behind it, contradictory history, an unjustified
 #     regression, flag drift, statement drift, a missing escape-hatch mechanism,
 #     an unrecorded flag deviation, a non-existent anchor, a ghost source file
 #     and an unclaimed witness on disk — each must be refused for the stated
 #     reason, while an honest evidenced regression must still pass; and the
-#     kernel half requires a closed Rocq/Lean proof to be accepted with
-#     `Print Assumptions` / `#print axioms` reporting it closed, and the
-#     `Admitted` / `sorry` controls NOT to be reported closed.
+#     kernel half (17 kernel & witness controls) verifies `check-proofs.sh`
+#     both ways on closed, declared-axiom, cross-module imported-axiom,
+#     cross-module `sorryAx`, and `Admitted`-in-`.axioms` witnesses.
 #
 # The Grade 3 claim itself is substantiated rather than labelled: the ledger
 # names the Agda declarations that carry the statement (and the gate re-reads

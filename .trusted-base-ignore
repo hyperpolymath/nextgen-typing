@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MPL-2.0
 # Comments start with `#`.
 # Each non-comment line is a path-fragment substring match against the
 # repo-relative file path. Narrow the fragment to avoid hiding adjacent

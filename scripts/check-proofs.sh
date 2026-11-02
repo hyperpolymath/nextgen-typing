@@ -191,11 +191,20 @@ write_receipt() {
   }
 }
 
+find_proof_files() {
+  local dir="$1"
+  if [[ "$PROVER" == "agda" ]]; then
+    find "$dir" \( -name '*.agda' -o -name '*.lagda' -o -name '*.lagda.*' \) -not -path '*/build/*' 2>/dev/null
+  else
+    find "$dir" -name "*.$EXT" -not -path '*/build/*' 2>/dev/null
+  fi
+}
+
 echo "=== $PROVER proof check ==="
 
 # --- a repo with proofs but no MANIFEST is itself a failure -------------------
 if [[ ! -f "$MANIFEST_FILE" ]]; then
-  if [[ -d "$PROOF_DIR" ]] && [[ -n "$(find "$PROOF_DIR" -name "*.$EXT" 2>/dev/null)" ]]; then
+  if [[ -d "$PROOF_DIR" ]] && [[ -n "$(find_proof_files "$PROOF_DIR" | head -1)" ]]; then
     echo "FAIL: $PROOF_DIR contains .$EXT proofs but has no MANIFEST." >&2
     echo "      Create $MANIFEST_FILE listing each as 'gated' or 'quarantine'." >&2
     write_receipt "FAIL" 0 0 "missing MANIFEST for non-empty $PROOF_DIR"
@@ -215,7 +224,7 @@ if [[ -f "$MANIFEST_FILE" ]]; then
     manifest_entries=$((manifest_entries + 1))
   done < "$MANIFEST_FILE"
 fi
-disk_proofs="$(find "$PROOF_DIR" -name "*.$EXT" -not -path '*/build/*' 2>/dev/null | head -1)"
+disk_proofs="$(find_proof_files "$PROOF_DIR" | head -1)"
 if [[ "$manifest_entries" -eq 0 ]] && [[ -z "$disk_proofs" ]]; then
   echo "no $PROOF_DIR/*.$EXT proofs and no MANIFEST entries — nothing to check."
   write_receipt "PASS (no-modules)" 0 0 "0 gated modules in MANIFEST; no witness compiled or assumption-queried"
@@ -256,8 +265,9 @@ fi
 echo
 
 listed_tmp="$(mktemp)"
+compiled_gated_tmp="$(mktemp)"
 WORK_BASE="$(mktemp -d)"
-trap 'rm -f "$listed_tmp"; rm -rf "$WORK_BASE"' EXIT
+trap 'rm -f "$listed_tmp" "$compiled_gated_tmp"; rm -rf "$WORK_BASE"' EXIT
 
 normalize_rel_path() {
   local root="${1%/}" rel="${2#./}"
@@ -337,28 +347,34 @@ array_contains() {
   return 1
 }
 
-# Match a kernel-reported Coq axiom `<mod_path>.<short>` or external `<pkg>.<ax>`
-# against the owning leg's recorded `.axioms` array. External axioms must match
-# verbatim; module-local `Axiom`/`Parameter`/`Conjecture` constants may match
-# either `<mod_path>.<short>` or `<short>`, provided `<short>` is actually a
-# declared axiom in the file rather than a `Theorem ... Admitted`.
+# Match a kernel-reported Coq axiom `<cand_mod>.<short>` or external `<pkg>.<ax>`
+# against the owning leg's recorded `.axioms` array. Whenever `<cand_mod>` maps
+# to a staged `.v` file in `$work_root` (either the primary witness or a staged
+# support module), `<short>` MUST be declared via `Axiom`/`Parameter`/`Conjecture`
+# in that file — so an incomplete `Theorem ... Admitted.` can never satisfy the
+# kernel check even if its full name is listed in `.axioms`.
 coq_axiom_allowed() {
-  local ax="$1" mod_path="$2" src_file="$3"
+  local ax="$1" mod_path="$2" work_root="$3"
   shift 3
   local allowed=("$@")
-  if [[ "${#allowed[@]}" -gt 0 ]] && array_contains "$ax" "${allowed[@]}"; then
-    return 0
-  fi
-  local prefix="${mod_path}."
-  if [[ "$ax" == "${prefix}"* ]]; then
-    local short="${ax#"$prefix"}"
-    if grep -qE "^[[:space:]]*(Axiom|Parameter|Conjecture)[[:space:]]+${short//./\\.}[^A-Za-z0-9_']" "$src_file" 2>/dev/null; then
-      if [[ "${#allowed[@]}" -gt 0 ]] && array_contains "$short" "${allowed[@]}"; then
+  [[ "${#allowed[@]}" -gt 0 ]] || return 1
+
+  if [[ "$ax" == *.* ]]; then
+    local cand_mod="${ax%.*}"
+    local short="${ax##*.}"
+    local local_v="$work_root/${cand_mod//./\/}.v"
+    if [[ -f "$local_v" ]]; then
+      if ! grep -qE "^[[:space:]]*(Axiom|Parameter|Conjecture)[[:space:]]+${short//./\\.}([^A-Za-z0-9_']|$)" "$local_v" 2>/dev/null; then
+        return 1
+      fi
+      if array_contains "$ax" "${allowed[@]}" || { [[ "$cand_mod" == "$mod_path" ]] && array_contains "$short" "${allowed[@]}"; }; then
         return 0
       fi
+      return 1
     fi
   fi
-  return 1
+
+  array_contains "$ax" "${allowed[@]}"
 }
 
 ASSUMPTION_ERR=""
@@ -431,7 +447,6 @@ verify_coq_assumptions() {
   full_rel="$(normalize_rel_path "$root" "$clean_rel")"
   mod_path="${clean_rel%.v}"
   mod_path="${mod_path//\//.}"
-  src_file="$work_root/$clean_rel"
 
   verify_ledger_ready "$full_rel" || return 1
 
@@ -544,8 +559,8 @@ $coqchk_out"
 
     local cax
     for cax in ${coqchk_axioms[@]+"${coqchk_axioms[@]}"}; do
-      if ! coq_axiom_allowed "$cax" "$mod_path" "$src_file" ${allowed_axioms[@]+"${allowed_axioms[@]}"}; then
-        ASSUMPTION_ERR="$full_rel ($tid): coqchk reported undeclared axiom '$cax' (ledger allows: [${allowed_axioms[*]:-none}])"
+      if ! coq_axiom_allowed "$cax" "$mod_path" "$work_root" ${allowed_axioms[@]+"${allowed_axioms[@]}"}; then
+        ASSUMPTION_ERR="$full_rel ($tid): coqchk reported undeclared or non-axiom assumption '$cax' (Admitted theorems are never allowed; ledger allows: [${allowed_axioms[*]:-none}])"
         return 1
       fi
     done
@@ -621,7 +636,7 @@ $probe_out"
           while IFS= read -r dax; do
             [[ -z "$dax" ]] && continue
             resolved_ax=""
-            if coq_axiom_allowed "$dax" "$mod_path" "$src_file" ${allowed_axioms[@]+"${allowed_axioms[@]}"}; then
+            if coq_axiom_allowed "$dax" "$mod_path" "$work_root" ${allowed_axioms[@]+"${allowed_axioms[@]}"}; then
               resolved_ax="$dax"
             else
               # Coq's Nametab pretty-printer elides `-R` prefixes in scope (for
@@ -632,7 +647,7 @@ $probe_out"
               # kernel axiom ending in `.${dax}` when unambiguous.
               for cax_cand in ${coqchk_axioms[@]+"${coqchk_axioms[@]}"}; do
                 if [[ "$cax_cand" == *".${dax}" ]] \
-                   && coq_axiom_allowed "$cax_cand" "$mod_path" "$src_file" ${allowed_axioms[@]+"${allowed_axioms[@]}"}; then
+                   && coq_axiom_allowed "$cax_cand" "$mod_path" "$work_root" ${allowed_axioms[@]+"${allowed_axioms[@]}"}; then
                   resolved_ax="$cax_cand"
                   break
                 fi
@@ -857,7 +872,8 @@ while IFS='|' read -r root rel status note; do
   [[ -z "${root// }" ]] && continue
   case "${root#"${root%%[![:space:]]*}"}" in \#*) continue ;; esac
   printf '  %-30s %-24s ' "$root" "$rel"
-  normalize_rel_path "$root" "$rel" >>"$listed_tmp"
+  full_rel="$(normalize_rel_path "$root" "$rel")"
+  printf '%s\n' "$full_rel" >>"$listed_tmp"
 
   case "$status" in
     gated)
@@ -874,6 +890,30 @@ while IFS='|' read -r root rel status note; do
       continue
       ;;
   esac
+
+  if [[ "$status" == "gated" ]] && { [[ "$PROVER" == "coq" ]] || [[ "$PROVER" == "lean4" ]]; } && [[ -f "$LEDGER" ]]; then
+    ledger_prover="$PROVER"
+    [[ "$PROVER" == "coq" ]] && ledger_prover="rocq"
+    missing_dep="$(jq -r --arg prover "$ledger_prover" --arg file "$full_rel" '
+      [ .theorems[]? | .legs[]?
+        | select(.prover == $prover and (.status == "proven" or .status == "proven-with-postulates") and .artifact == $file)
+        | (.support_files // [])[] ] | unique[]
+    ' "$LEDGER" 2>/dev/null | while IFS= read -r sf; do
+      [[ -z "$sf" ]] && continue
+      if ! grep -Fxq -- "$sf" "$compiled_gated_tmp" 2>/dev/null; then
+        printf '%s\n' "$sf"
+      fi
+    done)"
+    if [[ -n "$missing_dep" ]]; then
+      echo "FAIL (manifest-order)"
+      while IFS= read -r sf; do
+        [[ -z "$sf" ]] && continue
+        echo "        support_file '$sf' must appear as 'gated' BEFORE '$full_rel' in $MANIFEST_FILE (MANIFEST compiles in dependency order)"
+      done <<<"$missing_dep"
+      fails=$((fails + 1))
+      continue
+    fi
+  fi
 
   if check_one "$root" "$rel"; then
     if [[ "$status" == "gated" ]]; then
@@ -895,6 +935,7 @@ while IFS='|' read -r root rel status note; do
           continue
         fi
       fi
+      printf '%s\n' "$full_rel" >>"$compiled_gated_tmp"
       echo "PASS"
     else
       echo "PASS -- UNEXPECTED (quarantined module now compiles)"
@@ -917,7 +958,7 @@ done < "$MANIFEST_FILE"
 echo
 echo "=== manifest coverage ($PROOF_DIR) ==="
 listed="$(sort -u "$listed_tmp")"
-found="$(cd "$ROOT" && find "$PROOF_DIR" -name "*.$EXT" -not -path '*/build/*' 2>/dev/null | sed 's|^\./||' | sort)"
+found="$(cd "$ROOT" && find_proof_files "$PROOF_DIR" | sed 's|^\./||' | sort)"
 unlisted="$(comm -13 <(printf '%s\n' "$listed") <(printf '%s\n' "$found") || true)"
 missing="$(comm -23 <(printf '%s\n' "$listed") <(printf '%s\n' "$found") || true)"
 

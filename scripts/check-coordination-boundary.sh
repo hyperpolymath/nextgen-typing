@@ -45,6 +45,9 @@ is_allowed_proof() {
 if [ -d verification/proofs ]; then
   while IFS= read -r f; do
     case "$f" in
+      # Literate Agda (.lagda.md, .lagda.tex, .lagda.rst, .lagda.org) is a
+      # proof source, never prose metadata — match it before *.md / *.adoc.
+      *.lagda | *.lagda.*) ;;
       # Proof METADATA is not a proof: the per-prover MANIFEST (the compile
       # gate's input, scripts/check-proofs.sh) and LEDGER.json (the policy
       # ledger, audited by scripts/check-proof-ledger.sh) are tracked here

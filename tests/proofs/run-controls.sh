@@ -373,6 +373,58 @@ else
   sed 's/^/      /' "$k15/coq.log" "$k15/lean.log" | tail -20
 fi
 
+# K16: An incomplete Rocq proof closed with `Admitted.` is REFUSED by the kernel
+# check even when its full qualified name (`AdmittedWitness.tp_echo_1`) is listed
+# in `legs[].axioms` under `proven-with-postulates` (matching Lean's sorryAx ban).
+k16="$WORK/k16"
+mkdir -p "$k16/verification/proofs/coq"
+cat > "$k16/verification/proofs/coq/AdmittedWitness.v" <<'EOF'
+(* INSTRUMENT CONTROL *)
+Theorem tp_echo_1 : False.
+Proof. Admitted.
+EOF
+cat > "$k16/verification/proofs/coq/MANIFEST" <<'EOF'
+verification/proofs/coq|AdmittedWitness.v|gated|admitted control
+EOF
+write_fixture_ledger "$k16/verification/proofs/LEDGER.json" "rocq" "proven-with-postulates" \
+  "verification/proofs/coq/AdmittedWitness.v" "null" '["tp_echo_1"]' '["AdmittedWitness.tp_echo_1"]'
+bash "$CHECK_PROOFS" coq --root "$k16" >"$k16/out.log" 2>&1
+rc_k16=$?
+if [[ "$rc_k16" -ne 0 ]] && grep -qF "FAIL (assumptions)" "$k16/out.log"; then
+  ok "K16. check-proofs.sh coq refuses an Admitted theorem even when its full qualified name is listed in .axioms"
+else
+  viol "K16. check-proofs.sh coq accepted an Admitted theorem listed in .axioms (rc=$rc_k16)"
+  sed 's/^/      /' "$k16/out.log" | tail -20
+fi
+
+# K17: Multi-file MANIFEST out of dependency order (importer listed before its
+# support_files module) is REFUSED with a manifest-order diagnostic.
+k17="$WORK/k17"
+mkdir -p "$k17/verification/proofs/coq"
+cat > "$k17/verification/proofs/coq/HelperClean.v" <<'EOF'
+(* INSTRUMENT CONTROL *)
+Theorem helper_true : True. Proof. exact I. Qed.
+EOF
+cat > "$k17/verification/proofs/coq/SurfaceFirst.v" <<'EOF'
+(* INSTRUMENT CONTROL *)
+Require Import HelperClean.
+Theorem surface_true : True. Proof. exact helper_true. Qed.
+EOF
+cat > "$k17/verification/proofs/coq/MANIFEST" <<'EOF'
+verification/proofs/coq|SurfaceFirst.v|gated|importer listed too early
+verification/proofs/coq|HelperClean.v|gated|support module listed too late
+EOF
+write_fixture_ledger "$k17/verification/proofs/LEDGER.json" "rocq" "proven" \
+  "verification/proofs/coq/SurfaceFirst.v" '["verification/proofs/coq/HelperClean.v"]' '["surface_true"]' '[]'
+bash "$CHECK_PROOFS" coq --root "$k17" >"$k17/out.log" 2>&1
+rc_k17=$?
+if [[ "$rc_k17" -ne 0 ]] && grep -qF "FAIL (manifest-order)" "$k17/out.log"; then
+  ok "K17. check-proofs.sh refuses a multi-file MANIFEST listing an importer before its support_files module"
+else
+  viol "K17. check-proofs.sh did not diagnose out-of-order support_files in MANIFEST (rc=$rc_k17)"
+  sed 's/^/      /' "$k17/out.log" | tail -20
+fi
+
 echo ""
 if [[ "$VIOLATIONS" -gt 0 ]]; then
   echo "FAIL: $VIOLATIONS control expectation(s) violated — the instrument does not behave as"

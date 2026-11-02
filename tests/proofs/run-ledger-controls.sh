@@ -483,6 +483,55 @@ else
   viol "51. imported-axiom fixtures unexpectedly tripped the lexical scan"
 fi
 
+# 52. Deleting .statement_formal.declarations is refused (recheck statement comparison
+#     and #131 kernel assumption queries require formal declaration anchors).
+jq 'del(.theorems[0].statement_formal.declarations)' "$LEDGER" > "$WORK/no-formal-decls.json"
+expect_refusal "52. deleting .statement_formal.declarations" \
+  ".statement_formal.declarations must be a non-empty array" "$WORK/no-formal-decls.json"
+
+# 53. Deleting .source.import_cone on an Agda source with external module imports is refused.
+jq 'del(.theorems[0].source.import_cone)' "$LEDGER" > "$WORK/no-import-cone.json"
+expect_refusal "53. deleting .source.import_cone when Agda source imports external modules" \
+  ".source.import_cone.modules is missing or empty" "$WORK/no-import-cone.json"
+
+# 54. Recording non-empty .source.axioms while .source.status is 'proven' is refused
+#     even when import_cone counts are all 0.
+jq '(.theorems[0].source.axioms) = ["Echo.postulate"]' "$LEDGER" > "$WORK/source-proven-with-axioms.json"
+expect_refusal "54. source.status 'proven' with non-empty .source.axioms" \
+  "source.status is 'proven' but .source.axioms lists" "$WORK/source-proven-with-axioms.json"
+
+# 55. Listing a support_files entry AFTER .artifact in MANIFEST is refused.
+sandbox6="$WORK/repo-manifest-order"
+mkdir -p "$sandbox6"
+tar --exclude=.git --exclude=target -cf - . 2>/dev/null | ( cd "$sandbox6" && tar -xf - )
+printf '(* INSTRUMENT CONTROL *)\nTheorem helper_true : True. Proof. exact I. Qed.\n' \
+  > "$sandbox6/verification/proofs/coq/HelperClean.v"
+printf '(* INSTRUMENT CONTROL *)\nTheorem tp1 : True. Proof. exact I. Qed.\n' \
+  > "$sandbox6/verification/proofs/coq/ValidWitness.v"
+cat > "$sandbox6/verification/proofs/coq/MANIFEST" <<'EOF'
+# SPDX-License-Identifier: MPL-2.0
+verification/proofs/coq|ValidWitness.v|gated|witness before support
+verification/proofs/coq|HelperClean.v|gated|support after witness
+EOF
+jq '(.theorems[0].grade) = "2i"
+    | (.theorems[0].legs[0]) |= (.status = "proven" | .route = "re-proved"
+        | .reproof_reason = "control"
+        | .artifact = "verification/proofs/coq/ValidWitness.v"
+        | .support_files = ["verification/proofs/coq/HelperClean.v"]
+        | .declarations = ["tp1","tp2","tp3","tp4","tp5"]
+        | .axioms = [] | .statement_compared = "compared against EchoTyping.agda"
+        | .evidence = {"kind":"ci-receipt","commit":"3cd185939179773f177b59e6fee360719695dfc7","date":"2026-11-01","run":"https://example.invalid/run/1","assumptions_output":"Closed under the global context"})' \
+  "$sandbox6/verification/proofs/LEDGER.json" > "$sandbox6/verification/proofs/LEDGER.tmp"
+mv "$sandbox6/verification/proofs/LEDGER.tmp" "$sandbox6/verification/proofs/LEDGER.json"
+if ( cd "$sandbox6" && bash scripts/check-proof-ledger.sh ) >"$WORK/manifest-order.log" 2>&1; then
+  viol "55. the gate ACCEPTED a MANIFEST listing support_files after .artifact"
+elif grep -qF "must appear BEFORE" "$WORK/manifest-order.log"; then
+  ok "55. support_files listed after .artifact in MANIFEST is refused"
+else
+  viol "55. the MANIFEST dependency-order control failed for the wrong reason"
+  sed 's/^/      /' "$WORK/manifest-order.log" | tail -5
+fi
+
 echo ""
 if [ "$VIOLATIONS" -gt 0 ]; then
   echo "FAIL: $VIOLATIONS ledger-form control expectation(s) violated."

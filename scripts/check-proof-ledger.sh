@@ -87,7 +87,7 @@ scan_escape_hatches() {
   # can never be caught by one gate and missed by the other.
   local file="$1"
   local out rc
-  out="$(bash "$(dirname "$0")/proof-scan-dangerous.sh" --scan-file "$file" 2>&1)"; rc=$?
+  out="$(bash "$ROOT/scripts/proof-scan-dangerous.sh" --scan-file "$file" 2>&1)"; rc=$?
   if [ "$rc" -gt 1 ]; then
     printf '0:scanner-error:proof-scan-dangerous.sh exited %s for %s\n' "$rc" "$file"
     return 0
@@ -184,23 +184,29 @@ VOCAB='["argued","open","proven","proven-with-postulates","tested-only"]'
 # Prover families, from mathesis §5 (the Grade 2ii diversity rule).
 FAMILIES='{"agda":"dtt","rocq":"dtt","lean4":"dtt","idris2":"dtt","isabelle":"hol","tla+":"state-machine","smt":"smt"}'
 
-# Return success if the manifest has a gated entry for the target path;
-# return 1 if the manifest is missing or a readable manifest has no such entry.
-# An awk error also returns a non-zero status.
-manifest_is_gated() {
+# Print the 1-based entry index if the manifest has a gated entry for the target
+# path; return 1 if the manifest is missing or has no such entry.
+manifest_gated_index() {
   local mfile="$1" target="$2"
   [[ -f "$mfile" ]] || return 1
   awk -F'|' -v want="$target" '
     /^[[:space:]]*(#|$)/ { next }
     NF >= 3 {
+      idx++
       r = $1; sub(/^[[:space:]]+/, "", r); sub(/[[:space:]]+$/, "", r); sub(/\/+$/, "", r); sub(/^\.\//, "", r)
       m = $2; sub(/^[[:space:]]+/, "", m); sub(/[[:space:]]+$/, "", m); sub(/^\.\//, "", m)
       s = $3; sub(/^[[:space:]]+/, "", s); sub(/[[:space:]]+$/, "", s)
       full = (r == "" || r == ".") ? m : (r "/" m)
-      if (full == want && s == "gated") { found = 1; exit }
+      if (full == want && s == "gated") { print idx; found = 1; exit }
     }
     END { exit (found ? 0 : 1) }
   ' "$mfile"
+}
+
+# Return success if the manifest has a gated entry for the target path;
+# return 1 if the manifest is missing or a readable manifest has no such entry.
+manifest_is_gated() {
+  manifest_gated_index "$1" "$2" >/dev/null
 }
 
 is_valid_target_ident() {
@@ -242,6 +248,8 @@ done < <(jq -r '[.theorems[].grade // "<missing>" | tostring][] | select(. != "3
 # Emitted as TSV so bash can drive the filesystem checks. Independent recheck
 # counts exclude `.source.prover`, so duplicating the source prover as a leg
 # cannot inflate Grade 3 to Grade 2i.
+ROWS_TSV="$(mktemp)" || { echo "BLOCKED: cannot create a temporary file" >&2; exit 2; }
+trap 'rm -f "$ROWS_TSV"' EXIT
 jq -r '
   .theorems[] as $t |
   ($t.source.prover // "") as $src |
@@ -253,8 +261,7 @@ jq -r '
     ([$t.legs[]? | select(.waiver == null)
        | select((.prover // "") != $src)
        | select(.status == "proven" or .status == "proven-with-postulates")] | length)
-  ] | map(tostring) | join("\u001f")' "$LEDGER" > /tmp/proof-ledger-rows.$$.tsv
-trap 'rm -f /tmp/proof-ledger-rows.$$.tsv' EXIT
+  ] | map(tostring) | join("\u001f")' "$LEDGER" > "$ROWS_TSV"
 
 declare -A THEOREM_PROVEN=()
 while IFS=$'\x1f' read -r tid kind grade provers claimed proven; do
@@ -319,7 +326,7 @@ while IFS=$'\x1f' read -r tid kind grade provers claimed proven; do
   if [[ "$claimed" -gt 0 ]]; then
     GAPS+=("$tid: $claimed leg(s) carry a non-open status and MUST compile in this lane")
   fi
-done < /tmp/proof-ledger-rows.$$.tsv
+done < "$ROWS_TSV"
 
 # --- 3a. cross-prover reconciliation status (mathesis CROSS-PROVER-RECONCILIATION)
 # Never collapse distinct dimensions of verification: source Agda status, target
@@ -508,9 +515,24 @@ while IFS=$'\x1f' read -r tid sprover sstatus rec_file_opts rec_cli rec_effectiv
   fi
 
   # (e2) PROOF-POLICY §2 needs a statement comparison between the Agda source
-  # and any recheck leg. That is impossible if the Agda statement is only prose,
-  # so each recorded declaration's TYPE must still be in the file, whitespace-
-  # normalised. When the Agda statement moves, this record has to move with it.
+  # and any recheck leg, and check-proofs.sh queries Print Assumptions / #print
+  # axioms against .statement_formal.declarations. Require a non-empty array
+  # covering every .statement_anchor, and verify each recorded declaration's
+  # TYPE is still present in the source file, whitespace-normalised.
+  formal_decl_count="$(jq -r --arg id "$tid" '
+    .theorems[] | select(.id == $id)
+    | if (.statement_formal.declarations | type) == "array" then (.statement_formal.declarations | length) else -1 end' "$LEDGER")"
+  if [[ "${formal_decl_count:-0}" -le 0 ]]; then
+    fail "$tid: .statement_formal.declarations must be a non-empty array — recheck statement comparison (PROOF-POLICY §2) and kernel assumption queries (#131) cannot run without recorded formal declarations"
+  elif [[ -n "${anchor_ids// }" ]]; then
+    missing_formal_anchors="$(jq -r --arg id "$tid" '
+      .theorems[] | select(.id == $id) as $t
+      | ([$t.statement_anchor[]? // empty]) - ([$t.statement_formal.declarations[]?.name // empty])
+      | join(", ")' "$LEDGER")"
+    if [[ -n "$missing_formal_anchors" ]]; then
+      fail "$tid: .statement_formal.declarations is missing formal signature(s) for statement_anchor entry/entries: $missing_formal_anchors"
+    fi
+  fi
   while IFS=$'\x1f' read -r decl_name decl_type; do
     [ -z "${decl_name// }" ] && continue
     if [ -z "${decl_type// }" ]; then
@@ -681,6 +703,70 @@ done < <(jq -r '
 
 # import cone: Agda's --safe refuses an import that is not itself safe, so the
 # cone is the trust base. If the record admits a postulated module inside it,
+# Validate .source.axioms independently of import_cone, and require an explicit
+# .source.import_cone.modules audit whenever an Agda source imports external
+# non-stdlib modules (for example Echo / EchoCharacteristic / EchoLinear).
+while IFS=$'\x1f' read -r tid sprover sstatus sfiles_csv saxioms_state; do
+  [[ -z "$tid" ]] && continue
+  if [[ "$saxioms_state" == "bad" ]]; then
+    fail "$tid: .source.axioms must be null or a JSON array of non-empty strings (never 'sorryAx')"
+  elif [[ "$sstatus" == "proven" && "$saxioms_state" != "0" ]]; then
+    fail "$tid: source.status is 'proven' but .source.axioms lists $saxioms_state axiom(s) — record 'proven-with-postulates' (§5)"
+  elif [[ "$sstatus" == "proven-with-postulates" && "$saxioms_state" == "0" ]]; then
+    fail "$tid: source.status is 'proven-with-postulates' with an empty .source.axioms list (§5: list the axioms)"
+  fi
+
+  if [[ "$sprover" == "agda" && -n "$sfiles_csv" ]]; then
+    IFS=',' read -r -a agda_src_files <<<"$sfiles_csv"
+    local_mods=" "
+    for af in "${agda_src_files[@]}"; do
+      [[ -f "$af" ]] || continue
+      base_mod="$(basename "$af")"
+      base_mod="${base_mod%.lagda.*}"
+      base_mod="${base_mod%.lagda}"
+      base_mod="${base_mod%.agda}"
+      local_mods="${local_mods}${base_mod} "
+    done
+    ext_imports=""
+    for af in "${agda_src_files[@]}"; do
+      [[ -f "$af" ]] || continue
+      while IFS= read -r imod; do
+        [[ -z "$imod" ]] && continue
+        case "$imod" in
+          Agda.*|Data.*|Relation.*|Function|Function.*|Level|Level.*| Algebra.*|Category.*|Codata.*|Effect.*|Foreign.*|IO|IO.*|Induction.*|Reflection|Reflection.*|Strict|Text.*)
+            continue ;;
+        esac
+        case "$local_mods" in
+          *" $imod "*) continue ;;
+        esac
+        ext_imports="${ext_imports}${imod}"$'\n'
+      done < <(sed -nE 's/^[[:space:]]*(open[[:space:]]+)?import[[:space:]]+([A-Za-z0-9_.]+).*/\2/p' "$af")
+    done
+    if [[ -n "${ext_imports//[[:space:]]/}" ]]; then
+      cone_mods="$(jq -r --arg id "$tid" '[.theorems[] | select(.id == $id) | (.source.import_cone.modules // [])[]?.module // empty] | join("\n")' "$LEDGER")"
+      if [[ -z "${cone_mods//[[:space:]]/}" ]]; then
+        fail "$tid: Agda source imports external module(s) ($(printf '%s' "$ext_imports" | sort -u | tr '\n' ' ' | sed 's/ *$//')) but .source.import_cone.modules is missing or empty — audit external imports for postulates (§3)"
+      else
+        while IFS= read -r imod; do
+          [[ -z "$imod" ]] && continue
+          if ! printf '%s\n' "$cone_mods" | grep -Fxq -- "$imod"; then
+            fail "$tid: Agda source imports external module '$imod', which is missing from .source.import_cone.modules (§3)"
+          fi
+        done < <(printf '%s' "$ext_imports" | sort -u)
+      fi
+    fi
+  fi
+done < <(jq -r '
+  .theorems[] | [
+    .id,
+    (.source.prover // ""),
+    (.source.status // ""),
+    ((.source.files // []) | join(",")),
+    (if (.source.axioms // null) == null then "0"
+     elif (.source.axioms | type) != "array" or (all(.source.axioms[]; type == "string" and length > 0) | not) or ((.source.axioms | index("sorryAx")) != null) then "bad"
+     else (.source.axioms | length | tostring) end)
+  ] | join("\u001f")' "$LEDGER")
+
 # the source leg cannot be plain `proven` (§3: list the axioms).
 while IFS=$'\x1f' read -r tid mod count; do
   [ -z "${mod// }" ] && continue
@@ -851,12 +937,15 @@ while IFS=$'\x1f' read -r tid prover status artifact route compared axioms repro
   if [[ "$sup_type" == "bad" ]]; then
     fail "$tid/$prover: .support_files must be an array of non-empty file path strings"
   elif [[ "$sup_type" == "ok" ]]; then
+    art_idx="$(manifest_gated_index "$mdir/MANIFEST" "$artifact" || echo 0)"
     while IFS= read -r sf; do
       [[ -z "$sf" ]] && continue
       if [[ ! -f "$sf" ]]; then
         fail "$tid/$prover: support file listed but missing on disk: $sf"
-      elif ! manifest_is_gated "$mdir/MANIFEST" "$sf"; then
+      elif ! sf_idx="$(manifest_gated_index "$mdir/MANIFEST" "$sf")"; then
         fail "$tid/$prover: support file '$sf' is not listed as 'gated' in $mdir/MANIFEST"
+      elif [[ "$art_idx" -gt 0 && "$sf_idx" -ge "$art_idx" ]]; then
+        fail "$tid/$prover: support file '$sf' must appear BEFORE '$artifact' in $mdir/MANIFEST so its compiled artifact exists when the witness compiles"
       elif [[ "$prover" == "lean4" ]] && grep -qE '^[[:space:]]*import[[:space:]]+Mathlib' "$sf"; then
         fail "$tid/$prover: support file '$sf' imports Mathlib, which PROOF-POLICY §2 forbids"
       fi
@@ -1078,9 +1167,9 @@ $(printf '%s\n' "$hits" | sed 's/^/     line /')"
 }
 
 if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-  PROOF_FILES="$(git ls-files -- "$PROOFS_DIR" | grep -E '\.(agda|lagda|idr|v|lean|tla)$' | sort)"
+  PROOF_FILES="$(git ls-files -- "$PROOFS_DIR" | grep -E '\.(agda|lagda|lagda\.[A-Za-z0-9]+|idr|v|lean|tla)$' | sort)"
 else
-  PROOF_FILES="$(find "$PROOFS_DIR" -type f \( -name '*.agda' -o -name '*.idr' -o -name '*.v' -o -name '*.lean' -o -name '*.tla' \) 2>/dev/null | sort)"
+  PROOF_FILES="$(find "$PROOFS_DIR" -type f \( -name '*.agda' -o -name '*.lagda' -o -name '*.lagda.*' -o -name '*.idr' -o -name '*.v' -o -name '*.lean' -o -name '*.tla' \) 2>/dev/null | sort)"
 fi
 scanned=0
 while IFS= read -r f; do
@@ -1098,9 +1187,17 @@ fi
 # plain `find` otherwise. Covers Agda sources as well as Rocq and Lean witnesses.
 list_witnesses() {  # $1 = prover dir under $PROOFS_DIR, $2 = extension
   if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    git ls-files -- "$PROOFS_DIR/$1" 2>/dev/null | grep -E "\.$2\$" | sort
+    if [[ "$2" == "agda" ]]; then
+      git ls-files -- "$PROOFS_DIR/$1" 2>/dev/null | grep -E '\.(agda|lagda|lagda\.[A-Za-z0-9]+)$' | sort
+    else
+      git ls-files -- "$PROOFS_DIR/$1" 2>/dev/null | grep -E "\.$2\$" | sort
+    fi
   else
-    find "$PROOFS_DIR/$1" -type f -name "*.$2" 2>/dev/null | sort
+    if [[ "$2" == "agda" ]]; then
+      find "$PROOFS_DIR/$1" -type f \( -name '*.agda' -o -name '*.lagda' -o -name '*.lagda.*' \) 2>/dev/null | sort
+    else
+      find "$PROOFS_DIR/$1" -type f -name "*.$2" 2>/dev/null | sort
+    fi
   fi
 }
 LEDGER_ARTIFACTS="$(jq -r '

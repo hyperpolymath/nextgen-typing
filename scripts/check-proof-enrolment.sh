@@ -85,7 +85,7 @@ prover_binary() {
 prover_of_path() {
   case "$1" in
     *.agda) echo "agda" ;;
-    *.lagda) echo "agda" ;;
+    *.lagda | *.lagda.*) echo "agda" ;;
     *.idr) echo "idris2" ;;
     *.lean) echo "lean4" ;;
     *.v) echo "coq" ;;
@@ -162,8 +162,7 @@ done <<<"$boundary_list"
 # scripts/check-coordination-boundary.sh, and the ledger gate cross-checks them
 # against each other and against this registry.
 disk_files="$(git ls-files -- "$PROOFS_DIR" \
-  | grep -Ev '\.(a2ml|adoc|md)$|(^|/)\.gitkeep$' \
-  | grep -Ev '(^|/)MANIFEST$|(^|/)LEDGER\.json$' \
+  | awk '!/\.(a2ml|adoc)$|(^|\/)\.gitkeep$|(^|\/)MANIFEST$|(^|\/)LEDGER\.json$/ && (!/\.md$/ || /\.lagda\.md$/)' \
   | sort)"
 
 disk_proofs="$(while IFS= read -r f; do

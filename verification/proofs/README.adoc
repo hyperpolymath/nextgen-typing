@@ -169,22 +169,24 @@ just proof-status            # grade, and each leg's status and blocker
 just proof-check-all         # local only: ledger + all four provers
 ----
 
-The Agda source leg is *recorded and audited for form*; the lane does not
-re-derive it. It can still be typechecked locally, which needs its library
+The Agda source leg is both *audited in the ledger* and *re-typechecked in CI*
+via `just proof-check-agda`. Running it locally needs its library
 manifest activated — otherwise Agda reports `[ModuleNameDoesntMatchFileName]` for
 every module (observed on 2026-11-01):
 
 [source,bash]
 ----
-agda --safe --library=nextgen-typing verification/proofs/agda/Verification.agda
+just proof-check-agda
+# equivalent: cd verification/proofs/agda && agda --safe --without-K --cubical-compatible Verification.agda
 ----
 
 `nextgen-typing.agda-lib`, `standard-library`, `echo-types` and its own
 dependency `absolute-zero` must be registered in `<agda-app-dir>/libraries`
-(`agda --print-agda-app-dir`). `.github/workflows/proof-ci.yml` pins all four.
+(`agda --print-agda-app-dir`) and `defaults`. `.github/workflows/proof-ci.yml` pins all four.
 
-A prover that is required but absent from `PATH` makes the run **BLOCKED** — the
-lane never skips it and never turns that into a pass.
+A prover that is required but absent from `PATH` makes `check-proofs.sh` exit `1`
+(`FAIL (missing-toolchain)`) and `check-proof-enrolment.sh` exit `2` (`BLOCKED`) —
+the lane never skips it and never turns that into a pass.
 
 == Adding or promoting a witness
 

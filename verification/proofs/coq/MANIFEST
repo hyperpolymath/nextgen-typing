@@ -1,5 +1,7 @@
+# SPDX-License-Identifier: MPL-2.0
 # Rocq (Coq) recheck-leg manifest — read by scripts/check-proofs.sh coq
 # Format: <source-root>|<module-relative-to-source-root>|gated|quarantine|<note>
+# Entries compile in listed dependency order: support modules precede importers.
 #
 # PROOF-POLICY §2 requires every Agda theory proof to be rechecked in Rocq (and
 # Lean). No Rocq witness exists yet: XP-1's rocq leg is recorded `open` in

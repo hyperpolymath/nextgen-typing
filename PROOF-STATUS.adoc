@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 == Proof Status — nextgen-typing
 
 ____
@@ -8,8 +10,9 @@ ____
 
 The machine-readable record of every proof is
 `+verification/proofs/LEDGER.json+`. This page is a *summary of that ledger*;
-where the two disagree the ledger is authoritative and
-`+just proof-ledger-check+` fails. Nothing here is a percentage, a confidence
+each theorem's presence and documented grade in the summary table are checked
+against the ledger, and `+just proof-ledger-check+` fails if they differ.
+Nothing here is a percentage, a confidence
 estimate, or a count of "done" work: mathesis §6 requires the exact form —
 Open / Claimed, the grade, the axiom list, and the commit the receipt was taken
 at.
@@ -28,7 +31,7 @@ at.
 (AffineScript affine weakening; refinement erasure into the
 typed-wasm/kernel layer) are instances of echo-types' fiber construction.
 
-Three caveats belong to that sentence, and the ledger carries them in
+Four caveats belong to that sentence, and the ledger carries them in
 `+caveats+` so the gate can refuse a record that drops one:
 
 . **echo-types' identity claim is open.** What is proven here is a statement
@@ -150,7 +153,7 @@ stated
 in the ledger; the gate refuses a receipt that is not a full 40-character SHA
 |met
 |mathesis §6 |`+Superseded+` and `+Regressed+` are first-class states |Every
-retained receipt carries `+state+` (`+superseded+` for the pre-§2.1 one) and a
+historical receipt carries `+state+` (`+superseded+` for the pre-§2.1 one) and a
 reason; the gate refuses an unmarked archived receipt or a state outside the pair
 |met
 |mathesis §11 |Reject silent index drift, proof inflation and false verification
@@ -432,19 +435,21 @@ so the manifests compile nothing and the gate says so — the lane is green on
 
 |`+tests/proofs/run-controls.sh+`
 |PROOF-POLICY §7 requires a gate to be verified *both ways*, and this is where
-that is done — in two halves. `+run-ledger-controls.sh+` (51 controls, no prover
+that is done — in two halves. `+run-ledger-controls.sh+` (55 controls, no prover
 needed) exercises grades, history, flags, formal declaration-to-type binding,
-quarantined MANIFEST bypasses, `+sorryAx+` bans, reconciliation status rules,
-waivers, debt-register presence, and per-language comment-aware lexical scanning.
-The kernel & witness half (`+K1+`–`+K15+`) checks `+coqc+`/`+coqchk+`/`+coqtop+`
+quarantined and out-of-order MANIFEST bypasses, `+sorryAx+` bans, reconciliation
+status rules, external import-cone checks, waivers, debt-register presence, and
+per-language comment-aware lexical scanning.
+The kernel & witness half (`+K1+`–`+K17+`) checks `+coqc+`/`+coqchk+`/`+coqtop+`
 and `+lean+` both directly and end-to-end through `+scripts/check-proofs.sh+`:
 clean witnesses must pass and write verbatim `+CONTEXT SUMMARY+`,
 `+Closed under the global context+`, and `+does not depend on any axioms+`
 receipts; witnesses importing `+Coq.Logic.Classical_Prop.classic+` or
 `+Classical.em+` (clean to lexical scan) must fail under `+axioms: []+` and pass
 under `+proven-with-postulates+` naming the exact axioms; cross-module helper
-axioms, cross-module `+sorryAx+`, missing declarations, and stale `+axioms+`
-entries must all be refused. Where `+coqc+`, `+coqchk+`, `+coqtop+`, or `+lean+`
+axioms, cross-module `+sorryAx+`, `+Admitted+` theorems listed in `+.axioms+`,
+out-of-order multi-file `+MANIFEST+` entries, missing declarations, and stale
+`+axioms+` entries must all be refused. Where `+coqc+`, `+coqchk+`, `+coqtop+`, or `+lean+`
 is absent the kernel half reports **BLOCKED**, never a pass.
 
 |`+just proof-grade+`
@@ -461,8 +466,8 @@ has no file behind it, when zero proofs are enrolled, or when an `.agda` proof
 loses `+--safe+`/`+--without-K+`.
 
 |`+just proof-check-agda+` (and the Idris2/Lean4/Coq equivalents)
-|Exits 2 (BLOCKED) when proofs for that prover are enrolled but the prover is
-absent; exits 1 on any typecheck failure.
+|Exits 1 (`+FAIL (missing-toolchain)+`) when proofs for that prover are enrolled
+but the prover is absent, and exits 1 on any typecheck or kernel-assumption failure.
 
 |`+just proof-scan-dangerous+`
 (`+scripts/proof-scan-dangerous.sh+`)
@@ -564,8 +569,8 @@ now queries kernel-level assumptions for every gated Rocq (`+coqchk -silent -o+`
 + generated `+Print Assumptions+` probe) and Lean (`+import+` + `+#print axioms+`
 probe) witness against `+LEDGER.json+` `+legs[].axioms+`, writing verbatim
 assumption receipts (`+witness-coq.txt+`, `+witness-lean4.txt+`). Bidirectional
-controls expanded to 51 ledger controls + 15 kernel/witness controls
-(`+K1+`–`+K15+`) |Arena agent
+controls expanded to 55 ledger controls + 17 kernel/witness controls
+(`+K1+`–`+K17+`) |Arena agent
 
 |2026-11-01 |Reconciled with the estate policy, which moved twice: owner ruling
 2026-10-26, amended *today* (pinned `+46ee1832+`, recorded in the ledger, printed

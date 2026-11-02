@@ -36,7 +36,7 @@ each imported module's postulate count (0 at the pin).
 - (none) Nothing in this repository rests on an axiom. The one theorem is
   `proven` with zero postulates, so there is no axiom to justify or cite. The
   external developments it consumes are recorded in the ledger instead — see
-  `verification/proofs/LEDGER.json` `.source.assumptions` and `.source.caveats`
+  `verification/proofs/LEDGER.json` `.source.assumptions` and `.caveats`
   — because a dependency's own obligations are that dependency's to discharge,
   not an axiom of this proof.
 

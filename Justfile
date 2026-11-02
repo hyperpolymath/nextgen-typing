@@ -1345,10 +1345,10 @@ help-me:
 #     proven-with-postulates | proven
 #   * grades are mathesis/estate-mathematical-architecture §5 (Grade 3 → Grade 1)
 #
-# This repository's proof CI examines the §2 recheck legs only — Rocq and Lean —
-# and audits verification/proofs/LEDGER.json, which records every leg, its route,
-# its axioms and the exact commit of the receipt. The Agda source leg is recorded
-# and audited for form; it is not re-run in CI.
+# This repository's proof CI audits verification/proofs/LEDGER.json, compiles and
+# kernel-queries any declared §2 recheck legs (Rocq and Lean) via
+# `just proof-witness-check`, and separately re-typechecks the §1 Agda source leg
+# via `just proof-check-agda` once the pinned Agda libraries are registered.
 #
 # No silent skips anywhere: scripts/check-proofs.sh (the estate instrument) makes
 # a missing prover FATAL, and scripts/check-proof-ledger.sh fails on a claim the
@@ -1392,12 +1392,12 @@ proof-check-coq:
 proof-check-lean4:
     @bash scripts/check-proofs.sh lean4 --receipt "${PROOF_RECEIPT_DIR:-target/proof-receipts}/witness-lean4.txt"
 
-# Re-typecheck the Agda SOURCE leg locally. Not part of the CI target: under
-# PROOF-POLICY §1 the ledger records this leg, CI audits the record. Needs the
-# nextgen-typing, standard-library, echo-types and absolute-zero libraries
-# registered in <agda-app-dir>/libraries + defaults.
+# Re-typecheck the Agda SOURCE leg under `agda --safe --without-K --cubical-compatible`.
+# Invoked as a dedicated step in .github/workflows/proof-ci.yml (after library
+# registration) and available locally once nextgen-typing, standard-library,
+# echo-types and absolute-zero are registered in <agda-app-dir>/libraries + defaults.
 #
-# Re-typecheck the Agda source leg locally (needs registered libraries)
+# Re-typecheck the Agda source leg (needs registered libraries)
 proof-check-agda:
     @bash scripts/check-proofs.sh agda --receipt "${PROOF_RECEIPT_DIR:-target/proof-receipts}/witness-agda.txt"
 

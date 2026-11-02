@@ -1,5 +1,7 @@
+# SPDX-License-Identifier: MPL-2.0
 # Lean 4 recheck-leg manifest — read by scripts/check-proofs.sh lean4
 # Format: <source-root>|<module-relative-to-source-root>|gated|quarantine|<note>
+# Entries compile in listed dependency order: support modules precede importers.
 #
 # PROOF-POLICY §2 requires every Agda theory proof to be rechecked in Lean 4 as
 # well as Rocq, and forbids Mathlib. No Lean witness exists yet: XP-1's lean4
