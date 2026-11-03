@@ -25,7 +25,7 @@ cp -r "$REPO_SOURCE" "$TEST_REPO_PATH"
     bash scripts/check-coordination-boundary.sh
     ENROL_RC=0
     bash scripts/check-proof-enrolment.sh >/dev/null 2>&1 || ENROL_RC=$?
-    if [[ "$ENROL_RC" -ne 0 && "$ENROL_RC" -ne 2 ]]; then
+    if [[ "$ENROL_RC" -ne 0 ]]; then
         echo "check-proof-enrolment.sh failed with rc=$ENROL_RC" >&2
         exit 1
     fi
