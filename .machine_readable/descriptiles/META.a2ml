@@ -5,12 +5,12 @@
 # Architecture decisions, design rationale, governance.
 
 [metadata]
-version = "0.1.1"
-last-updated = "2026-09-09"
+version = "0.1.2"
+last-updated = "2026-11-03"
 
 [project-info]
 type = "monorepo"  # library | binary | monorepo | service | website
-languages = []             # e.g. ["rust", "zig", "idris2"]
+languages = ["agda", "rocq", "lean4", "shell", "nickel"]
 license = "MPL-2.0"
 author = "Jonathan D.A. Jewell (hyperpolymath)"
 
@@ -56,7 +56,14 @@ id = "ADR-006"
 title = "Estate standardization layout adopted (estate-standardization-20260607)"
 status = "accepted"
 date = "2026-06-12"
-rationale = "Merged the estate-standardization-20260607 branch: GOVERNANCE.adoc + MAINTAINERS.adoc + .github/CODEOWNERS at root; anchors/ renamed to 6a2/anchor/; agent_instructions/ renamed to bot_directives/; svc/k9/ renamed to self-validating/; nested + root contractiles replaced by flat .machine_readable/contractiles/{Intentfile,Mustfile,Trustfile,Adjustfile,Dustfile,Bustfile}.a2ml; flake.nix removed (Guix is the primary package manager, estate wave decision). Workflow files kept at origin/main's reusable-wrapper versions."
+rationale = "Merged the estate-standardization-20260607 branch: GOVERNANCE.adoc + MAINTAINERS.adoc + .github/CODEOWNERS at root; anchors/ renamed to 6a2/anchor/; agent_instructions/ renamed to bot_directives/; svc/k9/ renamed to self-validating/; nested + root contractiles replaced by flat .machine_readable/contractiles/{Intentfile,Mustfile,Trustfile,Adjustfile,Dustfile,Bustfile}.a2ml; flake.nix removed (Guix is the primary package manager, estate wave decision)."
+
+[[architecture-decisions.adrs]]
+id = "ADR-007"
+title = "Multi-prover cross-project verification under PROOF-POLICY (Agda + Rocq + core Lean 4)"
+status = "accepted"
+date = "2026-11-03"
+rationale = "Cross-project bridge theorems hosted under verification/proofs/ follow metadatastician/standards 3-practice/PROOF-POLICY.adoc and mathesis/estate-mathematical-architecture: Agda (--safe --without-K --cubical-compatible) is source of truth, independently rechecked in Rocq (coqchk + Print Assumptions) and core Lean 4 (zero Mathlib, #print axioms + getModuleIdxFor?), audited by verification/proofs/LEDGER.json and bidirectional §7 controls."
 
 [development-practices]
 build-tool = "just"

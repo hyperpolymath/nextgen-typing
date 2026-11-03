@@ -1,55 +1,52 @@
-== nextgen-typing Component Readiness Assessment
+// SPDX-License-Identifier: CC-BY-SA-4.0
+// Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+= nextgen-typing Component Readiness Assessment
 
 *Standard:*
-https://github.com/hyperpolymath/standards/tree/main/component-readiness-grades[Component
-Readiness Grades (CRG) v2.2] *Current Grade:* C *Assessed:* 2026-06-05
+https://github.com/metadatastician/standards/tree/main/component-readiness-grades[Component
+Readiness Grades (CRG) v2.2] *Current Grade:* C *Assessed:* 2026-11-03
 *Assessor:* Jonathan D.A. Jewell
 
 '''''
 
 === Summary
 
-[width="100%",cols="25%,8%,17%,50%",options="header",]
+[width="100%",cols="28%,8%,18%,46%",options="header"]
 |===
 |Component |Grade |Release Stage |Evidence Summary
-|Primary component |C |Alpha-stable |Dogfooded on own project; CI
-passing
+|Pipeline coordination & cross-project verification (`nextgen-typing`) |C |Coordinator-stable |Coordinator boundary & drift gates green; `XP-1` formal bridge verified at Mathesis Grade `2i` across Agda, Rocq, and core Lean 4 (`Proof CI` run `41565790232`)
 |===
 
-*Overall:* Grade C — dogfooding confirmed, CI passing, deep annotation
-in place.
+*Overall:* Grade C — repository-scoped coordination, machine-readable state synchronization, and cross-project multi-prover verification are dogfooded and enforced in CI (`OQ-001` and `OQ-002` resolved).
 
 '''''
 
 === Grade C Evidence
 
-* Deployed and dogfooded on the nextgen-typing project itself
-* CI passing (dogfood-gate, hypatia-scan, static-analysis-gate)
-* TEST-NEEDS.md documents test matrix
-* No home failures
-* Deep code and folder annotation in place per CRG v2 requirements
+* *Coordinator & boundary enforcement*: `scripts/check-coordination-boundary.sh` and `scripts/check-pipeline-drift.sh` enforce ownership routing (`placement.a2ml`) and canonical metadata/doc synchronization across `STATE.a2ml`, `META.a2ml`, `ECOSYSTEM.a2ml`, `docs/PIPELINE.adoc`, and `docs/ARCHITECTURE.adoc`.
+* *Cross-project formal verification (`XP-1`, Mathesis Grade `2i`)*: `EchoTyping.agda` (`--safe --without-K --cubical-compatible`), `EchoTyping.v` (Coq 8.18 `coqc` + `coqchk` + `Print Assumptions`), and `EchoTyping.lean` (core Lean 4.15, zero Mathlib, `#print axioms` + module-origin check) pass `just proof-check-all` with zero axioms on `main` (`Proof CI` run `41565790232` at `c4ea39721d7ba893478fe57b5f749a89f2996508`).
+* *Bidirectional test & control matrix*: link:TEST-NEEDS.adoc[TEST-NEEDS.adoc] documents 63 proof-ledger controls (`tests/proofs/run-ledger-controls.sh`), 18 kernel-assumption controls (`tests/proofs/run-kernel-assumption-controls.sh`), 29-workflow structural checks (`tests/workflows/validate_workflows_test.sh`), heading antipattern fixtures (`tests/rsr_antipattern_heading_test.sh`), and aspect/E2E checks (`tests/aspect_tests.sh`, `tests/e2e/template_instantiation_test.sh`).
+* *Hosted CI & static analysis*: `Proof CI` (`41565790232`), `Coordination Boundary`, `Dogfood Gate`, `Static Analysis Gate`, and `SonarCloud Code Analysis` (`125686944300` on `main` @ `c4ea3972`, Quality Gate passed with 0 security hotspots) are verified green; retired cross-owner `hyperpolymath/standards` workflow callers are replaced by self-contained SHA-pinned jobs locked in `.github/workflows/actions.lock`.
+* *Annotation & discoverability*: `0-AI-MANIFEST.a2ml`, `.machine_readable/descriptiles/`, `www/.well-known/{security,ai,humans}.txt`, and `PROOF-STATUS.adoc` are populated with zero unreplaced template placeholders.
 
 '''''
 
 === Promotion Path to Grade B
 
-Grade B requires: *6+ diverse external targets tested, issues fed back*.
+Grade B requires *6+ diverse external targets consuming and validating the coordination/verification contracts with issues fed back*:
 
-Diversity means: different languages, different architectures, different
-use cases.
-
-To reach B: 1. Deploy on at least 6 external projects that differ
-meaningfully from each other 2. Confirm it works in each (or document
-failures) 3. Feed back any issues found (GitHub issues or PRs) 4. Update
-this file with the evidence
+1. Complete independent cross-family bridge proofs in constituent repositories (e.g., `residual-evidence-types` `compose-claims` over `EchoComparison` and non-vacuous `EpistemicComparison` revision under `#115`).
+2. Add a non-DTT recheck leg (such as Isabelle/HOL) for `XP-1` to advance from Mathesis Grade `2i` to Grade `2ii`.
+3. Validate pipeline/ABI consumption end-to-end across `typell`, `typed-wasm`, `affinescript`, `ephapax`, `protocol-squisher`, and `panll`, feeding integration issues back into `nextgen-typing`.
 
 '''''
 
 === Concerns and Maintenance Notes
 
-_Document any known limitations, demotion risks, or maintenance concerns
-here._
+* *Pure coordinator scope (`OQ-001`)*: `nextgen-typing` contains no compiler, runtime binary, or single-project library code; runtime fuzzing and unit-coverage metrics belong to constituent implementation repositories (`typell`, `typed-wasm`, `affinescript`, `ephapax`).
+* *Mathesis Grade `2i` boundary*: `XP-1` is verified across three DTT kernels (Agda, Rocq, Lean 4) with zero axioms, but has no HOL/Mizar non-DTT recheck leg yet (`Grade 2ii` open) and discharges nothing of `echo-types`'s own open positive identity criterion (Criterion 2).
+* *Synchronized date invariant*: edits to `.machine_readable/descriptiles/{STATE,META,ECOSYSTEM}.a2ml`, `docs/PIPELINE.adoc`, or `docs/ARCHITECTURE.adoc` must keep their `last-updated` / `version` / header date synchronized or `scripts/check-pipeline-drift.sh` fails closed.
 
 '''''
 
-=== Run `+just crg-badge+` to generate the shields.io badge for your README.
+Run `+just crg-badge+` to generate the shields.io badge from this file.

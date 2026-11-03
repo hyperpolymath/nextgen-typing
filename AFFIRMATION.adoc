@@ -1,15 +1,17 @@
 // SPDX-License-Identifier: MPL-2.0
 // SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
-= AFFIRMATION — coordination checks, 2026-09-09
+= AFFIRMATION — coordination and cross-project proof checks, 2026-11-03
 :toc:
 
-This is a bounded verification record for the shared type-family map and
-coordination layer. It records observed results, including failures and checks
-whose scope is narrower than their success message suggests.
+This is a bounded verification record for `nextgen-typing` as the type-theory
+coordination repository and cross-project proof host (`OQ-001`). It records
+observed local checks and linked hosted CI receipts, together with explicit
+scope boundaries.
 
-The previous June affirmation remains available as a
-https://github.com/hyperpolymath/nextgen-typing/blob/0b3693acfe09fdd4254cd6a77f2d241f20624b81/AFFIRMATION.adoc[historical snapshot in Git].
-Its dates, paths, toolchain and proof inventory are not current verification receipts.
+Earlier snapshots remain available in Git history:
+https://github.com/hyperpolymath/nextgen-typing/blob/c4ea39721d7ba893478fe57b5f749a89f2996508/AFFIRMATION.adoc[2026-09-09 affirmation]
+and
+https://github.com/hyperpolymath/nextgen-typing/blob/0b3693acfe09fdd4254cd6a77f2d241f20624b81/AFFIRMATION.adoc[June 2026 snapshot].
 
 == Anchor and scope
 
@@ -17,101 +19,51 @@ Its dates, paths, toolchain and proof inventory are not current verification rec
 |===
 |Field |Observed value
 |Repository |`hyperpolymath/nextgen-typing`
-|Branch |`docs/type-connections`
-|Checked commit |`1a8c836b23115510a0c9b883c0b73f8710f8a18c`
-|Check session |2026-09-09 UTC; anchor captured at `20:34:41Z`, followed by the checks below
-|Working tree |Clean at the checked commit; the map regenerated without a diff.
-This affirmation is added after the checks and does not claim to verify itself.
-|Local toolchain |Just 1.56.0; Bash 5.2.37; Git 2.47.3; Agda 2.6.4.3;
-Graphviz 2.42.4
-|Checked commit signature |`git log -1 --format='%H %G? %GS'` reported `G`
-(good signature), signer `jonathan.jewell@gmail.com`.
-|Canonical metadata |`.machine_readable/descriptiles/`
+|Base `main` anchor |`c4ea39721d7ba893478fe57b5f749a89f2996508` (PR #133 squash-merged 2026-11-03T02:23Z)
+|Check session |2026-11-03 UTC
+|Hosted `Proof CI` receipt on `main` |https://github.com/hyperpolymath/nextgen-typing/actions/runs/41565790232[Run `41565790232`] (`just proof-witness-check (strict)` -> `just proof-check-all`, exit `0`: Agda 2.8.0 `--safe --without-K --cubical-compatible`, Coq 8.18.0 `coqc` + `coqchk` + `Print Assumptions`, core Lean 4.15.0 `#print axioms` + `getModuleIdxFor?`, plus 63 ledger and 18 kernel bidirectional controls)
+|Hosted static-analysis receipt on `main` |https://sonarcloud.io/summary/new_code?id=hyperpolymath_nextgen-typing&branch=main[SonarCloud check-run `125686944300`] at `c4ea39721d7ba893478fe57b5f749a89f2996508` (Quality Gate `SUCCESS`, `0` Security Hotspots; supersedes historical red check-run `106934611138` at `86cb69e5`)
+|Canonical metadata |`.machine_readable/descriptiles/` (`STATE.a2ml`, `META.a2ml`, `ECOSYSTEM.a2ml`, `anchor/ANCHOR.a2ml`)
 |===
 
-The observation horizon is this commit's coordination files and the named
-checks below. Whole constituent proof suites, production deployments and
-general mathematical novelty are outside this record.
+The observation horizon is this repository's coordination documents, workflow
+definitions, and `verification/proofs/` cross-project witnesses (`XP-1`).
+Whole constituent proof suites, production deployments, and estate-wide
+maintainer sign-offs tracked under issue #69 remain outside this single-repo
+record unless explicitly cited below.
 
-== Coordination results
+== Local coordinator and ledger checks
 
 [cols="2,1,4",options="header"]
 |===
 |Command |Exit |Meaning and limit
-|`just type-map` |0 |SVG regenerates from its DOT source without a diff.
-|`just validate-rsr` |0 |The recipe's required files, metadata and policy markers are present.
-|`just validate-state` |0 |Its required metadata/project markers are present;
-this is not a complete A2ML parser.
-|`just validate-coordination` |0 |The repository's ownership boundary check passes.
-|`just validate-pipeline-drift` |0 |The named pipeline documents and descriptiles
-agree on the guarded chain, invariants and dates (`2026-09-09`).
-|`just must-check` |0 |The recipe's licence/README/file-name checks pass.
-Its source-header scan examines at most 20 matching Rust/ReScript/Gleam files;
-this is not an exhaustive SPDX audit.
-|`just trust-license-content` |0 |The recipe's licence-text marker check passes;
-it does not establish licence consistency across every file.
-|`just trust-no-secrets-committed` |0 |The three prohibited credential-file
-paths checked by this recipe are absent. Separately, the deterministic
-`sonar analyze secrets` scan of this worktree reported no issues.
-|`gh actions-lock --verify-local` |0 |All 28 workflows have lockfile coverage.
-The tool notes an inline validator SHA; it matches the lockfile's reviewed pin.
-Offline coverage does not establish that mutable upstream refs have not moved.
+|`bash scripts/validate-template.sh .` |0 |29 workflows, required metadata, `verification/proofs/` artefacts, SPDX headers (12/12), and placeholder checks pass with 0 errors and 0 warnings.
+|`bash scripts/check-coordination-boundary.sh` |0 |Confirms no compiler or single-project implementation code exists outside `verification/proofs/`.
+|`bash scripts/check-pipeline-drift.sh .` |0 |Confirms `README.adoc`, `docs/ARCHITECTURE.adoc`, `docs/PIPELINE.adoc`, and `.machine_readable/descriptiles/{STATE,META,ECOSYSTEM}.a2ml` agree on the canonical chain, TypeLL invariant, and `2026-11-03` date.
+|`bash scripts/check-proof-ledger.sh` |0 |Audits `verification/proofs/LEDGER.json` against `PROOF-POLICY` (`46ee18323305`, amended 2026-11-01): `XP-1` at Grade `2i`, 4 proof sources, 2 proven DTT recheck legs (`rocq`, `lean4`), reachable receipt `c4ea3972`.
+|`bash scripts/proof-scan-dangerous.sh` |0 |Nested-comment-aware proof escape-hatch scanner across Agda, Rocq, and Lean 4 sources finds zero postulates, axioms, `Admitted`, or `sorry`.
+|`bash tests/proofs/run-ledger-controls.sh` |0 |All 63 positive and negative ledger, enrolment, correspondence, and comment-scanner controls hold.
+|`bash tests/aspect_tests.sh` |0 |4/4 cross-cutting checks pass (SPDX headers, escape-hatch scanner, coordination boundary, enrolment consistency + ledger audit).
+|`bash tests/workflows/validate_workflows_test.sh .github/workflows` |0 |29/29 workflow files carry SPDX headers and `name:` fields; 15/15 required gates present; `.github/workflows/actions.lock` covers every step-level `uses:` reference.
+|`bash tests/rsr_antipattern_heading_test.sh` |0 |Positive and negative Markdown heading fixtures confirm anchored heading detection (`^#[[:space:]]+`) without false positives on fenced code comments.
 |===
 
-The actual `validate-state` recipe was also exercised against isolated fixtures:
-valid metadata passed; missing metadata, missing project and absent state failed.
-The aggregate `just validate` failed for each invalid fixture. These controls
-establish failure propagation, not complete syntax validation.
+== Resolution of 2026-09-09 recorded failures
 
-The workflow SPDX check passed the repository and controls for a valid opening
-comment header, a missing identifier and an identifier placed after YAML content.
-The downloaded `gh-actions-lock` v0.1.6 linux-amd64 binary matched SHA-256
-`4181ec1da5408b34b9a542a7ee5c6ce3a4d6ac815c7d0206a00ceca8a817f4e3`
-and successfully ran the same offline coverage check.
+All five failures recorded in the 2026-09-09 affirmation have been resolved:
 
-== Failures and misleading success messages
-
-[cols="2,1,4",options="header"]
+[cols="2,4",options="header"]
 |===
-|Command |Exit |Observed result
-|`just proof-check-coq` |0 |No `.v` files occur in the enumerated
-`verification/proofs/` tree. The success message verifies no Coq theorem.
-|`just proof-check-idris2` |0 |No `.idr` files occur in that tree.
-The success message verifies no Idris theorem.
-|`just proof-scan-dangerous` |1 |One match: the comment saying "zero postulates"
-in `verification/proofs/agda/EchoTyping.agda`. This lexical match is not a
-proof-position postulate and is not a successful proof audit either.
-|`just verify-template` |1 |Unfilled setup placeholders, template references
-and the Groove port-zero marker remain. `REQUIRES_INITIALISATION.adoc` tracks
-outstanding decisions. The checker also reports placeholder examples in comments.
-|`just trust-verify` |1 |The `trust-container-images-pinned` subcheck fails
-on the root `Containerfile`. The two earlier trust subchecks pass.
+|2026-09-09 item |2026-11-03 resolution
+|`just proof-check-coq` (empty `.v` loop) |`verification/proofs/coq/EchoTyping.v` and `verification/proofs/lean4/EchoTyping.lean` are enrolled and compiled + kernel-queried (`coqchk` + `Print Assumptions`, `#print axioms` + `getModuleIdxFor?`) in `Proof CI` (`41565790232`), and `scripts/check-proofs.sh` fails closed if a prover is missing (`exit 2`) or a proven leg compiles zero files.
+|`just proof-check-idris2` (misleading pass on 0 files) |`scripts/check-proofs.sh idris2` explicitly reports `0 files checked` rather than claiming theorem verification; `XP-1` is a theory theorem (`Agda` + `Rocq` + `Lean 4`).
+|`just proof-scan-dangerous` (false positive on prose comment in `EchoTyping.agda`) |Replaced by nested-comment-aware `scripts/proof-scan-dangerous.sh` with per-language comment stripping (verified by controls 1–4, 29, 35, 41–43, 61–62).
+|`just verify-template` (unfilled placeholders, `REQUIRES_INITIALISATION.adoc`, `groove.a2ml` port `0`) |Coordinator templates instantiated (`OQ-002`), `www/.well-known/security.txt` and `.github/.mailmap` populated, non-applicable runtime-service `Containerfile` / `container/` / `groove.a2ml` and `REQUIRES_INITIALISATION.adoc` retired.
+|`just trust-verify` (unpinned root `Containerfile`) |Root service `Containerfile` retired; `.devcontainer/Containerfile` base image is `@sha256:` digest-pinned (`cgr.dev/chainguard/wolfi-base@sha256:6b2fd3aa...`).
 |===
 
-These are existing maintenance obligations, left visible. This record does not
-turn an empty proof loop or a failed scanner into evidence of verification.
-The current Agda cross-project files are present but were not rechecked here.
+== Bounded limits and open obligations
 
-== Separate residual proof evidence
-
-The first residual milestone belongs to `residual-evidence-types`.
-https://github.com/hyperpolymath/residual-evidence-types/actions/runs/34400741631[Its latest checked publication]
-passed the minimal Agda core, three expected-rejection controls and two direct
-comparisons with the published Echo and Epistemic interfaces. See the
-https://github.com/hyperpolymath/residual-evidence-types/blob/b2cd4e2f40005f20d5c4bd9a06051c3215b4db9a/PROOF-STATUS.adoc[proof status at that revision]
-for exact statements, pins and standard-library warnings.
-
-The link:docs/TYPE-CONNECTIONS.adoc[shared glossary] links those bounded results.
-The map's dashed arrows express conceptual relationships and further obligations.
-Composition, evidence revision, a certified finite checker and explorer
-correspondence remain open in the owning project.
-
-== Reproduce the record
-
-Use the checked commit above and run each command in the tables independently,
-retaining its exit status and output. A later successful hosted check does not
-erase the listed local failures. A later source change needs a new record.
-
-This record was prepared by Codex from the actual local runs and linked hosted
-results. The checked commit's signature result is recorded separately from
-these claims; no additional maintainer attestation is asserted here.
+* *Local prover availability*: running `scripts/check-proof-enrolment.sh` or `scripts/check-proofs.sh` in an environment without `agda`, `coqc`/`coqchk`, and `lean` exits `2` (`BLOCKED`) by design rather than silently skipping; full kernel compilation and the 18 kernel-assumption controls (`tests/proofs/run-kernel-assumption-controls.sh`) are verified in hosted `Proof CI` (`41565790232`).
+* *Residual Evidence sibling milestones*: `residual-evidence-types` https://github.com/hyperpolymath/residual-evidence-types/actions/runs/36740394802[hosted run `36740394802`] (`befdf9641c1bc6ecf58946e5ccbd0c630f4fc4c3`, 2026-09-30) verified the second residual milestone (composition, revision, 9 expected rejections, and finite-checker/explorer correspondence); transporting `compose-claims` across `EchoComparison` and non-vacuous warrant revision across `EpistemicComparison` remain open upstream obligations (#115).
+* *Maintainer signature attestation (#69)*: commit-signature and estate-wide affirmation sign-off across all 9 type-family repositories remain tracked under #69; this document records factual automated check results only and asserts no human cryptographic countersignature beyond Git commit metadata.
