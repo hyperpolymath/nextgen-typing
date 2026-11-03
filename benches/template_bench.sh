@@ -19,6 +19,10 @@ log_pass() { echo -e "${GREEN}✓${NC} $*"; }
 
 declare -A results
 
+# Run the command after a warm-up, then store the mean of three timed runs
+# in milliseconds under $1 in results. $2 is the display label; the remaining
+# arguments form the command. Command output is suppressed, but its side effects
+# occur on every run. A failed command aborts the script under set -e.
 run_bench() {
     local key="$1"
     local label="$2"

@@ -24,6 +24,9 @@ log_warning() { echo -e "${YELLOW}WARN${NC}: $*" >&2; WARNINGS=$((WARNINGS + 1))
 log_info() { echo -e "${BLUE}INFO${NC}: $*" >&2; }
 log_pass() { echo -e "${GREEN}PASS${NC}: $*" >&2; }
 
+# Check a file path relative to REPO_ROOT. The optional second argument is a
+# description for a missing-file error. Return 1 and increment ERRORS if the
+# path is not a regular file; otherwise return 0.
 check_file_exists() {
     local file="$1"
     local description="${2:-}"
@@ -36,6 +39,9 @@ check_file_exists() {
     fi
 }
 
+# Check a directory path relative to REPO_ROOT. The optional second argument is
+# a description for a missing-directory error. Return 1 and increment ERRORS if
+# the path is not a directory; otherwise return 0.
 check_dir_exists() {
     local dir="$1"
     local description="${2:-}"
@@ -48,6 +54,8 @@ check_dir_exists() {
     fi
 }
 
+# Check the first ten lines for an SPDX identifier. Return a non-zero status if
+# none is found or the read/search pipeline fails.
 has_spdx_header() {
     local target_file="$1"
     head -10 "$target_file" | grep -q "SPDX-License-Identifier"
