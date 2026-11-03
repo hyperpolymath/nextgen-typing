@@ -114,6 +114,10 @@ jobs:
           grep -q "^Expires:" "$SECTXT" || { echo "::error::Missing Expires field"; exit 1; }
 
           EXPIRES=$(grep "^Expires:" "$SECTXT" | cut -d: -f2- | tr -d ' ' | head -1)
+          if [[ ! "$EXPIRES" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}[Tt][0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]+)?([Zz]|[+-][0-9]{2}:[0-9]{2})$ ]]; then
+            echo "::error::Expires is not an RFC 3339 date-time: $EXPIRES"
+            exit 1
+          fi
           if ! EXPIRY_EPOCH=$(date -d "$EXPIRES" +%s 2>/dev/null); then
             echo "::error::Expires is not a valid date-time: $EXPIRES"
             exit 1
