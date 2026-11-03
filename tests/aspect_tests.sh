@@ -41,7 +41,7 @@ while IFS= read -r -d '' f; do
     fi
 done < <(find scripts/ verification/proofs/ -type f \( -name "*.agda" -o -name "*.v" -o -name "*.lean" -o -name "*.idr" -o -name "*.sh" \) -print0 2>/dev/null)
 
-if [ "$MISSING_SPDX" -eq 0 ]; then
+if [[ "$MISSING_SPDX" -eq 0 ]]; then
     pass "All verification proofs and gate scripts carry SPDX headers"
 else
     fail "$MISSING_SPDX file(s) missing SPDX headers"
@@ -64,7 +64,7 @@ fi
 bold "Aspect 4: Proof enrolment & ledger integrity"
 ENROL_RC=0
 ./scripts/check-proof-enrolment.sh >/dev/null 2>&1 || ENROL_RC=$?
-if { [ "$ENROL_RC" -eq 0 ] || [ "$ENROL_RC" -eq 2 ]; } && ./scripts/check-proof-ledger.sh >/dev/null; then
+if [[ "$ENROL_RC" -eq 0 || "$ENROL_RC" -eq 2 ]] && ./scripts/check-proof-ledger.sh >/dev/null; then
     pass "Proof enrolment consistent and LEDGER.json audit passed"
 else
     fail "Proof enrolment (rc=$ENROL_RC) or LEDGER.json check failed"
@@ -75,4 +75,4 @@ echo "════════════════════════�
 printf "  Results: PASS=%d  FAIL=%d  WARN=%d\n" "$PASS" "$FAIL" "$WARN"
 echo "═══════════════════════════════════════════════════════════════"
 
-[ "$FAIL" -eq 0 ]
+[[ "$FAIL" -eq 0 ]]

@@ -34,7 +34,7 @@ run_bench() {
         end=$(date +%s%N)
         ms=$(( (end - start) / 1000000 ))
         total=$(( total + ms ))
-        [ "$OUTPUT_FORMAT" = "human" ] && echo "  Run $i: ${ms}ms"
+        [[ "$OUTPUT_FORMAT" == "human" ]] && echo "  Run $i: ${ms}ms"
     done
     local avg=$(( total / runs ))
     results["$key"]=$avg
@@ -72,5 +72,7 @@ EOF
         echo "boundary,${results[boundary]}"
         echo "ledger,${results[ledger]}"
         echo "workflows,${results[workflows]}"
+        ;;
+    human|*)
         ;;
 esac

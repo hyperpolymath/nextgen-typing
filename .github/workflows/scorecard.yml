@@ -33,7 +33,7 @@ jobs:
 
       - name: Run pinned OSSF Scorecard
         env:
-          GITHUB_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_AUTH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           TARBALL="scorecard_${SCORECARD_VERSION}_linux_amd64.tar.gz"

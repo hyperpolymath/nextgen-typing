@@ -27,8 +27,8 @@ log_pass() { echo -e "${GREEN}PASS${NC}: $*" >&2; }
 check_file_exists() {
     local file="$1"
     local description="${2:-}"
-    if [ -f "$REPO_ROOT/$file" ]; then
-        [ "$VERBOSE" = "1" ] && log_pass "File exists: $file"
+    if [[ -f "$REPO_ROOT/$file" ]]; then
+        [[ "$VERBOSE" == "1" ]] && log_pass "File exists: $file"
         return 0
     else
         log_error "Required file missing: $file ${description:+(${description})}"
@@ -39,8 +39,8 @@ check_file_exists() {
 check_dir_exists() {
     local dir="$1"
     local description="${2:-}"
-    if [ -d "$REPO_ROOT/$dir" ]; then
-        [ "$VERBOSE" = "1" ] && log_pass "Directory exists: $dir"
+    if [[ -d "$REPO_ROOT/$dir" ]]; then
+        [[ "$VERBOSE" == "1" ]] && log_pass "Directory exists: $dir"
         return 0
     else
         log_error "Required directory missing: $dir ${description:+(${description})}"
@@ -49,7 +49,8 @@ check_dir_exists() {
 }
 
 has_spdx_header() {
-    head -10 "$1" | grep -q "SPDX-License-Identifier"
+    local target_file="$1"
+    head -10 "$target_file" | grep -q "SPDX-License-Identifier"
 }
 
 echo ""
@@ -103,8 +104,8 @@ REQUIRED_WORKFLOWS=(
 )
 
 for workflow in "${REQUIRED_WORKFLOWS[@]}"; do
-    if [ -f "$REPO_ROOT/.github/workflows/$workflow" ]; then
-        [ "$VERBOSE" = "1" ] && log_pass "Workflow found: $workflow"
+    if [[ -f "$REPO_ROOT/.github/workflows/$workflow" ]]; then
+        [[ "$VERBOSE" == "1" ]] && log_pass "Workflow found: $workflow"
     else
         log_error "Required workflow missing: $workflow"
     fi
@@ -112,14 +113,14 @@ done
 
 WORKFLOW_FILES=$(find "$REPO_ROOT/.github/workflows" -name "*.yml" -type f 2>/dev/null || true)
 WORKFLOW_COUNT=$(echo "$WORKFLOW_FILES" | grep -c "." || true)
-if [ "$WORKFLOW_COUNT" -ge 15 ]; then
+if [[ "$WORKFLOW_COUNT" -ge 15 ]]; then
     log_pass "Found $WORKFLOW_COUNT workflows (>= 15 expected)"
 else
     log_warning "Found only $WORKFLOW_COUNT workflows (expected >= 15)"
 fi
 
 while IFS= read -r workflow_file; do
-    [ -z "$workflow_file" ] && continue
+    [[ -z "$workflow_file" ]] && continue
     if ! head -5 "$workflow_file" | grep -q "SPDX-License-Identifier"; then
         log_warning "Workflow missing SPDX header: $(basename "$workflow_file")"
     fi
@@ -142,11 +143,11 @@ log_info "Phase 5: Placeholder token replacement"
 echo ""
 
 for file in "$REPO_ROOT/README.adoc" "$REPO_ROOT/.machine_readable/descriptiles/STATE.a2ml" "$REPO_ROOT/www/.well-known/security.txt"; do
-    if [ -f "$file" ] && grep -qE '\{\{[A-Z0-9_]+\}\}' "$file" 2>/dev/null; then
+    if [[ -f "$file" ]] && grep -qE '\{\{[A-Z0-9_]+\}\}' "$file" 2>/dev/null; then
         log_error "File contains unresolved placeholders: $(basename "$file")"
     fi
 done
-if [ -f "$REPO_ROOT/Justfile" ] && grep -q 'rsr-template-''repo' "$REPO_ROOT/Justfile" 2>/dev/null; then
+if [[ -f "$REPO_ROOT/Justfile" ]] && grep -q 'rsr-template-''repo' "$REPO_ROOT/Justfile" 2>/dev/null; then
     log_error "Justfile still references template default repository name"
 fi
 log_pass "Key files checked for unresolved placeholders"
@@ -159,7 +160,7 @@ SOURCE_FILES=$(find "$REPO_ROOT/verification/proofs" "$REPO_ROOT/scripts" -type 
 SOURCE_COUNT=$(echo "$SOURCE_FILES" | grep -c "." || true)
 SPDX_COUNT=0
 while IFS= read -r src_file; do
-    [ -z "$src_file" ] && continue
+    [[ -z "$src_file" ]] && continue
     if has_spdx_header "$src_file"; then
         SPDX_COUNT=$((SPDX_COUNT + 1))
     else
@@ -167,7 +168,7 @@ while IFS= read -r src_file; do
     fi
 done <<< "$SOURCE_FILES"
 
-if [ "$SOURCE_COUNT" -gt 0 ]; then
+if [[ "$SOURCE_COUNT" -gt 0 ]]; then
     PERCENT=$((SPDX_COUNT * 100 / SOURCE_COUNT))
     log_pass "SPDX headers: $SPDX_COUNT/$SOURCE_COUNT ($PERCENT%)"
 fi
@@ -180,8 +181,8 @@ check_file_exists "docs/ARCHITECTURE.adoc" "Pipeline architecture"
 check_file_exists "docs/PIPELINE.adoc" "Machine-readable pipeline spec"
 check_file_exists "docs/TYPE-CONNECTIONS.adoc" "Type-family connections guide"
 check_file_exists "docs/developer/ABI-FFI-README.adoc" "ABI/FFI routing note"
-if [ -f "$REPO_ROOT/.github/CONTRIBUTING.md" ] || [ -f "$REPO_ROOT/CONTRIBUTING.md" ]; then
-    [ "$VERBOSE" = "1" ] && log_pass "Contribution guide found"
+if [[ -f "$REPO_ROOT/.github/CONTRIBUTING.md" ]] || [[ -f "$REPO_ROOT/CONTRIBUTING.md" ]]; then
+    [[ "$VERBOSE" == "1" ]] && log_pass "Contribution guide found"
 else
     log_error "Required file missing: .github/CONTRIBUTING.md (Contribution guide)"
 fi
@@ -196,7 +197,7 @@ echo -e "Errors:   ${RED}${ERRORS}${NC}"
 echo -e "Warnings: ${YELLOW}${WARNINGS}${NC}"
 echo ""
 
-if [ "$ERRORS" -eq 0 ]; then
+if [[ "$ERRORS" -eq 0 ]]; then
     echo -e "${GREEN}✓ Validation PASSED${NC}"
     exit 0
 else
