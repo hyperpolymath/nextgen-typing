@@ -41,11 +41,11 @@ workflows:
         - 'actions/checkout@v7.0.1'
         - 'actions/upload-artifact@v7.0.2'
     '.github/workflows/push-email-notify.yml':
-        - 'hyperpolymath/smtp-notify-action@v0.5.0'
+        - 'hyperpolymath/smtp-notify-action@v0.5.1'
     '.github/workflows/quality.yml':
         - 'actions/checkout@v7.0.1'
         - 'editorconfig-checker/action-editorconfig-checker@v3.0.0'
-        - 'trufflesecurity/trufflehog@v3.99.3'
+        - 'trufflesecurity/trufflehog@v3.99.7'
     '.github/workflows/release.yml':
         - 'actions/checkout@v7.0.1'
         - 'actions/upload-artifact@v7.0.2'
@@ -142,9 +142,9 @@ dependencies:
         commit: 'sha1-6dde9fbb5aa3524c8fa740204b50405ec4e21c8c'
         owner_id: 6759885
         repo_id: 1275650185
-    'hyperpolymath/smtp-notify-action@v0.5.0':
-        ref: 'v0.5.0'
-        commit: 'sha1-c1c9fa07992a02c1fd3d67a0dc1b08cccb852aef'
+    'hyperpolymath/smtp-notify-action@v0.5.1':
+        ref: 'v0.5.1'
+        commit: 'sha1-e384daf6167a7a7567642d6a62060106244d2413'
         owner_id: 6759885
         repo_id: 1352485172
     'peter-evans/repository-dispatch@v4.0.1':
@@ -157,8 +157,8 @@ dependencies:
         commit: 'sha1-efb35369e0ad2afab669f228072c1b0d510eae64'
         owner_id: 2242
         repo_id: 204253808
-    'trufflesecurity/trufflehog@v3.99.3':
-        ref: 'v3.99.3'
-        commit: 'sha1-e63326d6545de8f425d93ce24078c6e68d83f70e'
+    'trufflesecurity/trufflehog@v3.99.7':
+        ref: 'v3.99.7'
+        commit: 'sha1-31ce31ee1abbcc7dc8eee5764c17121c3044c8b2'
         owner_id: 79229934
         repo_id: 77726177
