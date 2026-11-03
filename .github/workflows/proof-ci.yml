@@ -15,11 +15,11 @@
 #     under `agda --safe --without-K --cubical-compatible`.
 #   * §2: that statement must be rechecked in Rocq AND Lean — transported
 #     through Dedukti/Lambdapi or re-proved by hand, with the statement
-#     comparison recorded and no Mathlib. Those are the legs this lane
-#     examines (`coqchk -silent -o` + `Print Assumptions` for Rocq; `#print axioms`
-#     for Lean). BOTH ARE CURRENTLY OPEN: no witness exists, so the lane
-#     compiles zero recheck modules and the gate prints the gap as a
-#     `POLICY GAP` line on every run.
+#     comparison recorded and no Mathlib. Both XP-1 recheck legs
+#     (`verification/proofs/coq/EchoTyping.v` and
+#     `verification/proofs/lean4/EchoTyping.lean`) are gated and checked here via
+#     `coqchk -silent -o` + `Print Assumptions` (Rocq) and `#print axioms` +
+#     `Lean.Environment.getModuleIdxFor?` module-origin verification (Lean 4).
 #   * §5/§6: status is the closed vocabulary (open | argued | tested-only |
 #     proven-with-postulates | proven); a grade must be supported by the legs
 #     behind it; axioms are tracked (`Print Assumptions`, `#print axioms`), not
@@ -58,15 +58,16 @@
 # There is no `continue-on-error` in this workflow, and no step is skipped when
 # a tool is missing: a missing toolchain makes the run red, which is the point.
 #
-# A green run does NOT mean XP-1 is verified in an independent kernel. It means
-# the ledger is honest about what has and has not been proven. Today it records
-# Grade 3 (Agda only) with both recheck legs open.
+# Today `just proof-check-all` runs the full suite: XP-1's Agda source leg and
+# both PROOF-POLICY §2 recheck legs (`EchoTyping.v` in Rocq 8.18 and
+# `EchoTyping.lean` in core Lean 4.15.0, Grade 2i), plus `proof-check-idris2`,
+# the ledger gate, and the comment-aware escape-hatch scan.
 #
 # Toolchains are pinned so the lane cannot float:
 #   * Agda 2.8.0 — official release binary, sha256-verified before extraction
 #   * just 1.59.0 — exact version, installed from crates.io with --locked
 #   * Rocq/Coq 8.18 — Ubuntu 24.04's package, version asserted after install
-#   * Lean 4 — official release archive, exact version asserted
+#   * Lean 4.15.0 — official release archive, sha256-verified + version asserted
 #   * libraries — agda-stdlib v2.4 (tag + commit asserted), echo-types and
 #     absolute-zero pinned by commit, each re-verified after checkout
 #
@@ -133,8 +134,10 @@ env:
   JUST_VERSION: '1.59.0'
   # Ubuntu 24.04 (noble) ships this exact Rocq/Coq build; asserted below.
   ROCQ_VERSION: '8.18'
-  # No Mathlib (PROOF-POLICY §2): the lean leg must be core Lean. Asserted below.
+  # No Mathlib (PROOF-POLICY §2): the lean leg must be core Lean. Asserted + sha256-verified below.
   LEAN_VERSION: '4.15.0'
+  # sha256 of lean-4.15.0-linux.tar.zst (official GitHub release asset, leanprover/lean4)
+  LEAN_LINUX_SHA256: 'af71a2569a9f68337de2434829b3008cd8e32c436e9cb6bd8c84a2c2ba3585c9'
   STDLIB_TAG: 'v2.4'
   STDLIB_COMMIT: '2a5a0dec0a3cb5c87468ce101388a513d39dbf10'
   # echo-types: the library the XP-1 proof is *about* (PROOF-STATUS.adoc).
@@ -208,10 +211,10 @@ jobs:
           curl -fsSL --proto '=https' --proto-redir '=https' --tlsv1.2 \
             -o "$RUNNER_TEMP/lean-dl/$NAME" \
             "https://github.com/leanprover/lean4/releases/download/v${LEAN_VERSION}/${NAME}"
-          # The release asset ships no published digest, so the archive identity
-          # is recorded rather than asserted against an upstream constant. The
-          # version assertion below is what actually pins the toolchain: a
-          # substituted archive that is not this Lean fails the step.
+          # Verify the official release archive digest BEFORE extraction (matching
+          # Agda's sha256 pin above) so a tampered or substituted archive fails
+          # immediately before unpacking.
+          echo "${LEAN_LINUX_SHA256}  $RUNNER_TEMP/lean-dl/$NAME" | sha256sum -c -
           echo "$(stat -c%s "$RUNNER_TEMP/lean-dl/$NAME") bytes  sha256 $(sha256sum "$RUNNER_TEMP/lean-dl/$NAME" | cut -d' ' -f1)" \
             | tee "$RUNNER_TEMP/lean-dl/archive.txt"
           tar --zstd -xf "$RUNNER_TEMP/lean-dl/$NAME" -C "$RUNNER_TEMP/lean"
@@ -349,15 +352,15 @@ jobs:
           mkdir -p "$PROOF_RECEIPT_DIR"
           bash tests/proofs/run-controls.sh 2>&1 | tee "$RUNNER_TEMP/proof-controls.log" "$PROOF_RECEIPT_DIR/controls.txt"
 
-      # The CI target: audit the ledger, then compile every recheck leg the
-      # ledger declares. XP-1 declares Rocq and Lean 4, both `open`, so these
-      # compile zero modules — and the ledger gate refuses any claim that they
-      # compiled. The gate's receipt (census + POLICY GAP lines) is written to
-      # $PROOF_RECEIPT_DIR/ledger.txt by `just proof-ledger-check`.
-      - name: Ledger audit + declared recheck legs (Rocq, Lean 4)
+      # Full CI sweep (`just proof-check-all`, issue #57): runs enrolment,
+      # ledger audit, Idris2 engineering check, Lean 4 recheck witnesses +
+      # kernel #print axioms/origin queries, Agda source leg under
+      # `--safe --without-K --cubical-compatible`, Rocq recheck witnesses +
+      # coqchk/Print Assumptions queries, and the comment-aware escape-hatch scan.
+      - name: Full proof sweep — just proof-check-all (Agda, Rocq, Lean 4, Idris2, ledger & scans)
         run: |
           set -o pipefail
-          just proof-witness-check 2>&1 | tee "$RUNNER_TEMP/proof-witness-check.log"
+          just proof-check-all 2>&1 | tee "$RUNNER_TEMP/proof-witness-check.log" "$RUNNER_TEMP/proof-agda.log"
 
       # "PASS" from a per-prover step must never be reachable with nothing
       # compiled. scripts/check-proofs.sh is the estate instrument and is used
@@ -370,6 +373,7 @@ jobs:
           set -euo pipefail
           LEDGER=verification/proofs/LEDGER.json
           bad=0
+          checked_legs=0
           while IFS= read -r leg; do
             [ -z "$leg" ] && continue
             case "$leg" in
@@ -377,7 +381,8 @@ jobs:
               lean4|lean) dir=lean4; prover="Lean 4" ;;
               *) continue ;;
             esac
-            gated="$(awk -F'|' '/^[[:space:]]*#/ || NF < 3 { next } $3 == "gated" { c++ } END { print c+0 }'               "verification/proofs/$dir/MANIFEST")"
+            checked_legs=$((checked_legs + 1))
+            gated="$(awk -F'|' '/^[[:space:]]*#/ || NF < 3 { next } $3 == "gated" { c++ } END { print c+0 }' "verification/proofs/$dir/MANIFEST")"
             echo "$prover: ledger records a proven leg; $dir/MANIFEST lists $gated gated module(s)"
             if [ "$gated" -lt 1 ]; then
               echo "::error::zero-work: the ledger records a proven $prover leg but verification/proofs/$dir/MANIFEST lists no gated module"
@@ -385,19 +390,14 @@ jobs:
             fi
           done < <(jq -r '.theorems[].legs[]? | select(.status == "proven" or .status == "proven-with-postulates") | .prover' "$LEDGER" | sort -u)
           if [ "$bad" -ne 0 ]; then exit 1; fi
-          echo "no recheck leg is recorded proven, so zero compiled recheck modules is the honest count — not a pass"
+          if [ "$checked_legs" -eq 0 ]; then
+            echo "no recheck leg is recorded proven, so zero compiled recheck modules is the honest count — not a pass"
+          else
+            echo "all $checked_legs proven recheck leg(s) carry gated MANIFEST entries"
+          fi
 
-      # The Agda SOURCE leg. PROOF-POLICY §1 makes Agda the source of truth; the
-      # ledger records it at a pinned commit and the audit checks that record.
-      # Typechecking it here keeps the recorded status true rather than assumed.
-      - name: Agda source leg (recorded in the ledger, re-typechecked here)
-        run: |
-          set -o pipefail
-          just proof-check-agda 2>&1 | tee "$RUNNER_TEMP/proof-agda.log"
-
-      # A green run means "the ledger is honest", NOT "the theorem is verified in
-      # an independent kernel". Say so on the check run itself, where it cannot
-      # be missed by someone who only reads the badge.
+      # Announce any open-leg policy gaps on the check run itself so an open
+      # obligation can never be mistaken for independent kernel verification.
       - name: Announce policy gaps (recorded, not verified)
         run: |
           set -uo pipefail
@@ -407,7 +407,7 @@ jobs:
             exit 1
           fi
           GAPS="$(awk '/^gaps:/{f=1;next} /^[a-z-]+:/{f=0} f' "$RECEIPT" | sed 's/^  - //')"
-          if [ -z "${GAPS//[[:space:]]/}" ] || [ "$GAPS" = "(none)" ]; then
+          if [ -z "${GAPS//[[:space:]]/}" ] || [ "${GAPS//[[:space:]]/}" = "(none)" ]; then
             echo "no policy gaps recorded"
             exit 0
           fi
@@ -442,7 +442,17 @@ jobs:
           fi
 
       - name: Note receipts
+        if: always()
         run: |
+          if [ -f "$RUNNER_TEMP/lean-dl/archive.txt" ]; then
+            echo "::notice::lean-archive: $(cat "$RUNNER_TEMP/lean-dl/archive.txt")"
+          fi
+          for wf in "$PROOF_RECEIPT_DIR/witness-coq.txt" "$PROOF_RECEIPT_DIR/witness-lean4.txt"; do
+            if [ -f "$wf" ]; then
+              wpayload="$(grep -vE '^[[:space:]]*$' "$wf" | tail -n 35 | tail -c 3000 | sed ':a;N;$!ba;s/\n/%0A/g')"
+              echo "::notice::$(basename "$wf"):%0A${wpayload}"
+            fi
+          done
           echo "## Proof CI receipts" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           for f in "$PROOF_RECEIPT_DIR"/*.txt; do

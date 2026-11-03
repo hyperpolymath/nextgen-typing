@@ -379,7 +379,9 @@ fi
 k16="$WORK/k16"
 mkdir -p "$k16/verification/proofs/coq"
 cat > "$k16/verification/proofs/coq/AdmittedWitness.v" <<'EOF'
-(* INSTRUMENT CONTROL *)
+(* INSTRUMENT CONTROL
+Axiom tp_echo_1 : False.
+*)
 Theorem tp_echo_1 : False.
 Proof. Admitted.
 EOF
@@ -423,6 +425,29 @@ if [[ "$rc_k17" -ne 0 ]] && grep -qF "FAIL (manifest-order)" "$k17/out.log"; the
 else
   viol "K17. check-proofs.sh did not diagnose out-of-order support_files in MANIFEST (rc=$rc_k17)"
   sed 's/^/      /' "$k17/out.log" | tail -20
+fi
+
+# K18: Pointing a Lean leg's .declarations at an external Init declaration
+# (`Nat.zero`) while leaving the witness's own `sorry`-bearing theorem unqueried
+# is REFUSED by Lean declaration-ownership verification.
+k18="$WORK/k18"
+mkdir -p "$k18/verification/proofs/lean4"
+cat > "$k18/verification/proofs/lean4/SmuggledInitDecl.lean" <<'EOF'
+-- INSTRUMENT CONTROL
+theorem broken_local : False := sorry
+EOF
+cat > "$k18/verification/proofs/lean4/MANIFEST" <<'EOF'
+verification/proofs/lean4|SmuggledInitDecl.lean|gated|external declaration smuggling control
+EOF
+write_fixture_ledger "$k18/verification/proofs/LEDGER.json" "lean4" "proven" \
+  "verification/proofs/lean4/SmuggledInitDecl.lean" "null" '["Nat.zero"]' '[]'
+bash "$CHECK_PROOFS" lean4 --root "$k18" >"$k18/out.log" 2>&1
+rc_k18=$?
+if [[ "$rc_k18" -ne 0 ]] && grep -qF "FAIL (assumptions)" "$k18/out.log"; then
+  ok "K18. check-proofs.sh lean4 refuses legs[].declarations pointing at external Init constants (Nat.zero)"
+else
+  viol "K18. check-proofs.sh lean4 accepted external Init constant Nat.zero in legs[].declarations (rc=$rc_k18)"
+  sed 's/^/      /' "$k18/out.log" | tail -20
 fi
 
 echo ""

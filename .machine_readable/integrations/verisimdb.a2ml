@@ -25,6 +25,10 @@ emit-dependency-graph = true
 # backward compatibility — it is a query keyword, not a wire format. Records
 # carry "schema": "verisimdb.octad.v1" (see verisimdb-data scans/octads/).
 format = "verisimdb.octad.v1"
-# The store's layout (verisimdb-data README): scans/ holds per-repo results and
-# scans/octads/ holds octad records. There is no feeds/ directory.
+# The store's layout (verisimdb-data README + scripts/regen-index.sh):
+# top-level `scans/<repo>.json` files feed `regen-index.sh` (`index.json`),
+# while `scans/octads/` holds octad records (intentionally excluded from the
+# top-level repo scan index). Any feed writer that emits scan results must
+# preserve top-level `verisimdb-data/scans/<repo>.json` alongside octad records.
 destination = "verisimdb-data/scans/octads/"
+scan-index-destination = "verisimdb-data/scans/"

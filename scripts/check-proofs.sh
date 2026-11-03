@@ -351,8 +351,8 @@ array_contains() {
 # against the owning leg's recorded `.axioms` array. Whenever `<cand_mod>` maps
 # to a staged `.v` file in `$work_root` (either the primary witness or a staged
 # support module), `<short>` MUST be declared via `Axiom`/`Parameter`/`Conjecture`
-# in that file — so an incomplete `Theorem ... Admitted.` can never satisfy the
-# kernel check even if its full name is listed in `.axioms`.
+# outside comments in that file — so an incomplete `Theorem ... Admitted.` can
+# never satisfy the kernel check even if its full name is listed in `.axioms`.
 coq_axiom_allowed() {
   local ax="$1" mod_path="$2" work_root="$3"
   shift 3
@@ -364,7 +364,8 @@ coq_axiom_allowed() {
     local short="${ax##*.}"
     local local_v="$work_root/${cand_mod//./\/}.v"
     if [[ -f "$local_v" ]]; then
-      if ! grep -qE "^[[:space:]]*(Axiom|Parameter|Conjecture)[[:space:]]+${short//./\\.}([^A-Za-z0-9_']|$)" "$local_v" 2>/dev/null; then
+      if ! bash "$SCRIPT_ROOT/scripts/proof-scan-dangerous.sh" --strip-comments "$local_v" \
+           | grep -qE "^[[:space:]]*(Axiom|Parameter|Conjecture)[[:space:]]+${short//./\\.}([^A-Za-z0-9_']|$)" 2>/dev/null; then
         return 1
       fi
       if array_contains "$ax" "${allowed[@]}" || { [[ "$cand_mod" == "$mod_path" ]] && array_contains "$short" "${allowed[@]}"; }; then
@@ -396,8 +397,9 @@ verify_ledger_ready() {
 
 # Emit matching non-open legs for ($1 = prover_kind: coq|lean4, $2 = full_rel).
 # Output lines use US (\x1f): role (primary|support), theorem id, status,
-# axioms JSON and declarations JSON. A jq failure returns non-zero, although
-# callers using process substitution do not receive that status.
+# axioms JSON, declarations JSON and support-files JSON. A jq failure returns
+# non-zero, although callers using process substitution do not receive that
+# status. Invalid or missing support-files arrays are represented as [].
 query_claiming_legs() {
   local pkind="$1" full_rel="$2"
   jq -r --arg kind "$pkind" --arg path "$full_rel" '
@@ -431,7 +433,8 @@ query_claiming_legs() {
         ($t.id // "<unnamed>"),
         ($leg.status // ""),
         (if (($leg.axioms // []) | type) == "array" then (($leg.axioms // []) | tojson) else "null" end),
-        (target_decls($t; $leg) | tojson)
+        (target_decls($t; $leg) | tojson),
+        (if (($leg.support_files // []) | type) == "array" then (($leg.support_files // []) | tojson) else "[]" end)
       ]
     | join("\u001f")
   ' "$LEDGER"
@@ -530,9 +533,9 @@ $coqchk_out"
   done <<<"$coqchk_ax_raw"
 
   # 2. Validate against every claiming leg and run per-declaration Print Assumptions.
-  local role tid leg_status axioms_json decls_json
+  local role tid leg_status axioms_json decls_json support_json
   for row in "${leg_rows[@]}"; do
-    IFS=$'\x1f' read -r role tid leg_status axioms_json decls_json <<<"$row"
+    IFS=$'\x1f' read -r role tid leg_status axioms_json decls_json support_json <<<"$row"
     if [[ "$axioms_json" == "null" ]]; then
       ASSUMPTION_ERR="$full_rel ($tid): leg .axioms must be a JSON array"
       return 1
@@ -693,6 +696,8 @@ $probe_out"
 # Check a compiled Lean module against each claiming ledger leg. The arguments
 # are its source root, path relative to that root and staged root. Append query
 # output to the receipt sections; on rejection return 1 and set $ASSUMPTION_ERR.
+# For primary artifacts, check that recorded declarations belong to the leg's
+# staged modules as well as checking their axioms; support modules are imported.
 verify_lean_assumptions() {
   local root="$1" rel="$2" work_root="$3"
   local clean_rel="${rel#./}"
@@ -714,9 +719,9 @@ verify_lean_assumptions() {
     return 1
   fi
 
-  local role tid leg_status axioms_json decls_json
+  local role tid leg_status axioms_json decls_json support_json
   for row in "${leg_rows[@]}"; do
-    IFS=$'\x1f' read -r role tid leg_status axioms_json decls_json <<<"$row"
+    IFS=$'\x1f' read -r role tid leg_status axioms_json decls_json support_json <<<"$row"
     if [[ "$axioms_json" == "null" ]]; then
       ASSUMPTION_ERR="$full_rel ($tid): leg .axioms must be a JSON array"
       return 1
@@ -776,6 +781,23 @@ $sup_out"
       return 1
     fi
 
+    # Build the set of staged Lean files & module names owned by this leg so
+    # legs[].declarations cannot satisfy #print axioms via imported Init/Std
+    # constants (e.g. `Nat.zero` or `True.intro`).
+    local allowed_lean_files=("$work_root/$clean_rel")
+    local allowed_lean_mods=("$mod_path")
+    local s_entry s_rel s_mod
+    while IFS= read -r s_entry; do
+      [[ -z "$s_entry" ]] && continue
+      s_rel="${s_entry#"${root%/}/"}"
+      if [[ "$s_rel" != "$s_entry" && -f "$work_root/$s_rel" && "$s_rel" == *.lean ]]; then
+        allowed_lean_files+=("$work_root/$s_rel")
+        s_mod="${s_rel%.lean}"
+        s_mod="${s_mod//\//.}"
+        allowed_lean_mods+=("$s_mod")
+      fi
+    done < <(jq -r '.[]' <<<"${support_json:-[]}")
+
     local probe_file="$work_root/__AssumptionsProbe.lean"
     {
       printf 'import %s\n' "$mod_path"
@@ -786,9 +808,80 @@ $sup_out"
           ASSUMPTION_ERR="$full_rel ($tid): declaration '$decl' is not a valid Lean identifier — map Agda anchors to Lean identifiers in legs[].declarations"
           return 1
         fi
+        local decl_tail="${decl##*.}"
+        local esc_tail="${decl_tail//./\\.}"
+        local found_in_leg=0 lf
+        for lf in "${allowed_lean_files[@]}"; do
+          if bash "$SCRIPT_ROOT/scripts/proof-scan-dangerous.sh" --strip-comments "$lf" \
+             | grep -qE "(^|[^A-Za-z0-9_'])(theorem|lemma|def|abbrev|opaque|axiom|inductive|structure)[[:space:]]+${esc_tail}([^A-Za-z0-9_']|$)" 2>/dev/null; then
+            found_in_leg=1
+            break
+          fi
+        done
+        if [[ "$found_in_leg" -eq 0 ]]; then
+          rm -f "$probe_file"
+          ASSUMPTION_ERR="$full_rel ($tid): declaration '$decl' is not declared in this leg's Lean file(s) (${allowed_lean_mods[*]}) — legs[].declarations must name declarations owned by the leg, not external/Init constants"
+          return 1
+        fi
         printf '#print axioms %s\n' "$decl"
       done
     } >"$probe_file"
+
+    if [[ ! -f "$LEAN_LIBDIR/Lean.olean" ]]; then
+      rm -f "$probe_file"
+      ASSUMPTION_ERR="$full_rel ($tid): $LEAN_LIBDIR/Lean.olean not found — Lean constant-origin verification cannot run, so declaration ownership is unverified"
+      return 1
+    else
+      local origin_file="$work_root/__OriginProbe.lean"
+      local decl_list_lean=""
+      local decl
+      for decl in "${target_decls[@]}"; do
+        [[ -n "$decl_list_lean" ]] && decl_list_lean+=", "
+        decl_list_lean+="\`\`${decl}"
+      done
+      cat >"$origin_file" <<EOF
+import Lean
+import ${mod_path}
+#eval show Lean.Elab.Command.CommandElabM Unit from do
+  let env ← Lean.getEnv
+  for c in [${decl_list_lean}] do
+    match env.getModuleIdxFor? c with
+    | some idx =>
+      let m := env.header.moduleNames[idx.toNat]!
+      IO.println s!"ORIGIN|{c}|{m}"
+    | none =>
+      IO.println s!"ORIGIN|{c}|<current>"
+EOF
+      local origin_out origin_rc
+      set +e
+      origin_out="$(cd "$work_root" && LEAN_PATH="$work_root:$LEAN_LIBDIR${LEAN_PATH:+:$LEAN_PATH}" lean "$origin_file" 2>&1)"
+      origin_rc=$?
+      set -e
+      rm -f "$origin_file"
+      if [[ "$origin_rc" -ne 0 ]] || grep -qE 'error:' <<<"$origin_out"; then
+        rm -f "$probe_file"
+        ASSUMPTION_ERR="$full_rel ($tid): Lean constant-origin probe failed (exit $origin_rc):
+$origin_out"
+        return 1
+      fi
+      local oline otag odecl omod origin_count=0
+      while IFS= read -r oline; do
+        [[ "$oline" == ORIGIN\|* ]] || continue
+        IFS='|' read -r otag odecl omod <<<"$oline"
+        origin_count=$((origin_count + 1))
+        if ! array_contains "$omod" "${allowed_lean_mods[@]}"; then
+          rm -f "$probe_file"
+          ASSUMPTION_ERR="$full_rel ($tid): declaration '$odecl' resolves in the Lean kernel to module '$omod', outside this leg's modules (${allowed_lean_mods[*]})"
+          return 1
+        fi
+      done <<<"$origin_out"
+      if [[ "$origin_count" -ne "${#target_decls[@]}" ]]; then
+        rm -f "$probe_file"
+        ASSUMPTION_ERR="$full_rel ($tid): expected ${#target_decls[@]} Lean origin verdicts, saw $origin_count:
+$origin_out"
+        return 1
+      fi
+    fi
 
     local probe_out probe_rc
     set +e

@@ -5,8 +5,9 @@
 
 Dispositions per `docs/TRUSTED-BASE-REDUCTION-POLICY.adoc` (estate policy,
 enforced by `scripts/check-trusted-base.sh` through `governance-reusable.yml`).
-Scope: this repository is proof-bearing — `verification/proofs/agda/` carries
-XP-1 (see `verification/proofs/LEDGER.json` and `PROOF-STATUS.adoc`).
+Scope: this repository is proof-bearing — `verification/proofs/{agda,coq,lean4}/`
+carries XP-1 across its Agda source leg and its Rocq and core Lean 4 recheck
+witnesses (see `verification/proofs/LEDGER.json` and `PROOF-STATUS.adoc`).
 
 The file exists even though the answer is "nothing outstanding", because an
 absent file is indistinguishable from an unexamined repository, and the policy
