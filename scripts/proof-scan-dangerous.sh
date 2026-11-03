@@ -110,9 +110,12 @@ write_receipt() {
   } >"$RECEIPT" || { echo "FAIL: cannot write receipt $RECEIPT" >&2; exit 1; }
 }
 
-# Print $1 with the comment syntax of ITS language removed, and string literals
-# masked, preserving line numbers. Supports nested block comments in Agda,
-# Idris, Lean and Coq.
+# Print $1 with comments removed and double-quoted string contents masked,
+# preserving line numbers. Comment syntax is selected by extension; nested
+# block comments are recognised for Agda, Idris, Lean, Coq, TLA+ and F*.
+# An unclosed block comment extends to EOF. Unknown extensions retain comments
+# but still have double-quoted string contents masked. The function returns the
+# awk status; the --strip-comments command mode exits 0 after calling it.
 strip_comments() {
   local f="$1" mode
   case "$f" in

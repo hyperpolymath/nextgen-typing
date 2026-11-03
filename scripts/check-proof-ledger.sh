@@ -99,6 +99,8 @@ scan_escape_hatches() {
 # `proven-with-postulates` when the axioms are named and allowed by
 # TRUSTED-BASE-REDUCTION-POLICY. Strip comments first so prose in comments
 # (e.g. `(* Axiom fake : False. *)`) can never impersonate a declared axiom.
+# Print numbered declaration lines from a Coq or Lean file; other extensions
+# produce no output. Scanner and grep failures are converted to success.
 scan_declared_axioms() {
   local file="$1"
   case "$file" in

@@ -351,8 +351,8 @@ array_contains() {
 # against the owning leg's recorded `.axioms` array. Whenever `<cand_mod>` maps
 # to a staged `.v` file in `$work_root` (either the primary witness or a staged
 # support module), `<short>` MUST be declared via `Axiom`/`Parameter`/`Conjecture`
-# in that file — so an incomplete `Theorem ... Admitted.` can never satisfy the
-# kernel check even if its full name is listed in `.axioms`.
+# outside comments in that file — so an incomplete `Theorem ... Admitted.` can
+# never satisfy the kernel check even if its full name is listed in `.axioms`.
 coq_axiom_allowed() {
   local ax="$1" mod_path="$2" work_root="$3"
   shift 3
@@ -397,8 +397,9 @@ verify_ledger_ready() {
 
 # Emit matching non-open legs for ($1 = prover_kind: coq|lean4, $2 = full_rel).
 # Output lines use US (\x1f): role (primary|support), theorem id, status,
-# axioms JSON and declarations JSON. A jq failure returns non-zero, although
-# callers using process substitution do not receive that status.
+# axioms JSON, declarations JSON and support-files JSON. A jq failure returns
+# non-zero, although callers using process substitution do not receive that
+# status. Invalid or missing support-files arrays are represented as [].
 query_claiming_legs() {
   local pkind="$1" full_rel="$2"
   jq -r --arg kind "$pkind" --arg path "$full_rel" '
@@ -695,6 +696,8 @@ $probe_out"
 # Check a compiled Lean module against each claiming ledger leg. The arguments
 # are its source root, path relative to that root and staged root. Append query
 # output to the receipt sections; on rejection return 1 and set $ASSUMPTION_ERR.
+# For primary artifacts, check that recorded declarations belong to the leg's
+# staged modules as well as checking their axioms; support modules are imported.
 verify_lean_assumptions() {
   local root="$1" rel="$2" work_root="$3"
   local clean_rel="${rel#./}"

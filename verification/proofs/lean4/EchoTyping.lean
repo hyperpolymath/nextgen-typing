@@ -36,6 +36,7 @@ namespace EchoTyping
 -- § 0. Minimal Echo / EchoCharacteristic / EchoResidue / EchoLinear core
 -- =====================================================================
 
+/-- The fibre of `f` over `y`: an input paired with evidence that it maps to `y`. -/
 def Echo {A B : Type} (f : A → B) (y : B) : Type :=
   PSigma (fun x : A => f x = y)
 
@@ -53,6 +54,8 @@ theorem echo_true_neq_echo_false : echo_true ≠ echo_false :=
 def EchoR {B C : Type} (Cert : C → B → Type) (y : B) : Type :=
   PSigma (fun r : C => Cert r y)
 
+/-- Map an echo's input through `kappa`, retaining a certificate for `y`.
+`sound` supplies a certificate at each input's image under `f`. -/
 def echo_to_residue {A B C : Type}
     (f : A → B) (kappa : A → C) (Cert : C → B → Type)
     (sound : ∀ x : A, Cert (kappa x) (f x))
@@ -74,6 +77,7 @@ def LEcho : Mode → Type
   | Mode.linear => Echo collapse ()
   | Mode.affine => EchoR TrivialCert ()
 
+/-- Forget the Boolean input of a linear echo, retaining its trivial residue. -/
 def weaken : LEcho Mode.linear → LEcho Mode.affine := collapse_to_residue
 
 -- =====================================================================
@@ -113,6 +117,8 @@ def mode_le_trans : ∀ {m₁ m₂ m₃ : Mode}, ModeLe m₁ m₂ → ModeLe m�
   | _, _, _, ModeLe.linear_le_affine, ModeLe.affine_le_affine => ModeLe.linear_le_affine
   | _, _, _, ModeLe.affine_le_affine, ModeLe.affine_le_affine => ModeLe.affine_le_affine
 
+/-- Coerce an echo along a mode relation: equal modes leave it unchanged,
+while linear to affine applies `weaken`. -/
 def degradeMode : ∀ {m₁ m₂ : Mode}, ModeLe m₁ m₂ → LEcho m₁ → LEcho m₂
   | _, _, ModeLe.linear_le_linear, e => e
   | _, _, ModeLe.linear_le_affine, e => weaken e
@@ -140,6 +146,7 @@ inductive SurfaceTy : Type where
 inductive KernelTy : Type where
   | KernNat : KernelTy
 
+/-- Erase each modelled surface type to `KernNat`. -/
 def erase : SurfaceTy → KernelTy := fun _ => KernelTy.KernNat
 
 def ErasedFrom (k : KernelTy) : Type := Echo erase k
@@ -217,6 +224,7 @@ def LEchoPath : Mode → Type
   | Mode.linear => EchoPath collapse ()
   | Mode.affine => EchoRPath TrivialCert ()
 
+/-- Weaken a linear echo with proof-relevant paths to its trivial affine residue. -/
 def affine_weakening_path (e : LEchoPath Mode.linear) : LEchoPath Mode.affine :=
   ⟨collapse_kappa e.fst, path_subst (fun z => TrivialCert (collapse_kappa e.fst) z) e.snd (collapse_sound e.fst)⟩
 

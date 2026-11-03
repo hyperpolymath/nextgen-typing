@@ -29,6 +29,7 @@
 (* § 0. Minimal Echo / EchoCharacteristic / EchoResidue / EchoLinear core *)
 (* ===================================================================== *)
 
+(** The fibre of [f] over [y]: an input paired with evidence that it maps to [y]. *)
 Definition Echo {A B : Type} (f : A -> B) (y : B) : Type :=
   { x : A & f x = y }.
 
@@ -51,6 +52,8 @@ Qed.
 Definition EchoR {B C : Type} (Cert : C -> B -> Type) (y : B) : Type :=
   { r : C & Cert r y }.
 
+(** Map an echo's input through [kappa], retaining a certificate for [y].
+    [sound] supplies a certificate at each input's image under [f]. *)
 Definition echo_to_residue {A B C : Type}
   (f : A -> B) (kappa : A -> C) (Cert : C -> B -> Type)
   (sound : forall x : A, Cert (kappa x) (f x))
@@ -78,6 +81,7 @@ Definition LEcho (m : Mode) : Type :=
   | affine => EchoR TrivialCert tt
   end.
 
+(** Forget the Boolean input of a linear echo, retaining its trivial residue. *)
 Definition weaken : LEcho linear -> LEcho affine := collapse_to_residue.
 
 (* ===================================================================== *)
@@ -138,6 +142,8 @@ Definition mode_le_trans {m1 m2 m3 : Mode}
   | affine_le_affine => fun p23 => p23
   end.
 
+(** Coerce an echo along a mode relation: equal modes leave it unchanged,
+    while linear to affine applies [weaken]. *)
 Definition degradeMode {m1 m2 : Mode}
   (p : ModeLe m1 m2) : LEcho m1 -> LEcho m2 :=
   match p in ModeLe a b return LEcho a -> LEcho b with
@@ -184,6 +190,7 @@ Inductive SurfaceTy : Set :=
 Inductive KernelTy : Set :=
   | KernNat : KernelTy.
 
+(** Erase each modelled surface type to [KernNat]. *)
 Definition erase (_ : SurfaceTy) : KernelTy := KernNat.
 
 Definition ErasedFrom (k : KernelTy) : Type := Echo erase k.
