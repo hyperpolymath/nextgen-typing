@@ -89,11 +89,12 @@ jobs:
           claude_md = pathlib.Path('.claude/CLAUDE.md')
           if claude_md.exists():
               in_table = False
+              # Match the Markdown heading `## TypeScript Exemptions` (anchored to ^#{1,4}\s+).
               for line in claude_md.read_text(encoding='utf-8').splitlines():
-                  if re.search(r'^[#=]+\s+.*TypeScript [Ee]xemptions', line):
+                  if re.search(r'^#{1,4}\s+.*TypeScript [Ee]xemptions', line):
                       in_table = True
                       continue
-                  if in_table and line.startswith(('### ', '## ', '# ')):
+                  if in_table and re.match(r'^#{1,4}\s+', line):
                       break
                   if in_table and line.startswith('|'):
                       m = re.match(r'\|\s*`([^`]+)`', line)
@@ -140,6 +141,9 @@ jobs:
               sys.exit(1)
           print(f"✅ No TypeScript files outside allowlist ({len(exemption_patterns)} per-repo exemption(s) parsed).")
           PYEOF
+
+      - name: Verify heading-detection regex controls
+        run: bash tests/rsr_antipattern_heading_test.sh
 
       - name: Check for Go
         run: |

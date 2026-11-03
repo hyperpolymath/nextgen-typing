@@ -1,13 +1,10 @@
 # This workflow is managed by gh actions-lock.
 # SPDX-License-Identifier: MPL-2.0
-# This workflow is managed by gh actions-lock.
-# Rust CI — thin wrapper calling the shared estate reusable in
-# hyperpolymath/standards. Configure once, propagate everywhere.
-# See: docs/CI-REUSABLE-WORKFLOWS.adoc in standards.
 #
-# nextgen-typing is a coordination repo with NO Rust code, so the reusable had
-# nothing to build and failed. Path-gated to Rust artefacts so it only runs if
-# Rust is ever added here (currently never), instead of failing on every push.
+# nextgen-typing is a coordination repo with NO Rust code (OQ-001).
+# Path-gated to Rust artefacts so if any Rust file is accidentally introduced,
+# the coordination-boundary guard fails loudly rather than invoking a retired
+# cross-repo reusable caller.
 name: Rust CI
 
 on:
@@ -16,11 +13,21 @@ on:
     paths: ['**/*.rs', '**/Cargo.toml', '**/Cargo.lock', 'crates/**']
   pull_request:
     paths: ['**/*.rs', '**/Cargo.toml', '**/Cargo.lock', 'crates/**']
+  workflow_dispatch:
 
 permissions:
-  actions: read
   contents: read
 
 jobs:
   rust-ci:
-    uses: hyperpolymath/standards/.github/workflows/rust-ci-reusable.yml@84355587cb2a1f86e6882de83514a32db2646e7a
+    name: Rust boundary check (coordination repo)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - name: Verify coordination boundary forbids Rust sources
+        run: ./scripts/check-coordination-boundary.sh

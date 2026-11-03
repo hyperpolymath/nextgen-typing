@@ -17,15 +17,20 @@ workflows:
         - 'hyperpolymath/deed-ecosystem@main'
         - 'hyperpolymath/k9-ecosystem@main'
     '.github/workflows/e2e.yml': []
-    '.github/workflows/governance.yml': []
+    '.github/workflows/governance.yml':
+        - 'actions/checkout@v7.0.1'
     '.github/workflows/guix-nix-policy.yml':
         - 'actions/checkout@v7.0.1'
-    '.github/workflows/hypatia-scan.yml': []
+    '.github/workflows/hypatia-scan.yml':
+        - 'actions/checkout@v7.0.1'
+        - 'erlef/setup-beam@v1.24.1'
+        - 'github/codeql-action@v4.39.1'
     '.github/workflows/instant-sync.yml':
         - 'peter-evans/repository-dispatch@v4.0.1'
     '.github/workflows/label-triage.yml': []
     '.github/workflows/labels.yml': []
-    '.github/workflows/mirror.yml': []
+    '.github/workflows/mirror.yml':
+        - 'actions/checkout@v7.0.1'
     '.github/workflows/openssf-compliance.yml':
         - 'actions/checkout@v7.0.1'
     '.github/workflows/pages.yml':
@@ -51,9 +56,13 @@ workflows:
         - 'actions/checkout@v7.0.1'
     '.github/workflows/runtime-policy.yml':
         - 'actions/checkout@v7.0.1'
-    '.github/workflows/rust-ci.yml': []
-    '.github/workflows/scorecard.yml': []
-    '.github/workflows/secret-scanner.yml': []
+    '.github/workflows/rust-ci.yml':
+        - 'actions/checkout@v7.0.1'
+    '.github/workflows/scorecard.yml':
+        - 'actions/checkout@v7.0.1'
+        - 'github/codeql-action@v4.39.1'
+    '.github/workflows/secret-scanner.yml':
+        - 'actions/checkout@v7.0.1'
     '.github/workflows/security-policy.yml':
         - 'actions/checkout@v7.0.1'
     '.github/workflows/static-analysis-gate.yml':

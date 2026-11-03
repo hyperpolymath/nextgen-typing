@@ -1,6 +1,5 @@
 # This workflow is managed by gh actions-lock.
 # SPDX-License-Identifier: MPL-2.0
-# This workflow is managed by gh actions-lock.
 name: Governance
 
 on:
@@ -10,10 +9,119 @@ on:
     branches: [main, master]
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
-  actions: read
   contents: read
 
+# Self-contained execution of the shared estate governance policies pinned to
+# metadatastician/standards@8e48b1caade08a552646adeab66558ac43b4360d, plus
+# aligned Well-Known RFC 9116 validation over canonical www/.well-known/.
 jobs:
   governance:
-    uses: hyperpolymath/standards/.github/workflows/governance-reusable.yml@fad242d35291de1898242d6737ba02b74a59a2f2
+    name: Estate Governance Policy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    env:
+      STANDARDS_PIN: '8e48b1caade08a552646adeab66558ac43b4360d'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Checkout pinned standards policy scripts
+        uses: actions/checkout@v7.0.1
+        with:
+          repository: metadatastician/standards
+          ref: 8e48b1caade08a552646adeab66558ac43b4360d
+          path: .standards-checkout
+          sparse-checkout: |
+            scripts
+            0-canon
+          sparse-checkout-cone-mode: true
+          persist-credentials: false
+
+      - name: Enforce TypeScript and npm/yarn runtime policy
+        run: |
+          set -euo pipefail
+          if [ -f .standards-checkout/scripts/check-ts-allowlist.sh ]; then
+            bash .standards-checkout/scripts/check-ts-allowlist.sh
+          fi
+          rm -rf .standards-checkout
+
+          bad_ts="$(git ls-files '*.ts' '*.tsx' | grep -vE '^(archetypes/|templates/|tests/fixtures/)' || true)"
+          if [ -n "$bad_ts" ]; then
+            echo "::error::Unallowlisted TypeScript files detected:"
+            printf '%s\n' "$bad_ts"
+            exit 1
+          fi
+
+          bad_locks="$(git ls-files 'package-lock.json' '**/package-lock.json' 'yarn.lock' '**/yarn.lock' 'pnpm-lock.yaml' '**/pnpm-lock.yaml' || true)"
+          if [ -n "$bad_locks" ]; then
+            echo "::error::Banned npm/yarn/pnpm lockfiles detected (use Deno or Bun per LANGUAGE-POLICY):"
+            printf '%s\n' "$bad_locks"
+            exit 1
+          fi
+
+          if [ -f tsconfig.json ] || [ -f Makefile ] || [ -f GNUmakefile ]; then
+            echo "::error::Banned root config (tsconfig.json / Makefile) detected"
+            exit 1
+          fi
+          echo "Governance runtime and language anti-pattern checks passed."
+
+  wellknown:
+    name: Well-Known (RFC 9116 + RSR)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: RFC 9116 security.txt validation
+        run: |
+          set -euo pipefail
+          SECTXT=""
+          if [ -f "www/.well-known/security.txt" ]; then
+            SECTXT="www/.well-known/security.txt"
+          elif [ -f ".well-known/security.txt" ]; then
+            SECTXT=".well-known/security.txt"
+            echo "::warning::security.txt at legacy root .well-known/ — canonical location is www/.well-known/"
+          elif [ -f "security.txt" ]; then
+            SECTXT="security.txt"
+            echo "::warning::security.txt at repository root — canonical location is www/.well-known/"
+          fi
+
+          if [ -z "$SECTXT" ]; then
+            echo "::error::No security.txt found (expected www/.well-known/security.txt)"
+            exit 1
+          fi
+
+          if grep -qE '\{\{[A-Z0-9_]+\}\}' "$SECTXT"; then
+            echo "::error::$SECTXT contains unfilled placeholder tokens"
+            exit 1
+          fi
+
+          grep -q "^Contact:" "$SECTXT" || { echo "::error::Missing Contact field"; exit 1; }
+          grep -q "^Expires:" "$SECTXT" || { echo "::error::Missing Expires field"; exit 1; }
+
+          EXPIRES=$(grep "^Expires:" "$SECTXT" | cut -d: -f2- | tr -d ' ' | head -1)
+          if date -d "$EXPIRES" > /dev/null 2>&1; then
+            DAYS=$(( ($(date -d "$EXPIRES" +%s) - $(date +%s)) / 86400 ))
+            if [ "$DAYS" -lt 0 ]; then
+              echo "::error::security.txt EXPIRED"
+              exit 1
+            elif [ "$DAYS" -lt 30 ]; then
+              echo "::warning::security.txt expires in $DAYS days"
+            else
+              echo "security.txt valid ($DAYS days, $SECTXT)"
+            fi
+          fi
