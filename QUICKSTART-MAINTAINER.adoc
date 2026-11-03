@@ -11,7 +11,7 @@
 == Dependencies and Checks
 
 * **Coordinator & ledger gates**: Bash 5+, `jq`, `git`, `just` (optional runner), Graphviz (`dot` for `just type-map`).
-* **Cross-project proof CI (`Proof CI`)**: Agda 2.8.0 (`agda-stdlib` v2.3 + pinned `hyperpolymath/echo-types`), Coq 8.18.0 (`coqc`, `coqchk`, `coqtop`), and core Lean 4.15.0 (SHA-256-verified Linux release tarball).
+* **Cross-project proof CI (`Proof CI`)**: Agda 2.8.0 (`agda-stdlib` v2.4 at `2a5a0dec0a3cb5c87468ce101388a513d39dbf10` + pinned `hyperpolymath/echo-types`), Coq 8.18.0 (`coqc`, `coqchk`, `coqtop`), and core Lean 4.15.0 (SHA-256-verified Linux release tarball).
 
 [source,bash]
 ----
