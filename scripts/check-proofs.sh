@@ -824,7 +824,11 @@ $sup_out"
       done
     } >"$probe_file"
 
-    if [[ -f "$LEAN_LIBDIR/Lean.olean" ]]; then
+    if [[ ! -f "$LEAN_LIBDIR/Lean.olean" ]]; then
+      rm -f "$probe_file"
+      ASSUMPTION_ERR="$full_rel ($tid): $LEAN_LIBDIR/Lean.olean not found — Lean constant-origin verification cannot run, so declaration ownership is unverified"
+      return 1
+    else
       local origin_file="$work_root/__OriginProbe.lean"
       local decl_list_lean=""
       local decl
