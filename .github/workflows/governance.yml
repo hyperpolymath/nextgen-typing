@@ -114,14 +114,18 @@ jobs:
           grep -q "^Expires:" "$SECTXT" || { echo "::error::Missing Expires field"; exit 1; }
 
           EXPIRES=$(grep "^Expires:" "$SECTXT" | cut -d: -f2- | tr -d ' ' | head -1)
-          if date -d "$EXPIRES" > /dev/null 2>&1; then
-            DAYS=$(( ($(date -d "$EXPIRES" +%s) - $(date +%s)) / 86400 ))
-            if [ "$DAYS" -lt 0 ]; then
-              echo "::error::security.txt EXPIRED"
-              exit 1
-            elif [ "$DAYS" -lt 30 ]; then
-              echo "::warning::security.txt expires in $DAYS days"
-            else
-              echo "security.txt valid ($DAYS days, $SECTXT)"
-            fi
+          if ! EXPIRY_EPOCH=$(date -d "$EXPIRES" +%s 2>/dev/null); then
+            echo "::error::Expires is not a valid date-time: $EXPIRES"
+            exit 1
+          fi
+          NOW_EPOCH=$(date +%s)
+          if [ "$EXPIRY_EPOCH" -le "$NOW_EPOCH" ]; then
+            echo "::error::security.txt EXPIRED"
+            exit 1
+          fi
+          DAYS=$(( (EXPIRY_EPOCH - NOW_EPOCH) / 86400 ))
+          if [ "$DAYS" -lt 30 ]; then
+            echo "::warning::security.txt expires in $DAYS days"
+          else
+            echo "security.txt valid ($DAYS days, $SECTXT)"
           fi
