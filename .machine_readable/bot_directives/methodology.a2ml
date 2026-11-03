@@ -8,8 +8,8 @@
 # Reference: ADR-002 in standards/agentic-a2ml/docs/
 
 [metadata]
-version = "1.0.0"
-last-updated = "2026-04-11"
+version = "1.0.1"
+last-updated = "2026-11-03"
 spec = "https://github.com/hyperpolymath/standards/blob/main/agentic-a2ml/docs/ADR-002-methodology-layer.adoc"
 
 # ============================================================================
@@ -55,7 +55,7 @@ perfective = 10   # % for SPDX headers, doc updates, formatting, style
 # Customise this per project — the template default is generic.
 
 [methodology.unique-strength]
-description = "{{PROJECT_UNIQUE_STRENGTH}}"
+description = "Cross-family type-research coordination and multi-prover boundary verification (Agda source of truth independently rechecked in Rocq and core Lean 4 under PROOF-POLICY)"
 deepen-not-broaden = true
 
 # ============================================================================
@@ -71,15 +71,14 @@ deepen-not-broaden = true
 
 [methodology.divergent-invariants]
 rules = [
-  # Customise per project. Examples:
-  # "Idris2 only for formal verification — no Lean4, Coq, Agda",
-  # "believe_me count must remain zero",
-  # "FFI architecture: Idris2 → RefC → Zig → C ABI (no shortcuts)",
+  "No compiler, runtime, or single-project implementation code in nextgen-typing (enforced by scripts/check-coordination-boundary.sh)",
+  "Theory proofs under verification/proofs/ use Agda (--safe --without-K) as source of truth and are independently rechecked in Rocq and core Lean 4 (zero Mathlib, zero axioms)",
+  "Pipeline metadata dates stay synchronized across STATE.a2ml, META.a2ml, ECOSYSTEM.a2ml, docs/PIPELINE.adoc, and docs/ARCHITECTURE.adoc",
 ]
 
 # Optional: language invariant for the core strength
 # If set, divergent mode will not introduce other languages for this purpose
-# language-invariant = "idris2"
+# language-invariant = "agda"
 
 # ============================================================================
 # CONSTRAINT HINTS
@@ -89,9 +88,8 @@ rules = [
 
 [methodology.known-constraints]
 constraints = [
-  # Customise per project. Examples:
-  # "End-to-end build has never been verified",
-  # "libproject.so does not exist yet — all bindings call stubs",
+  "Every proof file under verification/proofs/ must be enrolled in placement.a2ml, scripts/check-coordination-boundary.sh, MANIFEST, and LEDGER.json",
+  ".github/workflows/actions.lock must match every step-level action reference in .github/workflows/*.yml",
 ]
 
 # ============================================================================
@@ -101,7 +99,7 @@ constraints = [
 # These rules detect corrupt/template/stale state files.
 
 [methodology.state-validation]
-reject-if-contains = ["{{PLACEHOLDER}}", "NEXTGEN_TYPING", "rsr-template-repo"]
+reject-if-contains = ["UNFILLED_TOKEN", "NEXTGEN_TYPING", "rsr-template-repo"]
 reject-if-project-name-mismatch = true
 staleness-threshold-days = 90
 fallback-files = ["TODO.md", "TODO.adoc", "ROADMAP.adoc", "README.adoc"]

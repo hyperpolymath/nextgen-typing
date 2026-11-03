@@ -17,6 +17,8 @@ Thumbs.db
 /build/
 /dist/
 /out/
+*.ttc
+*.ttm
 
 # Dependencies
 /node_modules/

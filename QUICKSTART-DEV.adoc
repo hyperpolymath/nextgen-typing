@@ -1,112 +1,78 @@
 // SPDX-License-Identifier: CC-BY-SA-4.0
 // Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
-// Template: QUICKSTART-DEV.adoc — clone → build → test → PR
-// Replace rsr-template-repo, {{BUILD_CMD}}, {{TEST_CMD}}, {{LANG_STACK}} with actuals
-= rsr-template-repo — Quick Start for Developers
+= nextgen-typing — Contributor Quick Start
 :toc:
 :toclevels: 2
 
 == Tech Stack
 
-{{LANG_STACK}}
+* **Coordination & documentation**: AsciiDoc (`.adoc`), Markdown, A2ML (`.a2ml`), Nickel/K9 (`.k9`, `.k9.ncl`), Graphviz (`.dot` → `.svg`).
+* **Cross-project formal verification (`verification/proofs/`)**: Agda (`--safe --without-K`) source-of-truth proofs, independently rechecked in Rocq (Coq 8.18) and core Lean 4 (4.15.0, zero Mathlib).
+* **Gate scripts**: Bash 5 + `jq` + `git` (`scripts/` and `tests/`).
 
 == Set Up Development Environment
 
-=== Option A: Guix (preferred)
+[source,bash]
+----
+git clone https://github.com/hyperpolymath/nextgen-typing.git
+cd nextgen-typing
+----
+
+For a reproducible Guix shell when Guix is available:
 
 [source,bash]
 ----
-guix shell
+guix shell -D -f build/guix.scm
 ----
 
-=== Option B: Nix (fallback)
+For coordinator boundary, drift, and ledger checks, Bash, `jq`, and Git are sufficient; Agda, Coq (`coqc`/`coqchk`), and Lean 4 (`lean`) are required when compiling proof witnesses locally.
 
-[source,bash]
-----
-nix develop
-----
-
-=== Option C: Manual
+== Validate and Test
 
 [source,bash]
 ----
-git clone https://github.com/hyperpolymath/rsr-template-repo.git
-cd rsr-template-repo
-just setup-dev
+./scripts/check-coordination-boundary.sh
+./scripts/check-pipeline-drift.sh .
+./scripts/check-proof-enrolment.sh
+./scripts/check-proof-ledger.sh
+./scripts/proof-scan-dangerous.sh
+bash tests/proofs/run-ledger-controls.sh
+bash tests/rsr_antipattern_heading_test.sh
 ----
 
-== Build
-
-[source,bash]
-----
-{{BUILD_CMD}}
-----
-
-== Test
+With `just` and the proof kernels installed:
 
 [source,bash]
 ----
-{{TEST_CMD}}
+just validate
+just validate-coordination
+just validate-pipeline-drift
+just proof-check-all
 ----
 
-== Project Structure
+== Repository Structure
 
 [source]
 ----
-rsr-template-repo/
-├── src/                  # Source code
-├── src/abi/              # Idris2 ABI definitions (if applicable)
-├── ffi/zig/              # Zig FFI bridge (if applicable)
-├── tests/                # Test suite
-├── docs/                 # Documentation
-├── .machine_readable/    # Checkpoint files (STATE, META, ECOSYSTEM)
-├── Justfile              # Task runner recipes
-├── guix.scm              # Guix environment
-├── flake.nix             # Nix environment (fallback)
-└── 0-AI-MANIFEST.a2ml    # AI agent entry point
+nextgen-typing/
+├── docs/                       # Architecture, pipeline spec, type-family map
+├── verification/proofs/        # Cross-project proofs (LEDGER.json, agda/, coq/, lean4/)
+├── scripts/                    # Boundary, drift, enrolment, ledger, and witness gates
+├── tests/                      # Bidirectional §7 proof controls and aspect checks
+├── .machine_readable/          # Descriptiles, contractiles, policies, K9 specs
+├── build/guix.scm              # Guix environment manifest
+├── Justfile                    # Task runner recipes
+└── 0-AI-MANIFEST.a2ml          # AI agent entry point
 ----
 
-== Key Recipes
+== Key Invariants
 
-[source,bash]
-----
-just build          # Build the project
-just test           # Run tests
-just doctor         # Self-diagnostic
-just lint           # Lint and format
-just panic-scan     # Security scan via panic-attacker
-just tour           # Guided tour of the codebase
-----
-
-== Before Submitting a PR
-
-[source,bash]
-----
-just lint           # Format and lint
-just test           # All tests pass
-just panic-scan     # No new security issues
-----
-
-== Contractile Invariants
-
-Read `.machine_readable/MUST.contractile` before making changes.
-Key invariants that must never be violated:
-
-{{MUST_INVARIANTS}}
-
-== LLM/AI Agent Development
-
-If using an AI assistant, load the warmup context first:
-
-[source,bash]
-----
-just llm-context    # Outputs role-appropriate context
-----
-
-Or read `0-AI-MANIFEST.a2ml` and `.claude/CLAUDE.md` directly.
+* **No compiler or single-project code**: `nextgen-typing` hosts only cross-project coordination artefacts and explicitly enrolled cross-project proofs (`scripts/check-coordination-boundary.sh` and `.machine_readable/bot_directives/placement.a2ml`).
+* **Synchronized pipeline metadata**: `STATE.a2ml`, `META.a2ml`, `ECOSYSTEM.a2ml`, `docs/PIPELINE.adoc`, and `docs/ARCHITECTURE.adoc` must remain synchronized (`scripts/check-pipeline-drift.sh`).
+* **Zero proof escape hatches**: every enrolled proof must pass `PROOF-POLICY` kernel assumption checks (`coqchk` + `Print Assumptions`, `#print axioms` + `getModuleIdxFor?`, and `agda --safe --without-K`) with zero unwaived axioms (`scripts/check-proof-ledger.sh`).
 
 == Get Help
 
-* **Architecture**: link:EXPLAINME.adoc[EXPLAINME.adoc]
-* **Wiki**: https://github.com/hyperpolymath/rsr-template-repo/wiki
-* **Report issue**: `just help-me`
+* **Architecture**: link:EXPLAINME.adoc[EXPLAINME.adoc] and link:docs/ARCHITECTURE.adoc[docs/ARCHITECTURE.adoc]
+* **Agent routing**: link:AGENTS.md[AGENTS.md] and `0-AI-MANIFEST.a2ml`
+* **Issues**: https://github.com/hyperpolymath/nextgen-typing/issues

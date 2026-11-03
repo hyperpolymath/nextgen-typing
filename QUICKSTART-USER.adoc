@@ -1,125 +1,26 @@
 // SPDX-License-Identifier: CC-BY-SA-4.0
 // Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
-// Template: QUICKSTART-USER.adoc — 5-minute path to working software
-// Replace rsr-template-repo, Rsr Template Repo — See README.adoc for details., just run, Rsr Template Repo started successfully. with actuals
-= rsr-template-repo — Quick Start for Users
+= nextgen-typing — Reader Quick Start
 :toc:
 :toclevels: 2
 
-== What is rsr-template-repo?
+== What this repository is
 
-Rsr Template Repo — See README.adoc for details.
+`nextgen-typing` is the coordination monorepo and cross-project verification host for the hyperpolymath type-theory pipeline (`katagoria → typell → typed-wasm → PanLL`) and its six research families (`echo-types`, `epistemic-types`, `tropical-types`, `residual-evidence-types`, `choreographic-types`, `secret-types`). It is not a compiler, runtime service, or single-project package.
 
-== Prerequisites
+== Find a project or specification
 
-Before you begin, ensure you have:
+1. Read link:README.adoc[the README] for the pipeline front door.
+2. Open link:docs/ARCHITECTURE.adoc[docs/ARCHITECTURE.adoc] and link:docs/PIPELINE.adoc[docs/PIPELINE.adoc] for the architectural contracts and machine-readable pipeline graph.
+3. Open link:docs/TYPE-CONNECTIONS.adoc[docs/TYPE-CONNECTIONS.adoc] for the shared six-family map, glossary, and inter-family bridge obligations.
+4. Check link:PROOF-STATUS.adoc[PROOF-STATUS.adoc] and `verification/proofs/LEDGER.json` for cross-project verification status (`XP-1`, Grade `2i` across Agda, Rocq, and Lean 4).
 
-* **just** — task runner (https://github.com/casey/just[install guide])
-* Platform-specific requirements listed below
+== Explore this coordinator
 
-[cols="1,3"]
-|===
-| Platform | Additional Requirements
+* link:EXPLAINME.adoc[EXPLAINME.adoc] — rationale and scope boundary (`OQ-001`).
+* `.machine_readable/bot_directives/placement.a2ml` — authoritative ownership routing table.
+* `.machine_readable/descriptiles/` — `STATE.a2ml`, `META.a2ml`, `ECOSYSTEM.a2ml`, and `anchor/ANCHOR.a2ml`.
 
-| Linux
-| See README.adoc
+== Installation
 
-| macOS
-| See README.adoc
-
-| Windows
-| See README.adoc
-|===
-
-== Install
-
-=== Option 1: Standard Install (recommended)
-
-[source,bash]
-----
-# Clone and set up
-git clone https://github.com/hyperpolymath/rsr-template-repo.git
-cd rsr-template-repo
-just setup
-----
-
-The setup script will:
-
-* Detect your platform and shell
-* Install missing dependencies (with your permission)
-* Configure the application
-* Offer install location choices
-* Run a self-diagnostic to verify everything works
-
-=== Option 2: Container (via Stapeln)
-
-[source,bash]
-----
-just stapeln-run
-----
-
-=== Option 3: Portable (no system changes)
-
-[source,bash]
-----
-just install --portable --prefix=./rsr-template-repo-portable
-----
-
-== First Run
-
-[source,bash]
-----
-just run
-----
-
-Expected output:
-
-[source]
-----
-Rsr Template Repo started successfully.
-----
-
-== Self-Diagnostic
-
-If something isn't working:
-
-[source,bash]
-----
-just doctor
-----
-
-This checks all dependencies, permissions, paths, and connectivity.
-If it finds issues, it will suggest fixes.
-
-To attempt automatic repair:
-
-[source,bash]
-----
-just heal
-----
-
-== Get Help
-
-* **In-app**: `just run --help`
-* **Guided tour**: `just tour`
-* **Report a problem**: `just help-me` (pre-fills diagnostic context)
-* **Wiki**: https://github.com/hyperpolymath/rsr-template-repo/wiki
-
-== Uninstall
-
-[source,bash]
-----
-just uninstall
-----
-
-You will be asked:
-
-1. Which uninstall tier (Bennett reversible, parameter-based, standard, or secure)
-2. Whether to include or exclude your data
-3. Whether to clear caches and LLM models
-
-== Next Steps
-
-* Read the link:README.adoc[README] for full feature overview
-* Read the link:EXPLAINME.adoc[EXPLAINME] for architecture and design decisions
-* Try `just tour` for a guided walkthrough
+There is no runtime binary or service to install from this repository. To build or install a language, kernel, or target toolchain, follow the instructions in its owning repository (`typell`, `typed-wasm`, `affinescript`, `ephapax`, `echo-types`, `residual-evidence-types`, etc.).

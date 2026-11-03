@@ -28,24 +28,24 @@ Inventory snapshot at audit time:
 
 | Placeholder badge tokens in README
 | `README.adoc`
-| `{{OPENSSF_PROJECT_ID}}`, `hyperpolymath`, `nextgen-typing`
-| placeholder
-| Template placeholders are intentional pre-bootstrap content.
-| Keep; document clearly as template tokens.
+| `<OPENSSF_PROJECT_ID>`, `hyperpolymath`, `nextgen-typing`
+| resolved
+| Instantiated for `nextgen-typing` during coordinator setup.
+| Resolved.
 
 | Docs links used `.adoc` files not present
 | legacy `README.adoc` (pre-migration)
 | `CONTRIBUTING.adoc`, `GOVERNANCE.adoc`, `SECURITY.adoc`
 | outdated
-| Actual files are `CONTRIBUTING.md`, no root `GOVERNANCE.adoc`, `SECURITY.md`.
+| Actual files are `CONTRIBUTING.md`, `GOVERNANCE.adoc`, `SECURITY.adoc` / `.github/SECURITY.md`.
 | Fixed README links to existing files.
 
-| ABI path lower-case only
+| ABI/proof scaffold retired under OQ-001
 | legacy `README.adoc` + legacy checks
-| `src/interface/abi/*.idr`
-| outdated
-| Current tree has `src/interface/Abi/*.idr` (uppercase A).
-| Updated docs/checks to accept current path.
+| `verification/proofs/`
+| resolved
+| Redundant RSR ABI/FFI scaffold dropped in PR #56 (OQ-001); cross-project proofs live under `verification/proofs/`.
+| Retargeted docs and checks to `verification/proofs/`.
 
 | Root manifest structure with non-existent files
 | legacy `0-AI-MANIFEST.a2ml` (pre-migration)

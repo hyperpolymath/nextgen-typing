@@ -1,6 +1,8 @@
 # This workflow is managed by gh actions-lock.
 # SPDX-License-Identifier: MPL-2.0
-# This workflow is managed by gh actions-lock.
+#
+# Self-contained OSSF Scorecard analysis using the SHA-256-verified v5.6.0
+# release binary and github/codeql-action/upload-sarif@v4.39.1.
 name: OSSF Scorecard
 
 on:
@@ -9,13 +11,47 @@ on:
   workflow_dispatch:
 
 permissions:
-  actions: read
   contents: read
 
 jobs:
   scorecard:
-    uses: hyperpolymath/standards/.github/workflows/scorecard-reusable.yml@84355587cb2a1f86e6882de83514a32db2646e7a
+    name: Scorecard analysis
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
     permissions:
       contents: read
       security-events: write
       id-token: write
+    env:
+      SCORECARD_VERSION: '5.6.0'
+      SCORECARD_SHA256: '19bde07129450cb65a95c6e3b9f34e034341579e6f0e241546ec3ae6efb2dd9a'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Run pinned OSSF Scorecard
+        env:
+          GITHUB_AUTH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TARBALL="scorecard_${SCORECARD_VERSION}_linux_amd64.tar.gz"
+          URL="https://github.com/ossf/scorecard/releases/download/v${SCORECARD_VERSION}/${TARBALL}"
+          curl -sSfL --proto '=https' --proto-redir '=https' --tlsv1.2 \
+            --retry 3 --retry-delay 2 \
+            -o "$RUNNER_TEMP/$TARBALL" "$URL"
+          echo "${SCORECARD_SHA256}  ${RUNNER_TEMP}/${TARBALL}" | sha256sum -c -
+          tar -xzf "$RUNNER_TEMP/$TARBALL" -C "$RUNNER_TEMP" scorecard
+          chmod +x "$RUNNER_TEMP/scorecard"
+          "$RUNNER_TEMP/scorecard" \
+            --repo="github.com/${GITHUB_REPOSITORY}" \
+            --format=sarif \
+            --show-details \
+            > results.sarif
+
+      - name: Upload Scorecard SARIF
+        uses: github/codeql-action/upload-sarif@v4.39.1
+        with:
+          sarif_file: results.sarif
+          category: scorecard

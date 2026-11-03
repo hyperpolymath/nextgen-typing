@@ -2,21 +2,19 @@
 // Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 = AI Guidance Directory
 
-Put AI-facing instructions in this folder.
+Put AI-facing instructions in this folder (with root pointers limited to `AGENTS.md` and `CLAUDE.md`).
 
-Examples:
+Files in this directory:
 
-* `CLAUDE.md`
-* `COPILOT.md`
-* `GEMINI.md`
-* `AI.a2ml`
-* `AI.djot`
+* `AI.a2ml` — structured agent directives
+* `.clinerules`, `.cursorrules`, `.windsurfrules` — editor rules
+* `PLACEHOLDERS.adoc` — RSR template placeholder reference
 
-Avoid scattering agent instruction files around the repo root.
+Avoid scattering agent session files around the repo root.
 
 Recommended machine read order:
 
-* `.machine_readable/anchors/ANCHOR.a2ml`
+* `.machine_readable/descriptiles/anchor/ANCHOR.a2ml`
 * `.machine_readable/policies/MAINTENANCE-AXES.a2ml`
 * `.machine_readable/policies/MAINTENANCE-CHECKLIST.a2ml`
 * `.machine_readable/policies/SOFTWARE-DEVELOPMENT-APPROACH.a2ml`

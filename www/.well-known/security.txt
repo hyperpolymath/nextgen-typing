@@ -2,10 +2,13 @@
 # RFC 9116 - security.txt
 # https://securitytxt.org/
 
-Contact: mailto:{{SECURITY_EMAIL}}
-Expires: 2026-12-31T23:59:59.000Z
-Encryption: {{PGP_KEY_URL}}
+# No Encryption: field. RFC 9116 §2.5.4 requires it to point at an actual key;
+# the estate signs with SSH (gpg.format=ssh) and publishes no PGP key.
+# Report privately via GitHub Security Advisories or the contact address below.
+
+Contact: https://github.com/hyperpolymath/nextgen-typing/security/advisories/new
+Contact: mailto:j.d.a.jewell@open.ac.uk
+Expires: 2027-12-31T23:59:59.000Z
 Preferred-Languages: en
-Canonical: https://github.com/hyperpolymath/nextgen-typing/.well-known/security.txt
-Policy: https://github.com/hyperpolymath/nextgen-typing/blob/main/SECURITY.md
-Hiring: https://{{WEBSITE}}/careers
+Canonical: https://github.com/hyperpolymath/nextgen-typing/blob/main/www/.well-known/security.txt
+Policy: https://github.com/hyperpolymath/nextgen-typing/blob/main/.github/SECURITY.md

@@ -7,8 +7,8 @@ Contact: j.d.a.jewell@open.ac.uk
 From: United Kingdom
 
 /* SITE */
-Last update: 2026-08-05
+Last update: 2026-11-03
 Standards: RSR (Rhodium Standard Repository)
 License: MPL-2.0 (Palimpsest MPL)
-Components: Idris2 ABI, Zig FFI
-Tools: just, Podman, Guix
+Components: Type-research coordination, Agda/Rocq/Lean 4 cross-project proofs
+Tools: just, Agda, Rocq, Lean 4, Graphviz, Guix

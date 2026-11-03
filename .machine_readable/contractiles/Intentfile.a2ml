@@ -19,10 +19,10 @@
 #            Non-gating — this is a report, not a gate. See the `must`
 #            contractile for hard gates.
 #
-# Provenance: repo-true rewrite at the 2026-06-12 governance checkpoint.
-# The former root INTENT.contractile was an unfilled rsr-template stub
-# ({{ONE_PARAGRAPH_PURPOSE}} placeholders); purpose/anti-purpose below are
-# populated from README.adoc, EXPLAINME.adoc and descriptiles/META.a2ml ADRs.
+# Provenance: repo-true rewrite at the 2026-06-12 governance checkpoint
+# (refreshed 2026-11-03). The former root INTENT.contractile was an unfilled
+# rsr-template stub (<ONE_PARAGRAPH_PURPOSE> placeholders); purpose/anti-purpose
+# below are populated from README.adoc, EXPLAINME.adoc and descriptiles/META.a2ml ADRs.
 
 @abstract:
 North-star contractile for nextgen-typing, the coordination monorepo for
@@ -44,15 +44,13 @@ calculus).
 
 This repository is NOT:
 - A compiler or kernel implementation (typell, typed-wasm own that)
-- A proof repository making correctness claims (constituent repos verify
-  their own claims; see also open question OQ-001 on the leftover RSR
-  proof scaffold)
+- A single-project proof repository (constituent repos verify their own single-project claims; only cross-project bridge proofs live under verification/proofs/ per OQ-001)
 - A general-purpose template (that role belongs to rsr-template-repo)
 - A runtime library or framework
 
 ## Architectural Invariants (must not be silently reversed)
 
-- Coordination monorepo, no compiler code (META ADR-001)
+- Coordination monorepo + cross-project proof host, no compiler code (META ADR-001, OQ-001)
 - TypeLL is open-ended progressive, not capped at 10 levels (META ADR-002)
 - typed-wasm has dual role: TypeLL application AND aggregate library (META ADR-003)
 - katagoria is the research upstream of typell (META ADR-004)
@@ -63,7 +61,7 @@ This repository is NOT:
 
 If you are unsure whether a change is in scope, ask. Sensitive areas:
 - .machine_readable/ contractile definitions and descriptiles/anchor/
-- verification/proofs/ + src/interface/ (frozen pending OQ-001)
+- verification/proofs/ (cross-project formal proofs and LEDGER.json)
 - Governance docs (GOVERNANCE.adoc, MAINTAINERS.adoc, CODEOWNERS)
 - License policy documents
 
@@ -71,15 +69,15 @@ If you are unsure whether a change is in scope, ask. Sensitive areas:
 
 ### decide-oq-001
 - description: Decide the identity contradiction — docs-only coordination monorepo vs real proof repo (drop or re-scope the RSR code scaffold)
-- probe: grep -q 'OQ-001.*status = "open"' .machine_readable/descriptiles/STATE.a2ml && echo open
-- status: declared
-- notes: Raised 2026-06-05 (PR #31); blocks proof-debt resolution (6 believe_me markers)
+- probe: grep -q 'OQ-001.*status = "resolved"' .machine_readable/descriptiles/STATE.a2ml && echo resolved
+- status: done
+- notes: Resolved 2026-06-15 (PR #56): coordinator + cross-project verification host; XP-1 verified at Grade 2i across Agda, Rocq, and Lean 4 (PR #133)
 
 ### placeholder-fill
 - description: Replace remaining template placeholders per .machine_readable/ai/PLACEHOLDERS.adoc
-- probe: "! grep -rl 'hyperpolymath' .github/ 2>/dev/null | head -1 | grep -q ."
-- status: declared
-- notes: Tracked as OQ-002 in descriptiles/STATE.a2ml
+- probe: "just verify-template"
+- status: done
+- notes: Completed 2026-11-03 (OQ-002 resolved)
 
 ### track-tropical-extensions
 - description: Track Tropical.thy extensions (linorder instance, tropical matrices, Kleene algebra) in tropical-resource-typing and mirror in docs

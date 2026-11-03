@@ -130,13 +130,20 @@ domain. Equal measured values need not mean equal retained information.
 |The first core checks an encoding into `Echo.Echo` and both round trips.
 The residual core now also checks dependency-preserving composition and
 coarsening on its own side (`compose-claims`, `coarsen-claim`); whether
-these laws transport to Echo has not been compared.
+these laws transport to Echo has not been compared. *Acceptance criterion
+(#115):* `ResidualEvidence.Composition` states and proves `compose-claims`
+over `EchoComparison`, with a corresponding negative/reject module rejected
+in CI.
 |Epistemic → Residual Evidence
 |Make the meaning and evidence obligations of candidate-wide claims explicit.
 |The first core checks a `SoundWarrant` for a candidate-wide claim, with an
 inhabited case and explicit actual-world premises. The residual core now also
 checks evidence revision and retraction (`survives-retraction`, `revise`);
 their relation to warrant revision in Epistemic has not been compared.
+*Acceptance criterion (#115):* `ResidualEvidence.Revision` makes retraction
+constructive and `EpistemicComparison` proves non-vacuous warrant preservation
+/ revision beyond surface typing (explicitly discharging or bounding vacuous
+candidate paths).
 |Echo → Choreographic
 |Track the distinctions retained by projection to participants.
 |A projection model and correspondence theorem. An informal loss number

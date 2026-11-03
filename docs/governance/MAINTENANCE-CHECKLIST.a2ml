@@ -133,8 +133,8 @@ quality_gate_required = [
 ]
 
 abi_ffi_policy = [
-  "ABI Idris2 in src/interface/Abi/*.idr (or src/interface/abi/*.idr)",
-  "FFI Zig in ffi/**/*.zig",
+  "Cross-project formal proofs in verification/proofs/ (tracked in verification/proofs/LEDGER.json)",
+  "Single-project ABI/FFI routed to owning repos (typed-wasm, typell) per .machine_readable/bot_directives/placement.a2ml",
 ]
 
 [should]

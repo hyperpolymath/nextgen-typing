@@ -2,21 +2,19 @@
 // Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
 = ABI/FFI — not defined in this repo
 
-nextgen-typing is a *coordination repo*: it documents and connects the
-type-theory pipeline and holds no compiler or application code, so it defines
-no ABI and no FFI of its own.
+`nextgen-typing` is a *coordination and cross-project verification repo*: it
+documents and connects the type-theory pipeline, hosts cross-project formal
+proofs under `verification/proofs/`, and holds no compiler or application code,
+so it defines no ABI and no FFI of its own.
 
-NOTE: the previous content here was RSR-template residue describing a
-`src/interface/Abi/` + `ffi/zig/` + `generated/abi/` layout that this repo does
-not have and never will. It was removed because it misled both humans and
-agents into adding ABI/FFI code to the coordination layer.
+NOTE: the previous RSR-template scaffold describing an Idris2 ABI and Zig FFI
+directory tree was removed under OQ-001 (PR #56) because this repository does
+not host single-project ABI/FFI implementations.
 
-== Where the ABI actually lives
+== Where the ABI and proofs actually live
 
-The estate's *verified convergence ABI* — the binary contract that independent
-WasmGC languages (AffineScript, Ephapax) agree on — and the aggregate-library
-binary conventions live in *typed-wasm*:
-
+* Cross-project formal verification witnesses: `verification/proofs/`
+  (tracked in `verification/proofs/LEDGER.json` and `PROOF-STATUS.adoc`)
 * WasmGC memory-safety proofs + convergence ABI: `hyperpolymath/typed-wasm`
 * Aggregate-library conventions (ADR-004): `hyperpolymath/typed-wasm`
 

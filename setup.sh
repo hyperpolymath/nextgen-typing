@@ -1,6 +1,6 @@
 #!/bin/sh
 # SPDX-License-Identifier: MPL-2.0
-# setup.sh — Universal setup script for rsr-template-repo
+# setup.sh — Universal setup script for nextgen-typing
 #
 # Detects your shell, platform, and installs prerequisites.
 # Then hands off to `just setup` for project-specific configuration.
@@ -127,7 +127,7 @@ detect_platform() {
 }
 
 # ── Verified just install ──
-# Replaces `curl https://just.systems/install.sh | bash`: piping a remote script
+# Replaces unverified remote install-script execution: piping a remote script
 # into a shell runs whatever the server returns, with no chance to check it.
 # A pinned RELEASE BINARY is fetched instead and its digest checked before use
 # (ported from hyperpolymath/standards setup.sh, 3079bc12). Digests computed

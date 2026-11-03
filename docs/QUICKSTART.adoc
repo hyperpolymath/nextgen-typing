@@ -3,24 +3,27 @@
 = Quickstart
 :toc: preamble
 
-Get up and running in 60 seconds.
+Clone and run the `nextgen-typing` coordination and proof-ledger checks in 60 seconds.
 
 == Prerequisites
 
 * Git 2.40+
-* just (command runner)
-* Your language toolchain (see Justfile for details)
+* Bash 5+ and `jq`
+* `just` (optional command runner)
+* Agda, Coq (`coqc`/`coqchk`), and Lean 4 (only when compiling proof witnesses locally)
 
-== From Template (New Project)
+== Clone and Verify
 
 [source,bash]
 ----
-git clone https://github.com/hyperpolymath/rsr-template-repo my-project
-cd my-project
-rm -rf .git && git init -b main
-just init       # interactive placeholder replacement
+git clone https://github.com/hyperpolymath/nextgen-typing.git
+cd nextgen-typing
+./scripts/check-coordination-boundary.sh
+./scripts/check-pipeline-drift.sh .
+./scripts/check-proof-enrolment.sh
+./scripts/check-proof-ledger.sh
 ----
 
 == Project Structure
 
-See README.adoc in the root for the Dual-Track architecture summary.
+See link:../README.adoc[README.adoc] and link:ARCHITECTURE.adoc[docs/ARCHITECTURE.adoc] for the pipeline summary and ownership boundaries.

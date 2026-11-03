@@ -1,3 +1,11 @@
 // SPDX-License-Identifier: CC-BY-SA-4.0
 // Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 = .machine_readable Pillar
+
+Canonical home for structured machine-readable metadata in `nextgen-typing`.
+
+== Location Policy
+
+* **Repository root**: only `0-AI-MANIFEST.a2ml` sits at the root as the universal AI agent entry point.
+* **`.machine_readable/`**: houses non-6a2 top-level manifests (`0.1-AI-MANIFEST.a2ml`, `CLADE.a2ml`, `ENSAID_CONFIG.a2ml`) and sub-pillars (`ai/`, `anchors/`, `bot_directives/`, `compliance/`, `configs/`, `contractiles/`, `integrations/`, `policies/`, `scripts/`, `self-validating/`).
+* **`.machine_readable/descriptiles/`**: houses the canonical 6a2 descriptive set (`STATE.a2ml`, `META.a2ml`, `ECOSYSTEM.a2ml`, `AGENTIC.a2ml`, `NEUROSYM.a2ml`, `PLAYBOOK.a2ml`) and `anchor/ANCHOR.a2ml` (per Hypatia SD004).

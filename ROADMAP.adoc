@@ -34,7 +34,7 @@ See link:docs/TYPE-CONNECTIONS.adoc[connections, meanings and ownership].
 * [x] Add ecosystem references to all constituent repos (affinescript, ephapax, tropical-resource-typing, protocol-squisher)
 * [x] katagoria: first research artefact structure (research/level-candidates/)
 * [x] protocol-squisher ECOSYSTEM.a2ml migrated from SCM format to A2ML
-* [x] typed-wasm ABI conventions implementation (layout proofs in src/abi/layout/ — DecEq, nullability, distinctness, passConvention + proofs, Stdlib)
+* [x] typed-wasm ABI conventions implementation (layout proofs in `typed-wasm` — DecEq, nullability, distinctness, passConvention + proofs, Stdlib)
 
 == Medium-Term
 

@@ -1,13 +1,13 @@
 K9!
 # SPDX-License-Identifier: MPL-2.0
-# K9 Kennel-level template: Pure data configuration
+# K9 Kennel-level component: nextgen-typing coordination family registry
 # Security Level: Kennel (data-only, no execution)
 # No signature required - safe for any use
 
 {
   pedigree = {
     schema_version = "1.0.0",
-    component_type = "TODO: describe component type (e.g., 'build-config', 'metadata')",
+    component_type = "coordination-metadata",
     security = {
       leash = 'Kennel,
       trust_level = "data-only",
@@ -16,39 +16,37 @@ K9!
       allow_subprocess = false,
     },
     metadata = {
-      name = "TODO: component-name",
+      name = "nextgen-typing-family-registry",
       version = "1.0.0",
-      description = "TODO: Brief description of what this component contains",
+      description = "Declarative registry of coordinated type-research families and pipeline stages",
       author = "Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>",
     },
   },
 
-  # Your configuration data here
   config = {
-    # Example: Pure data values
-    setting_1 = "value",
-    setting_2 = 42,
-    setting_3 = true,
+    repository = "hyperpolymath/nextgen-typing",
+    role = "coordination-and-cross-project-verification",
+    proof_root = "verification/proofs",
 
-    nested = {
-      key = "value",
-    },
+    pipeline = [
+      "katagoria",
+      "typell",
+      "typed-wasm",
+      "PanLL",
+    ],
 
-    list = [
-      "item1",
-      "item2",
+    families = [
+      "echo-types",
+      "epistemic-types",
+      "tropical-types",
+      "residual-evidence-types",
+      "choreographic-types",
+      "secret-types",
     ],
   },
 
-  # Optional: Export format specification
   export = {
-    format = "json",  # or "yaml", "toml"
-    destination = "output.json",
+    format = "json",
+    destination = "coordination-registry.json",
   },
 }
-
-# Usage:
-# 1. Fill in TODO items above
-# 2. Add your configuration data to config = { ... }
-# 3. Validate: nickel typecheck your-file.k9.ncl
-# 4. Export: nickel export your-file.k9.ncl > output.json

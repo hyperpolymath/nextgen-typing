@@ -34,12 +34,8 @@ let methodology_guard = {
     divergent_invariant_language = {
       description = "No files in languages violating the divergent language invariant",
       severity = "error",
-      # When methodology.divergent-invariants.language-invariant is set,
-      # check that no new files introduce a different language for that purpose.
-      # Example: if language-invariant = "idris2", reject new .lean or .v files
-      # in the proof directories.
       check_type = "file-extension-guard",
-      scope = "src/",
+      scope = "verification/proofs/",
     },
 
     believe_me_ceiling = {
@@ -62,7 +58,7 @@ let methodology_guard = {
       description = "STATE.a2ml must not contain template placeholders",
       severity = "warning",
       file = ".machine_readable/descriptiles/STATE.a2ml",
-      reject_patterns = ["{{PLACEHOLDER}}", "NEXTGEN_TYPING", "rsr-template-repo"],
+      reject_patterns = ["UNFILLED_TOKEN", "NEXTGEN_TYPING", "rsr-template-repo"],
     },
 
     coverage_updated = {

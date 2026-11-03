@@ -2,7 +2,7 @@
 // Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 = nextgen-typing: Pipeline Spec (A2ML)
 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
-2026-09-09
+2026-11-03
 :toc:
 :icons: font
 
@@ -16,7 +16,7 @@ tooling and AI agents. Human-oriented architectural narrative remains in
 ----
 [pipeline]
 id = "hyperpolymath-type-theory-main-chain"
-version = "2026-09-09"
+version = "2026-11-03"
 coordination = "nextgen-typing"
 chain = "katagoria → typell → typed-wasm → PanLL"
 invariant = "TypeLL is open-ended progressive; L1-L10 is an initial checked set, not a ceiling."

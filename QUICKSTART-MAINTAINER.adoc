@@ -1,130 +1,34 @@
 // SPDX-License-Identifier: CC-BY-SA-4.0
 // Copyright (c) Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
-// Template: QUICKSTART-MAINTAINER.adoc — packaging, deploying, and maintaining
-// Replace rsr-template-repo, nextgen-typing, {{DEPS}} with actuals
-= rsr-template-repo — Quick Start for Platform Maintainers
+= nextgen-typing — Coordinator Maintenance Guide
 :toc:
 :toclevels: 2
 
-== Overview
+== Scope
 
-This guide covers packaging, deploying, and maintaining rsr-template-repo for
-distribution on your platform.
+`nextgen-typing` is a pure coordination and cross-project verification repository; it produces no runtime service, compiler binary, container deployment, or installable package. Constituent repositories (`typell`, `typed-wasm`, `echo-types`, `epistemic-types`, `tropical-types`, `residual-evidence-types`, `choreographic-types`, `secret-types`) own their own build, release, and packaging pipelines.
 
-== Runtime Dependencies
+== Dependencies and Checks
 
-{{DEPS}}
-
-== Build from Source
+* **Coordinator & ledger gates**: Bash 5+, `jq`, `git`, `just` (optional runner), Graphviz (`dot` for `just type-map`).
+* **Cross-project proof CI (`Proof CI`)**: Agda 2.8.0 (`agda-stdlib` v2.4 at `2a5a0dec0a3cb5c87468ce101388a513d39dbf10` + pinned `hyperpolymath/echo-types`), Coq 8.18.0 (`coqc`, `coqchk`, `coqtop`), and core Lean 4.15.0 (SHA-256-verified Linux release tarball).
 
 [source,bash]
 ----
-git clone https://github.com/hyperpolymath/rsr-template-repo.git
-cd rsr-template-repo
-just build-release
+./scripts/check-coordination-boundary.sh
+./scripts/check-pipeline-drift.sh .
+just validate
+just proof-check-all
+git diff --check
 ----
 
-Output: `{{BUILD_OUTPUT_PATH}}`
+== Maintaining Synchronized Surfaces
 
-== Packaging
+1. **Pipeline state**: when updating `.machine_readable/descriptiles/STATE.a2ml`, keep `last-updated` synchronized across `STATE.a2ml`, `META.a2ml`, `ECOSYSTEM.a2ml`, `docs/PIPELINE.adoc` (`version`), and `docs/ARCHITECTURE.adoc` (header date), then run `./scripts/check-pipeline-drift.sh .`.
+2. **Cross-project proofs**: every proof file under `verification/proofs/` must be enrolled in both `scripts/check-coordination-boundary.sh` (`ALLOWED_PROOFS`), `.machine_readable/bot_directives/placement.a2ml` (`[verification].allowed-proofs`), the prover's `MANIFEST`, and `verification/proofs/LEDGER.json`.
+3. **Workflows**: `.github/workflows/actions.lock` locks every GitHub Action dependency; run `gh actions-lock` whenever workflow `uses:` references change.
 
-=== Guix
+== Governance and Security
 
-[source,bash]
-----
-guix build -f build/guix.scm
-----
-
-=== Nix
-
-[source,bash]
-----
-nix build
-----
-
-=== Container (Stapeln)
-
-[source,bash]
-----
-just stapeln-export    # Generates Containerfile
-podman build -t rsr-template-repo .
-----
-
-=== Manual Package
-
-[source,bash]
-----
-just install --prefix=/usr/local
-----
-
-Files installed:
-
-[cols="1,2"]
-|===
-| Path | Contents
-
-| `$PREFIX/bin/`
-| Executables
-
-| `$PREFIX/share/nextgen-typing/`
-| Data files, assets
-
-| `$PREFIX/share/doc/nextgen-typing/`
-| Documentation
-
-| `$PREFIX/share/applications/`
-| .desktop file (Linux, if GUI)
-
-| `$PREFIX/share/man/man1/`
-| Man pages
-|===
-
-== Configuration
-
-Default config location: `$XDG_CONFIG_HOME/nextgen-typing/config.toml`
-
-Fallback: `$HOME/.config/nextgen-typing/config.toml`
-
-== Health Checks
-
-[source,bash]
-----
-just doctor            # Full diagnostic
-just run --version   # Version check
-just run --selftest  # Built-in self-test
-----
-
-== Updating
-
-[source,bash]
-----
-git pull
-just build-release
-just install --prefix=/usr/local
-----
-
-Or via OPSM: `opsm update nextgen-typing`
-
-== Security Notes
-
-* License: MPL-2.0 (Palimpsest License)
-* All dependencies SHA-pinned
-* `panic-attacker` scan results: link:INSTALL-SECURITY-REPORT.adoc[]
-* OpenSSF Scorecard: see badge in README
-
-== Multi-Instance Deployment
-
-For deploying multiple instances (e.g., different users or tenants):
-
-[source,bash]
-----
-just install --prefix=/opt/nextgen-typing-instance1 --config=/etc/nextgen-typing/instance1.toml
-just install --prefix=/opt/nextgen-typing-instance2 --config=/etc/nextgen-typing/instance2.toml
-----
-
-Each instance has isolated config, data, and logs.
-
-== Reporting Issues
-
-* Upstream: https://github.com/hyperpolymath/rsr-template-repo/issues
-* With diagnostic: `just help-me` (pre-fills context)
+* Follow link:GOVERNANCE.adoc[GOVERNANCE.adoc] and link:MAINTAINERS.adoc[MAINTAINERS.adoc].
+* Report security vulnerabilities via link:.github/SECURITY.md[.github/SECURITY.md] (`www/.well-known/security.txt`).

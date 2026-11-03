@@ -103,14 +103,11 @@ just validate-rsr
 |`AI.a2ml`
 |Claude-specific instructions
 
-|`src/interface/Abi/`
-|Idris2 ABI definitions (Types, Layout, Foreign)
+|`verification/proofs/`
+|Cross-project formal proofs (Agda source + Rocq and Lean 4 recheck legs) and `LEDGER.json`
 
-|`ffi/zig/`
-|Zig FFI implementation
-
-|`generated/abi/`
-|Auto-generated C headers from Idris2 ABI
+|`.machine_readable/bot_directives/placement.a2ml`
+|Ownership routing rules between `nextgen-typing` and constituent repos
 |===
 
 == Justfile Features
@@ -176,23 +173,17 @@ project/
 │       ├── must/Mustfile      # Invariant checks
 │       └── trust/Trustfile.hs # Cryptographic verification
 ├── docs/                      # Documentation
-│   ├── CITATIONS.adoc
-│   ├── TOPOLOGY-GUIDE.adoc
-│   ├── generated/
-│   └── man/
-├── src/interface/Abi/         # Idris2 ABI definitions
-│   ├── Types.idr
-│   ├── Layout.idr
-│   └── Foreign.idr
-├── ffi/zig/                   # Zig FFI implementation
-│   ├── build.zig
-│   ├── src/main.zig
-│   └── test/integration_test.zig
-├── generated/abi/             # Auto-generated C headers
-├── examples/                  # Example code
-├── guix.scm                   # Guix package
+│   ├── ARCHITECTURE.adoc
+│   ├── PIPELINE.adoc
+│   └── TYPE-CONNECTIONS.adoc
+├── verification/proofs/       # Cross-project formal verification
+│   ├── LEDGER.json            # Theorem & recheck ledger
+│   ├── agda/                  # Agda source-of-truth proofs
+│   ├── coq/                   # Rocq (Coq) recheck witnesses
+│   └── lean4/                 # Core Lean 4 recheck witnesses
+├── scripts/                   # Boundary, drift, and proof gates
+├── build/guix.scm             # Guix package
 ├── Justfile                   # Task runner
-├── Containerfile              # Container build
 ├── LICENSE                    # MPL-2.0
 ├── EXHIBIT-A-ETHICAL-USE.txt  # Ethical use guidelines
 ├── EXHIBIT-B-QUANTUM-SAFE.txt # Quantum-safe provenance

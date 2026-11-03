@@ -19,9 +19,9 @@ set positional-arguments := true
 import? "contractile.just"
 
 # Project metadata — customize these
-project := "rsr-template-repo"
+project := "nextgen-typing"
 OWNER := "hyperpolymath"
-REPO := "rsr-template-repo"
+REPO := "nextgen-typing"
 version := "0.1.0"
 tier := "infrastructure"  # 1 | 2 | infrastructure
 
@@ -55,14 +55,14 @@ info:
     @[ -f ".machine_readable/STATE.a2ml" ] && grep -oP 'phase\s*=\s*"\K[^"]+' .machine_readable/STATE.a2ml | head -1 | xargs -I{} echo "Phase: {}" || true
 
 # Run Invariant Path overlay tools for this repository
-invariant-path *ARGS:
-    ./scripts/invariant-path.sh {{ARGS}}
+invariant-path *args:
+    ./scripts/invariant-path.sh "$@"
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # INIT — Bootstrap a new project from this template
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# Interactive project bootstrap — replaces all {{PLACEHOLDER}} tokens
+# Interactive project bootstrap — replaces all <PLACEHOLDER> tokens
 init:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -333,8 +333,8 @@ verify-template:
     fi
 
     # Check for template defaults still present
-    if grep -q 'rsr-template-repo' Justfile 2>/dev/null; then
-        echo "⚠ Justfile still references 'rsr-template-repo' — update project name"
+    if grep -q 'rsr-template-''repo' Justfile 2>/dev/null; then
+        echo "⚠ Justfile still references template default name — update project name"
         FOUND=1
     fi
 
@@ -419,22 +419,8 @@ self-assess:
     echo "── RELEVANT (matches your project) ───────────────────────"
     echo ""
 
-    if $HAS_IDRIS && { [ -d "src/interface/Abi" ] || [ -d "src/interface/abi" ]; }; then
-        echo "  ✓ src/interface/Abi|abi/ — KEEP (Idris2 ABI definitions)"
-    elif ! $HAS_IDRIS && { [ -d "src/interface/Abi" ] || [ -d "src/interface/abi" ]; }; then
-        echo "  ? src/interface/Abi|abi/ — No Idris2 detected."
-        echo "    → KEEP if you plan to add formal verification later."
-        echo "    → SAFE TO REMOVE if this project will never use Idris2."
-        echo "    ⚠ Consequence: no formally verified interface definitions."
-    fi
-
-    if $HAS_ZIG && [ -d "src/interface/ffi" ]; then
-        echo "  ✓ src/interface/ffi/ — KEEP (Zig FFI bridge)"
-    elif ! $HAS_ZIG && [ -d "src/interface/ffi" ]; then
-        echo "  ? src/interface/ffi/ — No Zig detected."
-        echo "    → KEEP if you plan C ABI interop later."
-        echo "    → SAFE TO REMOVE if this is a pure web/scripting project."
-        echo "    ⚠ Consequence: no C-compatible FFI bridge."
+    if [ -d "verification/proofs" ]; then
+        echo "  ✓ verification/proofs/ — KEEP (cross-project formal proofs)"
     fi
 
     if $HAS_API && [ -f ".machine_readable/integrations/groove.a2ml" ]; then
@@ -689,16 +675,16 @@ readiness:
     #   cargo test --test readiness -- --nocapture
     @echo "Readiness tests complete!"
 
-# Print the current CRG grade (reads from READINESS.md '**Current Grade:** X' line)
+# Print the current CRG grade (reads from READINESS.adoc or READINESS.md)
 crg-grade:
-    @grade=$$(grep -oP '(?<=\*\*Current Grade:\*\* )[A-FX]' READINESS.md 2>/dev/null | head -1); \
+    @grade=$$(grep -oP '(?<=\*Current Grade:\* )[A-FX]|(?<=\*\*Current Grade:\*\* )[A-FX]' READINESS.adoc READINESS.md 2>/dev/null | head -1 | sed 's/.*://'); \
     [ -z "$$grade" ] && grade="X"; \
     echo "$$grade"
 
 # Print a shields.io CRG badge for embedding in README files
-# Looks for '**Current Grade:** X' in READINESS.md; falls back to X
+# Looks for '*Current Grade:* X' in READINESS.adoc (or '**Current Grade:** X' in READINESS.md); falls back to X
 crg-badge:
-    @grade=$$(grep -oP '(?<=\*\*Current Grade:\*\* )[A-FX]' READINESS.md 2>/dev/null | head -1); \
+    @grade=$$(grep -oP '(?<=\*Current Grade:\* )[A-FX]|(?<=\*\*Current Grade:\*\* )[A-FX]' READINESS.adoc READINESS.md 2>/dev/null | head -1 | sed 's/.*://'); \
     [ -z "$$grade" ] && grade="X"; \
     case "$$grade" in \
       A) color="brightgreen" ;; \
@@ -866,8 +852,7 @@ container-init:
     set -euo pipefail
 
     if [ ! -d "container" ]; then
-        echo "Error: container/ directory not found."
-        echo "This repo may not have been created from rsr-template-repo."
+        echo "Error: container/ directory not found (not applicable to coordinator repos)."
         exit 1
     fi
 
@@ -1053,30 +1038,25 @@ validate-rsr:
     for f in .editorconfig .gitignore Justfile README.adoc LICENSE 0-AI-MANIFEST.a2ml; do
         [ -f "$f" ] || MISSING="$MISSING $f"
     done
-    for f in .machine_readable/STATE.a2ml .machine_readable/META.a2ml .machine_readable/ECOSYSTEM.a2ml .machine_readable/anchors/ANCHOR.a2ml .machine_readable/policies/MAINTENANCE-AXES.a2ml .machine_readable/policies/MAINTENANCE-CHECKLIST.a2ml .machine_readable/policies/SOFTWARE-DEVELOPMENT-APPROACH.a2ml; do
+    for f in .machine_readable/descriptiles/STATE.a2ml .machine_readable/descriptiles/META.a2ml .machine_readable/descriptiles/ECOSYSTEM.a2ml .machine_readable/descriptiles/anchor/ANCHOR.a2ml .machine_readable/policies/MAINTENANCE-AXES.a2ml .machine_readable/policies/MAINTENANCE-CHECKLIST.a2ml .machine_readable/policies/SOFTWARE-DEVELOPMENT-APPROACH.a2ml; do
         [ -f "$f" ] || MISSING="$MISSING $f"
     done
-    for f in licensing/exhibits/EXHIBIT-A-ETHICAL-USE.txt licensing/exhibits/EXHIBIT-B-QUANTUM-SAFE.txt licensing/texts/MPL-2.0.txt; do
+    for f in docs/legal/EXHIBIT-A-ETHICAL-USE.txt docs/legal/EXHIBIT-B-QUANTUM-SAFE.txt LICENSES/MPL-2.0.txt; do
         [ -f "$f" ] || MISSING="$MISSING $f"
     done
-    if [ ! -d "src/interface/Abi" ] && [ ! -d "src/interface/abi" ]; then
-        MISSING="$MISSING src/interface/Abi"
-    fi
-    for f in src/interface/ffi src/interface/generated; do
-        [ -d "$f" ] || MISSING="$MISSING $f"
-    done
+    [ -d "verification/proofs" ] || MISSING="$MISSING verification/proofs"
     for f in docs/governance/MAINTENANCE-CHECKLIST.adoc docs/governance/SOFTWARE-DEVELOPMENT-APPROACH.adoc; do
         [ -f "$f" ] || MISSING="$MISSING $f"
     done
-    if [ -f ".machine_readable/META.a2ml" ]; then
-        grep -q 'axis-1 = "must > intend > like"' .machine_readable/META.a2ml || MISSING="$MISSING META.a2ml:axis-1"
-        grep -q 'axis-2 = "corrective > adaptive > perfective"' .machine_readable/META.a2ml || MISSING="$MISSING META.a2ml:axis-2"
-        grep -q 'axis-3 = "systems > compliance > effects"' .machine_readable/META.a2ml || MISSING="$MISSING META.a2ml:axis-3"
-        grep -q 'scoping-first = true' .machine_readable/META.a2ml || MISSING="$MISSING META.a2ml:scoping-first"
-        grep -q 'idris-unsound-scan = "believe_me/assert_total"' .machine_readable/META.a2ml || MISSING="$MISSING META.a2ml:idris-unsound-scan"
-        grep -q 'audit-focus = "systems in place, documentation explains actual state, safety/security accounted for, observed effects reviewed"' .machine_readable/META.a2ml || MISSING="$MISSING META.a2ml:audit-focus"
-        grep -q 'compliance-focus = "seams/compromises/exception register, bounded exceptions, anti-drift checks"' .machine_readable/META.a2ml || MISSING="$MISSING META.a2ml:compliance-focus"
-        grep -q 'effects-evidence = "benchmark execution/results and maintainer status dialogue/review"' .machine_readable/META.a2ml || MISSING="$MISSING META.a2ml:effects-evidence"
+    if [ -f ".machine_readable/descriptiles/META.a2ml" ]; then
+        grep -q 'axis-1 = "must > intend > like"' .machine_readable/descriptiles/META.a2ml || MISSING="$MISSING META.a2ml:axis-1"
+        grep -q 'axis-2 = "corrective > adaptive > perfective"' .machine_readable/descriptiles/META.a2ml || MISSING="$MISSING META.a2ml:axis-2"
+        grep -q 'axis-3 = "systems > compliance > effects"' .machine_readable/descriptiles/META.a2ml || MISSING="$MISSING META.a2ml:axis-3"
+        grep -q 'scoping-first = true' .machine_readable/descriptiles/META.a2ml || MISSING="$MISSING META.a2ml:scoping-first"
+        grep -q 'idris-unsound-scan = "believe_me/assert_total"' .machine_readable/descriptiles/META.a2ml || MISSING="$MISSING META.a2ml:idris-unsound-scan"
+        grep -q 'audit-focus = "systems in place, documentation explains actual state, safety/security accounted for, observed effects reviewed"' .machine_readable/descriptiles/META.a2ml || MISSING="$MISSING META.a2ml:audit-focus"
+        grep -q 'compliance-focus = "seams/compromises/exception register, bounded exceptions, anti-drift checks"' .machine_readable/descriptiles/META.a2ml || MISSING="$MISSING META.a2ml:compliance-focus"
+        grep -q 'effects-evidence = "benchmark execution/results and maintainer status dialogue/review"' .machine_readable/descriptiles/META.a2ml || MISSING="$MISSING META.a2ml:effects-evidence"
         grep -q 'compliance-tooling = "panic-attack"' .machine_readable/policies/MAINTENANCE-AXES.a2ml || MISSING="$MISSING MAINTENANCE-AXES.a2ml:compliance-tooling"
         grep -q 'effects-tooling = "ecological checking with sustainabot guidance"' .machine_readable/policies/MAINTENANCE-AXES.a2ml || MISSING="$MISSING MAINTENANCE-AXES.a2ml:effects-tooling"
         grep -q 'source-human = "docs/governance/MAINTENANCE-CHECKLIST.adoc"' .machine_readable/policies/MAINTENANCE-CHECKLIST.a2ml || MISSING="$MISSING MAINTENANCE-CHECKLIST.a2ml:source-human"
@@ -1308,7 +1288,7 @@ assail:
 
 # Self-diagnostic — checks dependencies, permissions, paths
 doctor:
-    @echo "Running diagnostics for rsr-template-repo..."
+    @echo "Running diagnostics for {{project}}..."
     @echo "Checking required tools..."
     @command -v just >/dev/null 2>&1 && echo "  [OK] just" || echo "  [FAIL] just not found"
     @command -v git >/dev/null 2>&1 && echo "  [OK] git" || echo "  [FAIL] git not found"
@@ -1318,7 +1298,7 @@ doctor:
 
 # Guided tour of key features
 tour:
-    @echo "=== rsr-template-repo Tour ==="
+    @echo "=== {{project}} Tour ==="
     @echo ""
     @echo "1. Project structure:"
     @ls -la
@@ -1333,12 +1313,12 @@ tour:
 
 # Open feedback channel with diagnostic context
 help-me:
-    @echo "=== rsr-template-repo Help ==="
+    @echo "=== {{project}} Help ==="
     @echo "Platform: $(uname -s) $(uname -m)"
     @echo "Shell: $SHELL"
     @echo ""
     @echo "To report an issue:"
-    @echo "  https://github.com/hyperpolymath/rsr-template-repo/issues/new"
+    @echo "  https://github.com/{{OWNER}}/{{REPO}}/issues/new"
     @echo ""
     @echo "Include the output of 'just doctor' in your report."
 

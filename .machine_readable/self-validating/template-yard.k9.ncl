@@ -1,13 +1,13 @@
 K9!
 # SPDX-License-Identifier: MPL-2.0
-# K9 Yard-level template: Configuration with validation
+# K9 Yard-level component: nextgen-typing proof-policy configuration with contracts
 # Security Level: Yard (Nickel evaluation with contracts)
 # Signature recommended but not required
 
 {
   pedigree = {
     schema_version = "1.0.0",
-    component_type = "TODO: describe component type (e.g., 'validated-config', 'schema')",
+    component_type = "validated-config",
     security = {
       leash = 'Yard,
       trust_level = "validated-config",
@@ -16,69 +16,38 @@ K9!
       allow_subprocess = false,
     },
     metadata = {
-      name = "TODO: component-name",
+      name = "nextgen-typing-proof-policy-config",
       version = "1.0.0",
-      description = "TODO: Brief description with validation details",
+      description = "Contract-validated configuration for cross-project proof verification",
       author = "Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>",
     },
   },
 
-  # Configuration with Nickel contracts for validation
   config = {
-    # Example: String that cannot be empty
     name
       | String
       | std.string.NonEmpty
-      = "TODO: default value",
+      = "nextgen-typing",
 
-    # Example: Number with range constraint
-    port
-      | Number
-      | std.contract.from_predicate (fun p => p > 0 && p < 65536)
-      = 8080,
+    ledger_path
+      | String
+      | std.string.NonEmpty
+      = "verification/proofs/LEDGER.json",
 
-    # Example: Boolean flag
-    enabled | Bool = true,
+    strict_witnesses | Bool = true,
 
-    # Example: Enum (one of several values)
-    environment
-      | [| 'Development, 'Staging, 'Production |]
-      = 'Development,
+    source_prover
+      | [| 'Agda, 'Idris2 |]
+      = 'Agda,
 
-    # Example: List with non-empty constraint
-    items
+    recheck_provers
       | Array String
       | std.array.NonEmpty
-      = ["item1", "item2"],
-
-    # Example: Nested object with contracts
-    database = {
-      host | String | std.string.NonEmpty = "localhost",
-      port | Number | std.contract.from_predicate (fun p => p > 0 && p < 65536) = 5432,
-      name | String | std.string.NonEmpty = "mydb",
-    },
+      = ["rocq", "lean4"],
   },
 
-  # Validation rules (additional cross-field checks)
   validation = {
-    # Example: Check that at least one item exists
-    check_items = std.array.length config.items > 0,
-
-    # Example: Check that production has secure settings
-    check_production =
-      if config.environment == 'Production then
-        config.enabled == true
-      else
-        true,
-
-    # Add your custom validation rules here
+    check_recheck_provers = std.array.length config.recheck_provers >= 2,
+    check_strict = config.strict_witnesses == true,
   },
 }
-
-# Usage:
-# 1. Fill in TODO items above
-# 2. Define your config with appropriate contracts
-# 3. Add validation rules in validation = { ... }
-# 4. Validate: nickel typecheck your-file.k9.ncl
-# 5. Evaluate: nickel eval your-file.k9.ncl
-# 6. If validation passes, use in your application
