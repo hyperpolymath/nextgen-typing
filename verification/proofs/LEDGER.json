@@ -19,7 +19,7 @@
         "clause": "§6 (toolchains)",
         "subject": "CI install path for Rocq and Lean 4",
         "deviation": "installed in .github/workflows/proof-ci.yml from the Ubuntu package index (coq 8.18.0, version asserted) and from the official Lean 4 release archive (4.15.0, sha256-verified before extraction and version asserted) — not through a Guix manifest or through container/",
-        "reason": "container/ is the development environment and does not carry the proof toolchains; pinning them through Guix or the container is a separate change with its own review",
+        "reason": ".devcontainer/ is the editor development environment and does not carry the proof toolchains; pinning them through Guix or a dedicated proof container is a separate change with its own review",
         "state": "open",
         "note": "Recorded as a deviation, not a waiver: §4 is a capability exception for a proof leg, not a bootstrap exception for how a toolchain is installed."
       }
@@ -69,14 +69,23 @@
         ],
         "evidence": {
           "kind": "ci-receipt",
-          "commit": "3cd185939179773f177b59e6fee360719695dfc7",
-          "date": "2026-11-01",
-          "run": "https://github.com/hyperpolymath/nextgen-typing/actions/runs/41314454646",
-          "invocation": "agda --safe --without-K --cubical-compatible verification/proofs/agda/EchoTyping.agda and .../Verification.agda, via `just proof-check-agda` -> scripts/check-proofs.sh agda, with the standard-library, echo-types and absolute-zero library manifests registered",
+          "commit": "c4ea39721d7ba893478fe57b5f749a89f2996508",
+          "date": "2026-11-03",
+          "run": "https://github.com/hyperpolymath/nextgen-typing/actions/runs/41565790232",
+          "invocation": "agda --safe --without-K --cubical-compatible verification/proofs/agda/EchoTyping.agda and .../Verification.agda, via `just proof-check-all` -> `just proof-check-agda` -> scripts/check-proofs.sh agda, with the standard-library, echo-types and absolute-zero library manifests registered",
           "observed_result": "PASS — 2 gated modules typecheck, 0 failures, 0 quarantined; manifest coverage 2/2 files accounted for",
-          "checked_by": "proof-ci.yml, Agda 2.8.0, agda-stdlib v2.4 @2a5a0dec0a3cb5c87468ce101388a513d39dbf10, echo-types b0982c44f36133acd2d0e1d4e03cf031fff7a470, absolute-zero f486c29903434589117fa0662c6f29b0f17d1d5f",
-          "note": "PROOF-POLICY §2.1 (2026-11-01) makes the canonical invocation `agda --safe --without-K --cubical-compatible` and says a prior `--safe` or `--safe --without-K` success is historical evidence rather than a receipt for that combined profile. This receipt is the first canonical one; the earlier receipt is kept below as historical, not as evidence.",
+          "checked_by": "proof-ci.yml on main, Agda 2.8.0, agda-stdlib v2.4 @2a5a0dec0a3cb5c87468ce101388a513d39dbf10, echo-types b0982c44f36133acd2d0e1d4e03cf031fff7a470, absolute-zero f486c29903434589117fa0662c6f29b0f17d1d5f",
+          "note": "PROOF-POLICY §2.1 (2026-11-01) makes the canonical invocation `agda --safe --without-K --cubical-compatible`. Run 41565790232 on main (c4ea3972) verified Agda alongside Rocq and Lean 4 via `just proof-check-all`; superseded pre-merge receipts are retained below.",
           "historical_evidence": [
+            {
+              "state": "superseded",
+              "kind": "ci-receipt",
+              "commit": "3cd185939179773f177b59e6fee360719695dfc7",
+              "date": "2026-11-01",
+              "run": "https://github.com/hyperpolymath/nextgen-typing/actions/runs/41314454646",
+              "checked_by": "proof-ci.yml, Agda 2.8.0, agda-stdlib v2.4 @2a5a0dec0a3cb5c87468ce101388a513d39dbf10, echo-types b0982c4, absolute-zero f486c29",
+              "why_not_current": "superseded on main by squash-merged commit c4ea39721d7ba893478fe57b5f749a89f2996508 (run 41565790232)"
+            },
             {
               "state": "superseded",
               "kind": "ci-receipt (historical under §2.1)",
@@ -238,9 +247,9 @@
           "statement_compared": "Compared anchor-by-anchor against verification/proofs/agda/EchoTyping.agda (PROOF-POLICY §2.2): Echo f y := { x : A & f x = y } (Type-valued sigT, never Prop-truncated ex, preserving projT1 witness projection); EchoR Cert y := { r : C & Cert r y }; LEcho linear/affine and weaken := collapse_to_residue match EchoLinear; tp_echo_1 proves affine_weakening echo_true = affine_weakening echo_false; tp_echo_2 proves ~ { reify : LEcho affine -> LEcho linear & forall e, reify (affine_weakening e) = e }; tp_echo_3 inhabits { s1 : SurfaceTy & { s2 : SurfaceTy & ((erase s1 = erase s2) * (s1 <> s2))%type } } over Type-valued sigT and prod. Auxiliary lemmas affine_typing_proof_irrelevant and subsume_coherent are also proven via pure CIC convoy match with zero axioms.",
           "evidence": {
             "kind": "ci-receipt",
-            "commit": "8bdfd5a69a6bc34dcf1faa19ad617aaea0edd158",
-            "date": "2026-11-02",
-            "run": "https://github.com/hyperpolymath/nextgen-typing/actions/runs/41539844452",
+            "commit": "c4ea39721d7ba893478fe57b5f749a89f2996508",
+            "date": "2026-11-03",
+            "run": "https://github.com/hyperpolymath/nextgen-typing/actions/runs/41565790232",
             "assumptions_output": "$ coqchk -Q . \"\" -silent -o EchoTyping\nCONTEXT SUMMARY\n===============\n* Theory: Set is predicative\n* Axioms: <none>\n* Constants/Inductives relying on type-in-type: <none>\n* Constants/Inductives relying on unsafe (co)fixpoints: <none>\n* Inductives whose positivity is assumed: <none>\n$ Print Assumptions EchoTyping.tp_echo_1.\nClosed under the global context\n$ Print Assumptions EchoTyping.tp_echo_2.\nClosed under the global context\n$ Print Assumptions EchoTyping.tp_echo_3.\nClosed under the global context"
           },
           "api_receipt": null,
@@ -284,9 +293,9 @@
           "statement_compared": "Compared anchor-by-anchor against verification/proofs/agda/EchoTyping.agda (PROOF-POLICY §2.2): EchoTyping.tp_echo_1, EchoTyping.tp_echo_2, and EchoTyping.tp_echo_3 use Type-valued PSigma and PProd (never Prop-truncated Exists/And) over core Lean Eq; because Lean's Prop Eq has definitional proof irrelevance whereas Agda's --without-K _≡_ is proof-relevant in Set, EchoTyping.lean §4 also proves EchoTyping.tp_echo_1_path, EchoTyping.tp_echo_2_path, and EchoTyping.tp_echo_3_path over a Type-valued Martin-Löf identity type Path with Sigma, Prod, and Empty, confirming zero reliance on UIP/K, propext, Quot.sound, or Classical.choice.",
           "evidence": {
             "kind": "ci-receipt",
-            "commit": "8bdfd5a69a6bc34dcf1faa19ad617aaea0edd158",
-            "date": "2026-11-02",
-            "run": "https://github.com/hyperpolymath/nextgen-typing/actions/runs/41539844452",
+            "commit": "c4ea39721d7ba893478fe57b5f749a89f2996508",
+            "date": "2026-11-03",
+            "run": "https://github.com/hyperpolymath/nextgen-typing/actions/runs/41565790232",
             "assumptions_output": "'EchoTyping.tp_echo_1' does not depend on any axioms\n'EchoTyping.tp_echo_2' does not depend on any axioms\n'EchoTyping.tp_echo_3' does not depend on any axioms\n'EchoTyping.tp_echo_1_path' does not depend on any axioms\n'EchoTyping.tp_echo_2_path' does not depend on any axioms\n'EchoTyping.tp_echo_3_path' does not depend on any axioms"
           },
           "api_receipt": null,

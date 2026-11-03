@@ -12,13 +12,13 @@
 # It carries NO `name`, `description`, `homepage` or `private` key, and it must
 # never gain one. The reason is a real incident, not a hypothetical:
 #
-#   This file previously read `name: "{{REPO}}"`. probot/settings applies it on
+#   This file previously read `name: "<REPO>"`. probot/settings applies it on
 #   every push to the default branch, so it submitted the literal string
-#   `{{REPO}}` as the repository name. GitHub sanitises an invalid name by
-#   collapsing each run of illegal characters to a dash — `{{REPO}}` became
+#   `<REPO>` as the repository name. GitHub sanitises an invalid name by
+#   collapsing each run of illegal characters to a dash — `<REPO>` became
 #   `-REPO-`. The template renamed itself on every push, its old URL 404'd, and
 #   it was mistaken for a deleted repository. `description` was likewise left
-#   reading the literal `{{DESCRIPTION}}` on the live repo.
+#   reading the literal `<DESCRIPTION>` on the live repo.
 #
 # Two properties make identity keys unsafe here specifically:
 #

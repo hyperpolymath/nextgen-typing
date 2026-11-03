@@ -207,10 +207,12 @@ recheck witnesses; and `+scripts/proof-scan-dangerous.sh+` scans all four proof
 sources (nested-comment-aware) on every run.
 |===
 
-The receipt behind all four is CI run **41314454646** at
-`+3cd185939179773f177b59e6fee360719695dfc7+` — the first run that invoked the
-policy's canonical form, `+agda --safe --without-K --cubical-compatible+`
-(PROOF-POLICY §2.1, amended 2026-11-01), through `+just proof-check-agda+`.
+The receipt behind all four on `+main+` is CI run **41565790232** at
+`+c4ea39721d7ba893478fe57b5f749a89f2996508+`, which executed `+just proof-check-all+`
+across the policy's canonical Agda form (`+agda --safe --without-K --cubical-compatible+`,
+PROOF-POLICY §2.1, amended 2026-11-01), Rocq (`+coqc+` + `+coqchk+` + `+Print Assumptions+`),
+and core Lean 4 (`+lean+` + `+#print axioms+` + module-origin verification),
+succeeding run **41314454646** (`+3cd185939179773f177b59e6fee360719695dfc7+`).
 
 The earlier receipt (run 41299544043 at `+4c6b918+`) invoked `+--safe+` with the
 library manifest only: `+--without-K+` came from the file's `+{-# OPTIONS #-}+`
@@ -385,7 +387,7 @@ operations against. Its own identity claim is **open** (see caveat 1 below).
 115 Qed / 0 Admitted / **61 undischarged axioms**, OND-6 open by design. It
 reaches this proof only through echo-types' library manifest; none of its Coq is
 in the import cone.
-|Receipt commit |receipt |`+3cd185939179773f177b59e6fee360719695dfc7+` (run 41314454646, canonical §2.1 invocation)
+|Receipt commit |receipt |`+c4ea39721d7ba893478fe57b5f749a89f2996508+` (run 41565790232 on `+main+`, canonical §2.1 + Grade 2i recheck invocation)
 |===
 
 These are not the same kind of entry, and the ledger says so: a *dependency-pin*

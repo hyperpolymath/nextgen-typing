@@ -35,16 +35,16 @@ K9!
     repo_name
       | String
       | std.string.NonEmpty
-      = "my-new-repo",
+      = "nextgen-typing",
 
     repo_type
       | [| 'Library, 'Application, 'Tool, 'Specification |]
-      = 'Application,
+      = 'Specification,
 
     primary_language
       | String
       | std.string.NonEmpty
-      = "rust",
+      = "agda",
 
     # RSR compliance features to enable
     features = {
@@ -91,11 +91,11 @@ K9!
     },
 
     "create-structure" = {
-      description = "Create RSR directory structure",
+      description = "Create coordinator directory structure",
       commands = [
-        "mkdir -p src/ docs/ tests/ scripts/",
+        "mkdir -p verification/proofs/ docs/ tests/ scripts/",
         "mkdir -p .github/workflows/",
-        "mkdir -p .machine_readable/contractiles/k9/",
+        "mkdir -p .machine_readable/self-validating/",
         "echo '✓ Directory structure created'",
       ],
     },

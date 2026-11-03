@@ -37,10 +37,10 @@ output this repo produces (docs, CLI tooling, diagrams).
 
 ### placeholder-drift
 - description: Remaining template placeholders should trend to zero
-- tolerance: 0 {{PLACEHOLDER}} markers outside .machine_readable/ai/PLACEHOLDERS.adoc
-- corrective: Fill per PLACEHOLDERS.adoc (just init or manual sed pass)
+- tolerance: 0 double-brace <PLACEHOLDER> markers outside .machine_readable/ai/PLACEHOLDERS.adoc
+- corrective: Fill per PLACEHOLDERS.adoc (just init or manual pass)
 - severity: advisory
-- notes: As of 2026-06-12 placeholders remain in .github/ community files, self-validating/ k9 templates, and QUICKSTART-MAINTAINER.adoc (tracked as OQ-002 in descriptiles/STATE.a2ml)
+- notes: Resolved 2026-11-03 (OQ-002 closed; verified via just verify-template).
 
 ## Structural Drift
 

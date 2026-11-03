@@ -64,9 +64,8 @@ explicitly told otherwise.
 
 - .machine_readable/descriptiles/anchor/ANCHOR.a2ml — maintainer-only authority record
 - GOVERNANCE.adoc / MAINTAINERS.adoc / .github/CODEOWNERS — governance
-- verification/proofs/ + src/interface/ — frozen pending OQ-001 decision
-- .github/workflows/ — thin wrappers of standards reusables; changes ride
-  the standards repo, not ad-hoc edits here
+- verification/proofs/ — cross-project formal verification witnesses and LEDGER.json
+- .github/workflows/ — CI and security gates (locked via .github/workflows/actions.lock)
 
 ## Integrity Invariants
 
@@ -112,10 +111,10 @@ explicitly told otherwise.
 ## Dangerous Patterns
 
 ### no-unsound-escape-hatches
-- description: No believe_me, assert_total, Admitted, sorry, unsafeCoerce, Obj.magic
-- run: "! grep -rE 'believe_me|assert_total|Admitted|sorry|unsafeCoerce|Obj\\.magic' --include='*.idr' --include='*.lean' --include='*.v' --include='*.ml' --include='*.hs' . 2>/dev/null | head -1 | grep -q ."
+- description: No believe_me, assert_total, Admitted, sorry, unsafeCoerce, Obj.magic, postulate in enrolled proofs
+- run: "./scripts/proof-scan-dangerous.sh"
 - severity: critical
-- notes: Currently red — 6 believe_me markers in scaffold proof files are recorded tech debt (docs/tech-debt-2026-05-26.md), pending OQ-001. Tracked, not hidden.
+- notes: Enforced in CI via scripts/proof-scan-dangerous.sh and kernel assumption queries (scripts/check-proofs.sh).
 
 ### no-unsafe-without-comment
 - description: All unsafe blocks in Rust must have SAFETY comments

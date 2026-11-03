@@ -100,9 +100,9 @@ REQUIRED_WORKFLOWS=(
     "security-policy.yml"
     "wellknown-enforcement.yml"
     "workflow-linter.yml"
-    "npm-bun-blocker.yml"
-    "ts-blocker.yml"
-    "scorecard-enforcer.yml"
+    "proof-ci.yml"
+    "coordination-boundary.yml"
+    "governance.yml"
     "secret-scanner.yml"
 )
 

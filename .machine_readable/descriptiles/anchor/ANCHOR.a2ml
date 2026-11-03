@@ -4,13 +4,15 @@
 # ANCHOR.a2ml - authoritative anchor for this repository
 
 [metadata]
-version = "1.0.1"
-last-updated = "2026-06-12"
+version = "1.0.2"
+last-updated = "2026-11-03"
 
 [anchor]
+id = "org.hyperpolymath.nextgen-typing"
 schema = "hyperpolymath.anchor/1"
 repo = "hyperpolymath/nextgen-typing"
 authority = "upstream-canonical"
+status = "active"
 
 purpose = [
   "Define canonical semantics and policy boundaries for this repository.",
@@ -20,32 +22,34 @@ purpose = [
 
 [identity]
 project = "nextgen-typing"
-kind = "monorepo"                # coordination monorepo (no compiler code; see META ADR-001)
-one-sentence = "Coordination monorepo for the hyperpolymath type theory pipeline (katagoria → typell → typed-wasm → PanLL)"
+kind = "monorepo"                # coordination monorepo + cross-project proof host (META ADR-001, OQ-001)
+one-sentence = "Coordination monorepo and cross-project verification host for the hyperpolymath type theory pipeline (katagoria → typell → typed-wasm → PanLL)"
 domain = "type theory / programming-language research coordination"
 
 [semantic-authority]
 policy = "canonical"
 
 owns = [
-  "Project semantics and specification",
-  "Invariant definitions and contractiles",
-  "Reference implementation behavior",
+  "Cross-project pipeline architecture and routing boundaries",
+  "Shared type-family vocabulary and inter-family bridge obligations",
+  "Cross-project formal verification witnesses (verification/proofs/)",
 ]
 
 [implementation-policy]
-allowed = ["Rust", "Idris2", "Zig", "Scheme", "Shell", "Just", "AsciiDoc", "Markdown"]
-forbidden = ["Node.js", "npm"]
+allowed = ["Agda", "Rocq", "Lean 4", "Idris2", "Shell", "Just", "AsciiDoc", "Markdown", "A2ML", "Nickel"]
+forbidden = ["Node.js", "npm", "TypeScript", "Go"]
 
 [golden-path]
 smoke-test-command = [
-  "just test",
-  "just quality",
+  "just validate",
+  "just validate-coordination",
+  "just validate-pipeline-drift",
+  "just proof-witness-check",
 ]
 
 success-criteria = [
-  "Core tests pass",
-  "Quality gates pass",
+  "Coordination boundary and pipeline drift guards pass",
+  "Cross-project proof ledger and compiled witnesses pass",
   "No unresolved critical security findings",
 ]
 
@@ -56,15 +60,10 @@ must-have-anchor = true
 must-have-golden-path = true
 
 [semantic-authority-files]
-# NOTE (2026-06-12): the four paths below are template residue — none of them
-# exist in-tree. Kept verbatim pending maintainer decision (tracked as a
-# proposed issue at the 2026-06-12 governance checkpoint). The real
-# architecture authority files today are docs/ARCHITECTURE.adoc and
-# docs/PIPELINE.adoc.
-language-spec = "SPECIFICATION.md"
-formal-proofs = "docs/proofs/PROOFS.adoc"
-type-theory = "docs/theory/THEORY.adoc"
-algorithms = "docs/theory/ALGORITHMS.adoc"
+architecture = "docs/ARCHITECTURE.adoc"
+pipeline = "docs/PIPELINE.adoc"
+formal-proofs = "PROOF-STATUS.adoc"
+type-connections = "docs/TYPE-CONNECTIONS.adoc"
 
 # Dated realignment entries (most recent last).
 
@@ -74,3 +73,8 @@ what = "Estate standardization + governance checkpoint"
 why = "Adopt the estate-standardization-20260607 layout and refresh machine-readable metadata to current reality"
 evidence = "Merge of origin/estate-standardization-20260607 (workflows kept at main's reusable-wrapper versions); codeql cron monthly cherry-pick; root STATE.a2ml pointer-ized to 6a2/STATE.a2ml; 6a2 STATE/META refreshed to 2026-06-12; bot_directives trio (hypatia, gitbot-fleet, git-private-farm) added; flat contractiles populated with repo-true obligations (content ported from nested must/trust/dust/bust and root *.contractile files)"
 
+[[realignments]]
+date = "2026-11-03"
+what = "Retarget semantic-authority-files and golden-path to live coordinator + proof-host paths"
+why = "Retire template-residue dead paths (SPECIFICATION.md, docs/proofs/PROOFS.adoc, docs/theory/{THEORY,ALGORITHMS}.adoc) after OQ-001 and XP-1 Grade 2i verification (#40)"
+evidence = "docs/ARCHITECTURE.adoc, docs/PIPELINE.adoc, PROOF-STATUS.adoc, and docs/TYPE-CONNECTIONS.adoc verified in-tree; XP-1 Agda + Rocq + Lean 4 Grade 2i proofs checked under Proof CI"

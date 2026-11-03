@@ -1,6 +1,6 @@
 K9!
 # SPDX-License-Identifier: MPL-2.0
-# Example Kennel-level K9 component: Project metadata
+# Kennel-level K9 component: nextgen-typing project metadata
 # Security Level: Kennel (pure data, no execution)
 # No signature required
 
@@ -16,40 +16,42 @@ K9!
       allow_subprocess = false,
     },
     metadata = {
-      name = "project-metadata",
+      name = "nextgen-typing-project-metadata",
       version = "1.0.0",
-      description = "Pure data configuration for project metadata",
+      description = "Pure data configuration for nextgen-typing coordination metadata",
       author = "Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>",
     },
   },
 
-  # Project configuration
   project = {
-    name = "my-project",
+    name = "nextgen-typing",
     version = "0.1.0",
-    description = "A project following Rhodium Standard Repositories",
+    description = "Coordination monorepo and cross-project verification host for the hyperpolymath type theory pipeline",
 
     repository = {
-      url = "https://github.com/hyperpolymath/my-project",
+      url = "https://github.com/hyperpolymath/nextgen-typing",
       type = "git",
     },
 
     author = {
       name = "Jonathan D.A. Jewell",
       email = "j.d.a.jewell@open.ac.uk",
-      organization = "{{AUTHOR_ORG}}",
+      organization = "hyperpolymath",
     },
 
     license = "MPL-2.0",
 
     keywords = [
-      "rhodium-standard",
+      "type-theory",
+      "formal-verification",
+      "agda",
+      "rocq",
+      "lean4",
       "rsr",
       "hyperpolymath",
     ],
   },
 
-  # Export as JSON for other tools
   export = {
     format = "json",
     destination = "project-metadata.json",

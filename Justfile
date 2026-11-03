@@ -55,14 +55,14 @@ info:
     @[ -f ".machine_readable/descriptiles/STATE.a2ml" ] && grep -oP 'phase\s*=\s*"\K[^"]+' .machine_readable/descriptiles/STATE.a2ml | head -1 | xargs -I{} echo "Phase: {}" || true
 
 # Run Invariant Path overlay tools for this repository
-invariant-path *ARGS:
-    ./scripts/invariant-path.sh {{ARGS}}
+invariant-path *args:
+    ./scripts/invariant-path.sh "$@"
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # INIT — Bootstrap a new project from this template
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# Interactive project bootstrap — replaces all {{PLACEHOLDER}} tokens
+# Interactive project bootstrap — replaces all <PLACEHOLDER> tokens
 init:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -333,8 +333,8 @@ verify-template:
     fi
 
     # Check for template defaults still present
-    if grep -q 'rsr-template-repo' Justfile 2>/dev/null; then
-        echo "⚠ Justfile still references 'rsr-template-repo' — update project name"
+    if grep -q 'rsr-template-''repo' Justfile 2>/dev/null; then
+        echo "⚠ Justfile still references template default name — update project name"
         FOUND=1
     fi
 
@@ -848,8 +848,7 @@ container-init:
     set -euo pipefail
 
     if [ ! -d "container" ]; then
-        echo "Error: container/ directory not found."
-        echo "This repo may not have been created from rsr-template-repo."
+        echo "Error: container/ directory not found (not applicable to coordinator repos)."
         exit 1
     fi
 
@@ -1297,7 +1296,7 @@ assail:
 
 # Self-diagnostic — checks dependencies, permissions, paths
 doctor:
-    @echo "Running diagnostics for rsr-template-repo..."
+    @echo "Running diagnostics for {{project}}..."
     @echo "Checking required tools..."
     @command -v just >/dev/null 2>&1 && echo "  [OK] just" || echo "  [FAIL] just not found"
     @command -v git >/dev/null 2>&1 && echo "  [OK] git" || echo "  [FAIL] git not found"
@@ -1307,7 +1306,7 @@ doctor:
 
 # Guided tour of key features
 tour:
-    @echo "=== rsr-template-repo Tour ==="
+    @echo "=== {{project}} Tour ==="
     @echo ""
     @echo "1. Project structure:"
     @ls -la
@@ -1322,12 +1321,12 @@ tour:
 
 # Open feedback channel with diagnostic context
 help-me:
-    @echo "=== rsr-template-repo Help ==="
+    @echo "=== {{project}} Help ==="
     @echo "Platform: $(uname -s) $(uname -m)"
     @echo "Shell: $SHELL"
     @echo ""
     @echo "To report an issue:"
-    @echo "  https://github.com/hyperpolymath/rsr-template-repo/issues/new"
+    @echo "  https://github.com/{{OWNER}}/{{REPO}}/issues/new"
     @echo ""
     @echo "Include the output of 'just doctor' in your report."
 
