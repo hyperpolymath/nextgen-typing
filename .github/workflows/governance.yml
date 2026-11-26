@@ -61,9 +61,17 @@ jobs:
             exit 1
           fi
 
-          bad_locks="$(git ls-files 'package-lock.json' '**/package-lock.json' 'yarn.lock' '**/yarn.lock' 'pnpm-lock.yaml' '**/pnpm-lock.yaml' || true)"
+          bad_locks="$(git ls-files 'package-lock.json' '**/package-lock.json' 'yarn.lock' '**/yarn.lock' || true)"
+          # Canonical JS policy (Bun first, then Deno, pnpm, npm): pnpm-lock.yaml is
+          # allowed only beside bun.lock and package.json in the same directory.
+          for lock in $(git ls-files 'pnpm-lock.yaml' '**/pnpm-lock.yaml'); do
+            dir="$(dirname "$lock")"
+            if [ -z "$(git ls-files "$dir/bun.lock")" ] || [ -z "$(git ls-files "$dir/package.json")" ]; then
+              bad_locks="${bad_locks:+$bad_locks$'\n'}$lock"
+            fi
+          done
           if [ -n "$bad_locks" ]; then
-            echo "::error::Banned npm/yarn/pnpm lockfiles detected (use Deno or Bun per LANGUAGE-POLICY):"
+            echo "::error::Banned npm/yarn lockfiles, or pnpm-lock.yaml without bun.lock and package.json, detected (Bun first per LANGUAGE-POLICY):"
             printf '%s\n' "$bad_locks"
             exit 1
           fi
