@@ -54,8 +54,6 @@ workflows:
         - 'actions/checkout@v7.0.1'
     '.github/workflows/rsr-antipattern.yml':
         - 'actions/checkout@v7.0.1'
-    '.github/workflows/runtime-policy.yml':
-        - 'actions/checkout@v7.0.1'
     '.github/workflows/rust-ci.yml':
         - 'actions/checkout@v7.0.1'
     '.github/workflows/scorecard.yml':
