@@ -90,7 +90,7 @@ local rulings where they differ from the policy, including what was superseded.
 1. Read `0-AI-MANIFEST.a2ml`, then `.machine_readable/descriptiles/STATE.a2ml`.
 2. Full rules: `docs/practice/AI-CONVENTIONS.adoc`.
 3. Licence **MPL-2.0** + SPDX header on every file (never AGPL).
-4. Banned languages: TypeScript→ReScript, npm/Node→Deno, Go→Rust, Python→Julia/Rust.
+4. Banned languages: TypeScript→AffineScript, npm/Node→Deno, Go→Rust, Python→Julia/Rust.
    Containers: Podman + `Containerfile`. Build/test via `just`.
 5. No unsound escape hatches in any proof: `believe_me`, `assert_total`,
    `postulate`, `sorry`, `Admitted`, `unsafeCoerce`, `Obj.magic`.

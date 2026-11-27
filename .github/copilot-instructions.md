@@ -48,7 +48,7 @@ constituent repos) under `verification/proofs/`.
 
 ## Banned Languages
 
-- No TypeScript (use ReScript)
+- No TypeScript (use AffineScript)
 - No Node.js / npm / bun (use Deno)
 - No Go (use Rust)
 - No Python (use Julia or Rust)
